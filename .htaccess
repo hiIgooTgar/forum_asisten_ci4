@@ -1,0 +1,21 @@
+<IfModule mod_rewrite.c>
+    Options -Indexes
+    Options +FollowSymLinks
+    RewriteEngine On
+
+    # Jika Anda menggunakan HTTPS, aktifkan dua baris berikut untuk memaksa HTTPS:
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Mengabaikan file dan direktori yang ada secara fisik (seperti assets, CSS, JS, Gambar)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Mengarahkan semua request ke index.php
+    RewriteRule ^(.*)$ index.php/$1 [L,QSA]
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+    # Jika mod_rewrite tidak aktif di Apache, tampilkan error 404
+    ErrorDocument 404 /index.php
+</IfModule>

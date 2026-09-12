@@ -4,7 +4,7 @@ namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
 
-class CreatePasswordResetTokensTable extends Migration
+class CreatePasswordResetsTable extends Migration
 {
     public function up()
     {
@@ -24,11 +24,11 @@ class CreatePasswordResetTokensTable extends Migration
         ]);
 
         $this->forge->addKey('email', true);
-        $this->forge->createTable('password_reset_tokens');
+        $this->forge->createTable('password_resets');
     }
 
     public function down()
     {
-        $this->forge->dropTable('password_reset_tokens');
+        $this->forge->dropTable('password_resets');
     }
 }
