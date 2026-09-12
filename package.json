@@ -1,0 +1,21 @@
+{
+  "name": "forum_asisten_ci4",
+  "version": "1.0.0",
+  "description": "## What is CodeIgniter?",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "build": "tailwindcss -i ./public/assets/css/tailwind/input.css -o ./public/assets/css/tailwind/output.css --minify",
+    "watch": "tailwindcss -i ./public/assets/css/tailwind/input.css -o ./public/assets/css/tailwind/output.css --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "autoprefixer": "^10.5.6",
+    "postcss": "^8.5.28",
+    "tailwindcss": "^3.4.19"
+  }
+}
