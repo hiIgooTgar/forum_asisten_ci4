@@ -36,6 +36,7 @@ $routes->get('auth/logout-admin', 'Auth\AuthenticationAdmin::logout');
 
 $routes->group('student', ['filter' => 'student_auth'], static function ($routes) {
     $routes->get('dashboard', 'Student\Dashboard::index');
+    $routes->get('/', 'Student\Dashboard::index');
 });
 
 $routes->group('admin', ['filter' => 'admin_auth'], function ($routes) {

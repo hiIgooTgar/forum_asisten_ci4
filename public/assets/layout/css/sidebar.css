@@ -33,6 +33,7 @@
   --color-primary-combine-v2: #0c1d61;
   --color-hover-primary: #081750;
   --color-transparent-primary: rgba(10, 36, 129, 0.5);
+  --color-transparent-primary-v2: rgba(10, 36, 129, 0.25);
 
   --info: #884bdf;
   --color-info-combine: #733cc2;
