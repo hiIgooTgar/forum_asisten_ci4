@@ -78,11 +78,13 @@
 		</div>
 	</div>
 
-	<button type="submit"
-		class="left-content-gsap w-full py-3 sm:py-3.5 bg-brand-primary hover:bg-brand-primary_hover text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2.5 rounded-md transition-all shadow-lg shadow-brand-primary/25 active:scale-[0.98] cursor-pointer !mt-5">
-		<span>Daftar Akun Calon Asisten</span>
-		<i class="fa-solid fa-user-plus text-xs sm:text-sm"></i>
-	</button>
+	<div class="fade-up-gsap">
+		<button type="submit"
+			class="w-full py-3 sm:py-3.5 bg-brand-primary hover:bg-brand-primary_hover text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2.5 rounded-md transition-all shadow-lg shadow-brand-primary/25 active:scale-[0.98] cursor-pointer !mt-5">
+			<span>Daftar Akun Calon Asisten</span>
+			<i class="fa-solid fa-user-plus text-xs sm:text-sm"></i>
+		</button>
+	</div>
 </form>
 
 <p class="fade-up-gsap text-center text-xs sm:text-sm mt-5 sm:mt-6 text-slate-500 font-medium">

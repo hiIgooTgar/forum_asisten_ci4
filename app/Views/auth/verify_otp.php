@@ -24,11 +24,13 @@
 		<?php endfor; ?>
 	</div>
 
-	<button type="submit"
-		class="left-content-gsap w-full py-3 sm:py-3.5 bg-brand-primary hover:bg-brand-primary_hover text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2.5 rounded-md transition-all shadow-lg shadow-brand-primary/25 active:scale-[0.98] cursor-pointer">
-		<span>Verifikasi Kode OTP</span>
-		<i class="fa-solid fa-shield-check text-xs sm:text-sm"></i>
-	</button>
+	<div class="fade-up-gsap">
+		<button type="submit"
+			class="w-full py-3 sm:py-3.5 bg-brand-primary hover:bg-brand-primary_hover text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2.5 rounded-md transition-all shadow-lg shadow-brand-primary/25 active:scale-[0.98] cursor-pointer">
+			<span>Verifikasi Kode OTP</span>
+			<i class="fa-solid fa-shield-check text-xs sm:text-sm"></i>
+		</button>
+	</div>
 </form>
 
 <div class="fade-up-gsap mt-5 p-3 sm:p-3.5 bg-slate-50 border border-slate-200/80 rounded-md flex items-center justify-between text-xs sm:text-sm text-slate-600">

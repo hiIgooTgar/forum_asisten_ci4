@@ -5,7 +5,7 @@ use CodeIgniter\Router\RouteCollection;
 /** @var RouteCollection $routes */
 $routes->get('/', 'Home::index');
 
-$routes->group('auth', ['filter' => 'studentGuest'], static function ($routes) {
+$routes->group('auth', ['filter' => 'student_guest'], static function ($routes) {
     $routes->get('login', 'Auth\AuthenticationStudent::login');
     $routes->post('loginProcess', 'Auth\AuthenticationStudent::processLogin');
 
@@ -26,8 +26,18 @@ $routes->group('auth', ['filter' => 'studentGuest'], static function ($routes) {
     $routes->post('processResendVerification', 'Auth\AuthenticationStudent::processResendVerification');
 });
 
-$routes->get('auth/logout', 'Auth\AuthenticationStudent::logout');
+$routes->group('auth', ['filter' => 'admin_guest'], static function ($routes) {
+    $routes->get('login-admin', 'Auth\AuthenticationAdmin::login');
+    $routes->post('login-process', 'Auth\AuthenticationAdmin::processLogin');
+});
 
-$routes->group('student', ['filter' => 'studentAuth'], static function ($routes) {
+$routes->get('auth/logout', 'Auth\AuthenticationStudent::logout');
+$routes->get('auth/logout-admin', 'Auth\AuthenticationAdmin::logout');
+
+$routes->group('student', ['filter' => 'student_auth'], static function ($routes) {
     $routes->get('dashboard', 'Student\Dashboard::index');
+});
+
+$routes->group('admin', ['filter' => 'admin_auth'], function ($routes) {
+    $routes->get('dashboard', 'Admin\DashboardController::index');
 });
