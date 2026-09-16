@@ -57,7 +57,7 @@
 
 	<div class="fade-up-gsap">
 		<button type="submit"
-			class="w-full py-3 sm:py-3.5 bg-brand-primary hover:bg-brand-primary_combine_v2 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2.5 rounded-md transition-all shadow-lg shadow-brand-primary/25 active:scale-[0.98] cursor-pointer mt-2">
+			class="w-full py-3 sm:py-3.5 bg-brand-primary hover:bg-brand-primary_combine_v2 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2.5 rounded-md transition-all shadow-lg shadow-brand-primary/25 cursor-pointer mt-2">
 			<span>Masuk Portal Forum Asisten</span>
 			<i class="fa-solid fa-right-to-bracket text-xs sm:text-sm"></i>
 		</button>

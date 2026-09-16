@@ -107,4 +107,20 @@ class UserModel extends Model
             'updated_at' => date('Y-m-d H:i:s')
         ])->update();
     }
+
+    public function getStudentProfile(int $userId)
+    {
+        return $this->db->table($this->table)
+            ->select('users.*, 
+                      faculties.faculty_name, 
+                      study_programs.program_name, 
+                      study_programs.degree_level,
+                      class_groups.class_name')
+            ->join('faculties', 'faculties.id = users.faculty_id', 'left')
+            ->join('study_programs', 'study_programs.id = users.study_program_id', 'left')
+            ->join('class_groups', 'class_groups.id = users.class_id', 'left')
+            ->where('users.id', $userId)
+            ->get()
+            ->getRow();
+    }
 }

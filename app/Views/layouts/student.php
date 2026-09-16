@@ -25,137 +25,12 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
 
+    <link rel="stylesheet" href="<?= base_url('assets/layout/css/student/profile.css'); ?>">
+
+    <link rel="stylesheet" href="<?= base_url('assets/layout/css/custom/template_student.css'); ?>">
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/custom/layout.css'); ?>">
+    <link rel="stylesheet" href="<?= base_url('assets/layout/css/custom/cropper.css'); ?>">
 
-    <style>
-        :root {
-            --primary: #0a2481;
-            --color-primary-combine: #0c2996;
-            --color-primary-combine-v2: #0c1d61;
-            --color-hover-primary: #081750;
-            --color-transparent-primary: rgba(10, 36, 129, 0.5);
-            --color-transparent-primary-v2: rgba(10, 36, 129, 0.25);
-        }
-
-        .app-header {
-            background-color: var(--primary) !important;
-        }
-
-        .app-header__logo {
-            background-color: var(--color-primary-combine-v2) !important;
-            font-family: inherit;
-        }
-
-        .app-header__logo:hover {
-            background-color: var(--color-hover-primary) !important;
-        }
-
-        @media (max-width: 767px) {
-            .app-header__logo {
-                background-color: var(--color-primary) !important;
-                font-family: inherit;
-            }
-        }
-
-
-        .app-sidebar__toggle:hover {
-            background-color: var(--color-hover-primary) !important;
-        }
-
-        .app-sidebar {
-            background-color: #ffffff;
-            border-right: 1px solid #e5e7eb;
-        }
-
-        .app-sidebar__user {
-            background-color: var(--color-primary-combine-v2);
-            color: #ffffff;
-            padding: 15px;
-            display: flex;
-            align-items: center;
-            overflow: hidden;
-        }
-
-        .app-sidebar__user-avatar {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            object-fit: cover;
-            flex-shrink: 0;
-            margin-right: 12px;
-        }
-
-        .app-sidebar__user-info {
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-        }
-
-        .app-sidebar__user-name {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 2px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            color: #ffffff;
-        }
-
-        .app-sidebar__user-designation {
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.75);
-            margin-bottom: 0;
-        }
-
-        .app-menu__item.active,
-        .app-menu__item:hover,
-        .app-menu__item:focus {
-            background-color: var(--color-transparent-primary-v2) !important;
-            border-left-color: var(--primary) !important;
-            color: var(--color-hover-primary) !important;
-        }
-
-        .treeview-item.active,
-        .treeview-item:hover,
-        .treeview-item:focus {
-            color: var(--primary) !important;
-        }
-
-        .btn-primary {
-            background-color: var(--primary) !important;
-            border-color: var(--primary) !important;
-        }
-
-        .btn-primary:hover,
-        .btn-primary:focus,
-        .btn-primary:active {
-            background-color: var(--color-hover-primary) !important;
-            border-color: var(--color-hover-primary) !important;
-        }
-
-        .select2-container--default .select2-selection--single {
-            height: calc(2.25rem + 2px);
-            padding: 0.375rem 0.75rem;
-            border: 1px solid #ced4da;
-            border-radius: 0.25rem;
-        }
-
-        .select2-container--default .select2-selection--single .select2-selection__rendered {
-            color: #495057;
-            padding-left: 0;
-            line-height: 1.5;
-        }
-
-        .select2-container--default .select2-selection--single .select2-selection__arrow {
-            height: calc(2.25rem + 2px);
-        }
-
-        .is-invalid+.select2-container--default .select2-selection--single {
-            border-color: #dc3545;
-        }
-    </style>
-
-    <?= $this->renderSection('styles') ?>
 </head>
 
 <body class="app sidebar-mini">
@@ -221,8 +96,11 @@
         <div class="app-sidebar__user">
             <?php
             $profileImg = session()->get('profile');
-            $avatar = (!empty($profileImg)) ? base_url('uploads/profile/' . $profileImg) : base_url('assets/images/profile/profile-default.png');
-            $fullName = session()->get('full_name') ?? 'Mahasiswa';
+            $avatar = (empty($profileImg) || $profileImg === 'profile-default.png')
+                ? base_url('assets/images/profile/profile-default.png')
+                : base_url('uploads/profile_student/' . $profileImg);
+
+            $fullName = session()->get('full_name') ?: 'Mahasiswa';
             ?>
             <img class="app-sidebar__user-avatar" src="<?= $avatar; ?>" alt="User Image">
             <div class="app-sidebar__user-info">
@@ -245,18 +123,13 @@
             <li class="treeview <?= in_array($uri->getSegment(2), ['profile', 'documents', 'experiences']) ? 'is-expanded' : ''; ?>">
                 <a class="app-menu__item" href="#" data-toggle="treeview">
                     <i class="app-menu__icon fa fa-id-card"></i>
-                    <span class="app-menu__label">Biodata Student</span>
+                    <span class="app-menu__label">Biodata Mahasiswa</span>
                     <i class="treeview-indicator fa fa-angle-right"></i>
                 </a>
                 <ul class="treeview-menu">
                     <li>
                         <a class="treeview-item <?= ($uri->getSegment(2) == 'profile') ? 'active' : ''; ?>" href="<?= base_url('student/profile'); ?>">
                             <i class="icon fa fa-circle-o"></i> Profil Diri
-                        </a>
-                    </li>
-                    <li>
-                        <a class="treeview-item <?= ($uri->getSegment(2) == 'documents') ? 'active' : ''; ?>" href="<?= base_url('student/documents'); ?>">
-                            <i class="icon fa fa-circle-o"></i> Dokumen Berkas
                         </a>
                     </li>
                     <li>
@@ -277,6 +150,11 @@
                     <li>
                         <a class="treeview-item <?= ($uri->getSegment(2) == 'registration') ? 'active' : ''; ?>" href="<?= base_url('student/registration'); ?>">
                             <i class="icon fa fa-circle-o"></i> Daftar Matakuliah
+                        </a>
+                    </li>
+                    <li>
+                        <a class="treeview-item <?= ($uri->getSegment(2) == 'documents') ? 'active' : ''; ?>" href="<?= base_url('student/documents'); ?>">
+                            <i class="icon fa fa-circle-o"></i> Dokumen Berkas
                         </a>
                     </li>
                     <li>
@@ -303,41 +181,56 @@
 
     <div class="modal fade" id="globalCropModal" tabindex="-1" role="dialog" aria-labelledby="globalCropModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="globalCropModalLabel">Potong Gambar</h5>
+            <div class="modal-content crop-modal-content">
+
+                <div class="modal-header crop-modal-header align-items-center">
+                    <h5 class="modal-title crop-modal-title d-flex align-items-center gap-2" id="globalCropModalLabel">
+                        <i class="fa fa-crop mr-2"></i> Potong Gambar
+                    </h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body p-0">
-                    <div class="img-container">
+
+                <div class="modal-body p-0 crop-modal-body">
+                    <div class="crop-img-container">
                         <img id="globalImageToCrop" src="" alt="Crop Image Target">
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                    <button type="button" class="btn btn-primary" id="globalCropBtn">
-                        <i class="fa fa-crop"></i> Potong & Simpan
+
+                <div class="modal-footer crop-modal-footer">
+                    <button type="button" class="btn crop-btn-action crop-btn-save" id="globalCropBtn">
+                        <i class="fa fa-check mr-1"></i> Potong & Simpan
+                    </button>
+                    <button type="button" class="btn crop-btn-action crop-btn-cancel" data-dismiss="modal">
+                        Batal
                     </button>
                 </div>
+
             </div>
         </div>
     </div>
+
+    <script>
+        window.baseUrl = "<?= base_url() ?>";
+    </script>
 
     <script src="<?= base_url('assets/layout/js/jquery-3.3.1.min.js'); ?>"></script>
     <script src="<?= base_url('assets/layout/js/popper.min.js'); ?>"></script>
     <script src="<?= base_url('assets/layout/js/bootstrap.min.js'); ?>"></script>
     <script src="<?= base_url('assets/layout/js/main.js'); ?>"></script>
     <script src="<?= base_url('assets/layout/js/plugins/pace.min.js'); ?>"></script>
-    <script src="<?= base_url('assets/layout/js/plugins/jquery.dataTables.min.js'); ?>"></script>
     <script src="<?= base_url('assets/layout/js/plugins/dataTables.bootstrap.min.js'); ?>"></script>
+    <script src="<?= base_url('assets/layout/js/plugins/jquery.dataTables.min.js'); ?>"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
     <script src="<?= base_url('assets/layout/js/custom/layout-admin.js'); ?>"></script>
     <script src="<?= base_url('assets/layout/js/custom/cropper.js'); ?>"></script>
+    <script src="<?= base_url('assets/layout/js/custom/wilayah.js'); ?>"></script>
+
+    <script src="<?= base_url('assets/layout/js/student/profile.js'); ?>"></script>
 
     <script>
         $(document).ready(function() {

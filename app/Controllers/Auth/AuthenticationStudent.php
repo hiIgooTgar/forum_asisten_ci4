@@ -18,9 +18,7 @@ class AuthenticationStudent extends BaseController
 
     public function login()
     {
-        $data = [
-            'title' => 'Login'
-        ];
+        $data = ['title' => 'Login'];
         return view('auth/login', $data);
     }
 
@@ -52,6 +50,8 @@ class AuthenticationStudent extends BaseController
 
         if ($user && password_verify($password, $user->password)) {
             if ($user->status_account === 'inactive') {
+                $this->logActivity('LOGIN_FAILED', 'Percobaan login dengan akun nonaktif: ' . $email, ['target_user_id' => $user->id, 'email' => $email]);
+
                 session()->setFlashdata('error', 'Akun Anda sedang dinonaktifkan. Silakan hubungi admin.');
                 return redirect()->back()->withInput();
             }
@@ -67,15 +67,21 @@ class AuthenticationStudent extends BaseController
                 return redirect()->back()->withInput();
             }
 
+            session()->regenerate();
             session()->set([
                 'user_id'              => $user->id,
+                'student_number'       => $user->student_number,
                 'full_name'            => $user->full_name,
                 'email'                => $user->email,
+                'profile'              => $user->profile,
                 'is_student_logged_in' => true
             ]);
 
+            $this->logActivity('LOGIN_SUCCESS', 'Mahasiswa ' . $user->full_name . ' (' . $user->student_number . ') berhasil login.');
             return redirect()->to('student/dashboard');
         }
+
+        $this->logActivity('LOGIN_FAILED', 'Gagal login, email atau password salah untuk email: ' . $email, ['attempted_email' => $email]);
 
         session()->setFlashdata('error', 'Email atau password salah.');
         return redirect()->back()->withInput();
@@ -83,9 +89,7 @@ class AuthenticationStudent extends BaseController
 
     public function register()
     {
-        $data = [
-            'title' => 'Registrasi Akun'
-        ];
+        $data = ['title' => 'Registrasi Akun'];
         return view('auth/register', $data);
     }
 
@@ -130,9 +134,9 @@ class AuthenticationStudent extends BaseController
 
         $currentTime = date('Y-m-d H:i:s');
         $data = [
-            'student_number' => $this->request->getPost('student_number'),
-            'full_name'      => $this->request->getPost('full_name'),
-            'email'          => $this->request->getPost('email'),
+            'student_number' => trim((string)$this->request->getPost('student_number')),
+            'full_name'      => trim((string)$this->request->getPost('full_name')),
+            'email'          => strtolower(trim((string)$this->request->getPost('email'))),
             'password'       => password_hash($this->request->getPost('password'), PASSWORD_BCRYPT),
             'is_verified'    => 0,
             'status_account' => 'active',
@@ -143,6 +147,7 @@ class AuthenticationStudent extends BaseController
         $userId = $this->userModel->insert($data);
         $user   = $this->userModel->find($userId);
 
+        $this->logActivity('REGISTER', 'Registrasi mahasiswa baru berhasil: ' . $data['full_name'] . ' (' . $data['student_number'] . ')', ['registered_user_id' => $userId]);
         if ($this->sendOtp($user)) {
             session()->set('pending_user_id', $userId);
             session()->setFlashdata('success', 'Registrasi berhasil. Silakan cek OTP di email Anda.');
@@ -159,10 +164,7 @@ class AuthenticationStudent extends BaseController
             return redirect()->to('auth/login');
         }
 
-        $data = [
-            'title' => 'Verifikasi OTP'
-        ];
-
+        $data = ['title' => 'Verifikasi OTP'];
         return view('auth/verify_otp', $data);
     }
 
@@ -187,7 +189,7 @@ class AuthenticationStudent extends BaseController
         }
 
         $dbOtp        = trim((string) $user->otp_code);
-        $isValidOtp   = ($dbOtp !== '' && $dbOtp === $inputOtp);
+        $isValidOtp   = ($dbOtp !== '' && hash_equals($dbOtp, $inputOtp));
         $isNotExpired = (strtotime($user->otp_expires_at) >= time());
 
         if ($isValidOtp && $isNotExpired) {
@@ -202,11 +204,13 @@ class AuthenticationStudent extends BaseController
                 'updated_at'        => $currentTime
             ]);
 
+            $this->logActivity('VERIFY_OTP_SUCCESS', 'Verifikasi akun via OTP berhasil untuk user ID: ' . $user->id, ['target_user_id' => $user->id]);
             session()->remove('pending_user_id');
             session()->setFlashdata('success', 'Email berhasil diverifikasi! Silakan login.');
             return redirect()->to('auth/login');
         }
 
+        $this->logActivity('VERIFY_OTP_FAILED', 'Gagal verifikasi OTP untuk user ID: ' . $user->id, ['target_user_id' => $user->id, 'reason' => !$isNotExpired ? 'Expired' : 'Invalid OTP']);
         if (!$isNotExpired) {
             session()->setFlashdata('error', 'Kode OTP telah kedaluwarsa. Silakan kirim ulang OTP.');
         } else {
@@ -218,9 +222,7 @@ class AuthenticationStudent extends BaseController
 
     public function forgetPassword()
     {
-        $data = [
-            'title' => 'Lupa Password'
-        ];
+        $data = ['title' => 'Lupa Password'];
         return view('auth/forget_password', $data);
     }
 
@@ -252,6 +254,7 @@ class AuthenticationStudent extends BaseController
         $resetLink = base_url("auth/reset-password?token={$token}&email=" . urlencode($email));
 
         if ($this->sendResetPasswordEmail($user, $resetLink)) {
+            $this->logActivity('FORGET_PASSWORD_REQUEST', 'Tautan reset password dikirimkan ke email: ' . $email, ['target_user_id' => $user->id, 'email' => $email]);
             session()->setFlashdata('success', 'Tautan reset password telah dikirim ke email Anda.');
         } else {
             session()->setFlashdata('error', 'Gagal mengirim email reset password.');
@@ -321,6 +324,7 @@ class AuthenticationStudent extends BaseController
         $password = password_hash($this->request->getPost('password'), PASSWORD_BCRYPT);
         $this->userModel->updatePasswordByEmail($email, $password);
         $this->userModel->deleteResetToken($email);
+        $this->logActivity('RESET_PASSWORD_SUCCESS', 'Berhasil memperbarui password untuk email: ' . $email, ['email' => $email]);
 
         session()->setFlashdata('success', 'Password berhasil diperbarui. Silakan login kembali.');
         return redirect()->to('auth/login');
@@ -328,9 +332,7 @@ class AuthenticationStudent extends BaseController
 
     public function resendVerification()
     {
-        $data = [
-            'title' => 'Kirim Ulang Verifikasi'
-        ];
+        $data = ['title' => 'Kirim Ulang Verifikasi'];
         return view('auth/resend_verification', $data);
     }
 
@@ -363,6 +365,8 @@ class AuthenticationStudent extends BaseController
         }
 
         if ($this->sendOtp($user)) {
+            $this->logActivity('RESEND_VERIFICATION', 'Kode OTP dikirim ulang ke: ' . $email, ['target_user_id' => $user->id, 'email' => $email]);
+
             session()->set('pending_user_id', $user->id);
             session()->setFlashdata('success', 'Kode OTP verifikasi baru berhasil dikirim ke email Anda.');
             return redirect()->to('auth/verify-otp');
@@ -392,6 +396,8 @@ class AuthenticationStudent extends BaseController
         $user = $this->userModel->find($pendingId);
 
         if ($user && $this->sendOtp($user)) {
+            $this->logActivity('RESEND_OTP_ACTION', 'Permintaan ulang OTP untuk user ID: ' . $pendingId, ['target_user_id' => $pendingId]);
+
             session()->set('otp_last_sent', time());
             session()->setFlashdata('success', 'Kode OTP baru telah berhasil dikirim ke email Anda.');
         } else {
@@ -403,6 +409,11 @@ class AuthenticationStudent extends BaseController
 
     public function logout()
     {
+        $userId = session()->get('user_id');
+        if ($userId) {
+            $this->logActivity('LOGOUT', 'User ID ' . $userId . ' telah logout.');
+        }
+
         session()->destroy();
         return redirect()->to('auth/login');
     }
@@ -481,6 +492,7 @@ class AuthenticationStudent extends BaseController
 
         return true;
     }
+
     private function getOtpTemplate(string $fullName, string $otp): string
     {
         return "

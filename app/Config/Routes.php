@@ -34,10 +34,25 @@ $routes->group('auth', ['filter' => 'admin_guest'], static function ($routes) {
 $routes->get('auth/logout', 'Auth\AuthenticationStudent::logout');
 $routes->get('auth/logout-admin', 'Auth\AuthenticationAdmin::logout');
 
+$routes->group('api/wilayah', ['filter' => 'student_auth'], function ($routes) {
+    $routes->get('provinces', 'Student\Wilayah::provinces');
+    $routes->get('regencies/(:segment)', 'Student\Wilayah::regencies/$1');
+    $routes->get('districts/(:segment)', 'Student\Wilayah::districts/$1');
+    $routes->get('villages/(:segment)', 'Student\Wilayah::villages/$1');
+});
+
 $routes->group('student', ['filter' => 'student_auth'], static function ($routes) {
     $routes->get('dashboard', 'Student\Dashboard::index');
     $routes->get('/', 'Student\Dashboard::index');
+
+    $routes->get('profile', 'Student\ProfileData::index');
+    $routes->post('profile/update-biodata', 'Student\ProfileData::updateBiodata');
+    $routes->post('profile/update-photo', 'Student\ProfileData::updatePhoto');
+    $routes->get('profile/get-study-programs/(:num)', 'Student\ProfileData::getStudyProgramsByFaculty/$1');
+    $routes->get('profile/get-class-groups/(:num)', 'Student\ProfileData::getClassGroupsByStudyProgram/$1');
 });
+
+
 
 $routes->group('admin', ['filter' => 'admin_auth'], function ($routes) {
     $routes->get('dashboard', 'Admin\DashboardController::index');

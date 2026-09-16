@@ -16,17 +16,36 @@ class Dashboard extends BaseController
 
     public function index()
     {
-        $userId = session()->get('user_id');
+        $userId        = session()->get('user_id');
+        $studentNumber = session()->get('student_number');
+
+        if (!$userId || !$studentNumber) {
+            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        }
 
         $student   = $this->dashboardModel->getStudentProfile((int)$userId);
         $documents = $this->dashboardModel->getDocumentStatus((int)$userId);
+
+        if (!$student) {
+            return redirect()->to('/auth/login')->with('error', 'Data mahasiswa tidak ditemukan.');
+        }
+
+        $completionPercentage = $this->calculateProfileCompletion($student, $documents);
+        $this->logActivity(
+            'VIEW_DASHBOARD',
+            'Mahasiswa melihat halaman dashboard utama',
+            [
+                'student_number'        => $studentNumber,
+                'completion_percentage' => $completionPercentage,
+            ]
+        );
 
         $data = [
             'title'                 => 'Dashboard Student',
             'student'               => $student,
             'documents'             => $documents,
             'active_event'          => $this->dashboardModel->getActiveEvent(),
-            'completion_percentage' => $this->calculateProfileCompletion($student, $documents),
+            'completion_percentage' => $completionPercentage,
         ];
 
         return view('student/dashboard', $data);
@@ -48,7 +67,8 @@ class Dashboard extends BaseController
             'date_of_birth',
             'gender',
             'address',
-            'gpa'
+            'gpa',
+            'profile'
         ];
 
         if (!empty($student)) {
