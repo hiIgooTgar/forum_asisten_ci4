@@ -26,6 +26,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
 
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/student/profile.css'); ?>">
+    <link rel="stylesheet" href="<?= base_url('assets/layout/css/student/experience.css'); ?>">
 
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/custom/template_student.css'); ?>">
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/custom/layout.css'); ?>">
@@ -176,6 +177,7 @@
 
     <main class="app-content">
         <?= $this->include('partials/toast') ?>
+        <?= $this->include('components/confirm_modal') ?>
         <?= $this->renderSection('content') ?>
     </main>
 
@@ -231,6 +233,9 @@
     <script src="<?= base_url('assets/layout/js/custom/wilayah.js'); ?>"></script>
 
     <script src="<?= base_url('assets/layout/js/student/profile.js'); ?>"></script>
+    <script src="<?= base_url('assets/layout/js/student/experience.js'); ?>"></script>
+
+    <?= $this->include('components/confirm_modal') ?>
 
     <script>
         $(document).ready(function() {

@@ -50,9 +50,12 @@ $routes->group('student', ['filter' => 'student_auth'], static function ($routes
     $routes->post('profile/update-photo', 'Student\ProfileData::updatePhoto');
     $routes->get('profile/get-study-programs/(:num)', 'Student\ProfileData::getStudyProgramsByFaculty/$1');
     $routes->get('profile/get-class-groups/(:num)', 'Student\ProfileData::getClassGroupsByStudyProgram/$1');
+
+    $routes->get('experiences', 'Student\ExperienceData::index');
+    $routes->post('experiences/store', 'Student\ExperienceData::store');
+    $routes->post('experiences/update/(:segment)', 'Student\ExperienceData::update/$1');
+    $routes->post('experiences/delete/(:segment)', 'Student\ExperienceData::delete/$1');
 });
-
-
 
 $routes->group('admin', ['filter' => 'admin_auth'], function ($routes) {
     $routes->get('dashboard', 'Admin\DashboardController::index');

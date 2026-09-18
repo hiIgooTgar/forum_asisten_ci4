@@ -93,6 +93,10 @@
   position: relative;
 }
 
+.form-control:focus {
+  border-color: var(--primary) !important;
+}
+
 .tile-header-custom {
   background: linear-gradient(
     135deg,

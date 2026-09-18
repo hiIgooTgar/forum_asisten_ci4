@@ -20,6 +20,11 @@ class CreateUserExperiencesTable extends Migration
                 'constraint' => 20,
                 'unsigned'   => true,
             ],
+            'experience_code' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '64',
+                'unique'     => true,
+            ],
             'title' => [
                 'type'       => 'VARCHAR',
                 'constraint' => '255',
@@ -30,15 +35,11 @@ class CreateUserExperiencesTable extends Migration
             ],
             'experience_type' => [
                 'type'       => 'ENUM',
-                'constraint' => ['work', 'organizational', 'teaching_assistant', 'volunteering', 'other'],
+                'constraint' => ['work', 'organizational', 'teaching_assistant', 'volunteering', "certification", "competition", "project", "community_service", 'other'],
                 'default'    => 'work',
             ],
-            'start_date' => [
-                'type' => 'DATE',
-            ],
-            'end_date' => [
-                'type' => 'DATE',
-                'null' => true,
+            'year_occurred' => [
+                'type' => 'YEAR',
             ],
             'is_current' => [
                 'type'    => 'BOOLEAN',
