@@ -116,20 +116,29 @@ $pagedExperiences = array_slice($allExperiences, $offset, $perPage);
 </div>
 
 <?php if (!empty($validationErrors) && is_array($validationErrors)): ?>
-    <div class="alert alert-warning alert-dismissible fade show border-0 shadow-sm rounded-lg mb-4" role="alert">
-        <div class="d-flex align-items-start">
-            <i class="fa fa-exclamation-triangle mr-2 fa-lg mt-1"></i>
-            <div>
-                <strong class="d-block mb-1">Terjadi kesalahan input data:</strong>
-                <ul class="mb-0 pl-3">
+    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm p-3 p-md-4 mb-4 position-relative overflow-hidden" role="alert" style="background-color: #fdf2f2; border-left: 4px solid #e53e3e !important; border-top: 1px solid rgba(229, 62, 62, 0.5) !important; border-right: 1px solid rgba(229, 62, 62, 0.5) !important; border-bottom: 1px solid rgba(229, 62, 62, 0.5) !important;">
+        <div class="d-flex align-items-start" style="gap: 0.9rem">
+            <div class="alert-icon-wrapper bg-soft-danger text-danger rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px; background-color: rgba(229, 62, 62, 0.12);">
+                <i class="fa fa-exclamation-circle fa-lg"></i>
+            </div>
+
+            <div class="pr-4 flex-grow-1">
+                <h6 class="font-weight-bold text-danger mb-1" style="font-size: 0.95rem; letter-spacing: -0.2px;">
+                    Terjadi Kesalahan Input Data
+                </h6>
+                <p class="text-muted small mb-2" style="font-size: 0.825rem;">
+                    Mohon periksa kembali formulir Anda dan perbaiki beberapa kesalahan berikut:
+                </p>
+                <ul class="mb-0 pl-3 text-dark small" style="font-size: 0.85rem; line-height: 1.6;">
                     <?php foreach ($validationErrors as $error): ?>
-                        <li><?= esc($error) ?></li>
+                        <li class="mb-1 text-secondary"><?= esc($error) ?></li>
                     <?php endforeach; ?>
                 </ul>
             </div>
         </div>
-        <button type="button" class="close close-btn-c" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
+
+        <button type="button" class="close p-3 position-absolute" data-dismiss="alert" aria-label="Close" style="top: 0; right: 0; outline: none; opacity: 0.5;">
+            <span aria-hidden="true" class="text-danger" style="font-size: 1.25rem;">&times;</span>
         </button>
     </div>
 <?php endif; ?>
@@ -202,7 +211,7 @@ $pagedExperiences = array_slice($allExperiences, $offset, $perPage);
                     <h6 class="font-weight-bold mb-0 text-dark">Informasi Data Pengalaman</h6>
                 </div>
                 <small class="text-xs-c text-secondary-c d-block">
-                    Pengisian riwayat rekam jejak ini bersifat <strong class="text-primary">opsional (tidak wajib)</strong>. Namun, menambahkan pengalaman kerja, organisasi, sertifikasi, atau kepanitiaan sangat disarankan untuk melengkapi portofolio dan profil kelulusan Anda.
+                    Pengisian riwayat rekam jejak ini bersifat <strong class="text-primary">opsional (tidak wajib)</strong>. Namun, menambahkan pengalaman kerja, organisasi, sertifikasi, atau kepanitiaan sangat disarankan untuk melengkapi portofolio dan profil Anda.
                 </small>
             </div>
 
