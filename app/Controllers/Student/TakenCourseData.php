@@ -19,7 +19,6 @@ class TakenCourseData extends BaseController
         $this->courseModel      = new CourseModel();
         $this->userModel        = new UserModel();
     }
-
     public function index()
     {
         $userId        = session()->get('user_id');
@@ -31,6 +30,7 @@ class TakenCourseData extends BaseController
 
         $student = $this->userModel->getStudentProfile($userId);
         $profileIncomplete = false;
+
         $requiredFields = [
             'student_number',
             'full_name',
@@ -47,7 +47,6 @@ class TakenCourseData extends BaseController
             'village',
             'address',
             'gpa',
-            'profile'
         ];
 
         foreach ($requiredFields as $field) {
@@ -57,9 +56,15 @@ class TakenCourseData extends BaseController
             }
         }
 
+        if (!$profileIncomplete) {
+            $profilePhoto = trim($student->profile ?? '');
+            if (empty($profilePhoto) || $profilePhoto === 'profile-default.png') {
+                $profileIncomplete = true;
+            }
+        }
+
         $takenCourses     = $this->takenCourseModel->getTakenCoursesByUser($userId);
         $availableCourses = [];
-
         if (!$profileIncomplete && !empty($student->faculty_id)) {
             $availableCourses = $this->courseModel->getCoursesByFaculty($student->faculty_id);
         }
@@ -133,6 +138,33 @@ class TakenCourseData extends BaseController
 
                 return redirect()->back()->withInput()->with('errors', [
                     'course_id' => 'Mata kuliah ini sudah Anda daftarkan sebelumnya.'
+                ]);
+            }
+        }
+
+        $courseData = $this->courseModel
+            ->select('courses.*, (SELECT COUNT(*) FROM taken_courses WHERE taken_courses.course_id = courses.id) as total_taken')
+            ->find($courseId);
+
+        if ($courseData) {
+            $quotaNeeded = (int)($courseData->quota_needed ?? 0);
+            $totalTaken  = (int)($courseData->total_taken ?? 0);
+
+            if ($quotaNeeded > 0 && $totalTaken >= $quotaNeeded) {
+                $this->logActivity(
+                    'FAILED_CREATE_TAKEN_COURSE_QUOTA_FULL',
+                    'Gagal mendaftarkan mata kuliah karena kuota sudah penuh',
+                    [
+                        'student_number' => $studentNumber,
+                        'course_id'      => $courseId,
+                        'quota_needed'   => $quotaNeeded,
+                        'total_taken'    => $totalTaken,
+                    ],
+                    'student'
+                );
+
+                return redirect()->back()->withInput()->with('errors', [
+                    'course_id' => 'Kuota untuk mata kuliah ini sudah penuh.'
                 ]);
             }
         }
@@ -261,6 +293,34 @@ class TakenCourseData extends BaseController
                 return redirect()->back()->withInput()->with('errors', [
                     'course_id' => 'Mata kuliah ini sudah Anda daftarkan sebelumnya.'
                 ]);
+            }
+
+            $newCourseData = $this->courseModel
+                ->select('courses.*, (SELECT COUNT(*) FROM taken_courses WHERE taken_courses.course_id = courses.id) as total_taken')
+                ->find($newCourseId);
+
+            if ($newCourseData) {
+                $quotaNeeded = (int)($newCourseData->quota_needed ?? 0);
+                $totalTaken  = (int)($newCourseData->total_taken ?? 0);
+
+                if ($quotaNeeded > 0 && $totalTaken >= $quotaNeeded) {
+                    $this->logActivity(
+                        'FAILED_UPDATE_TAKEN_COURSE_QUOTA_FULL',
+                        'Gagal memperbarui mata kuliah karena kuota mata kuliah tujuan penuh',
+                        [
+                            'student_number'    => $studentNumber,
+                            'taken_course_code' => $takenCourseCode,
+                            'new_course_id'     => $newCourseId,
+                            'quota_needed'      => $quotaNeeded,
+                            'total_taken'       => $totalTaken,
+                        ],
+                        'student'
+                    );
+
+                    return redirect()->back()->withInput()->with('errors', [
+                        'course_id' => 'Kuota untuk mata kuliah pilihan baru ini sudah penuh.'
+                    ]);
+                }
             }
         }
 

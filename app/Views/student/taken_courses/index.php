@@ -74,7 +74,7 @@ $pagedTaken = array_slice($allTaken, $offset, $perPage);
                     Profil Belum Lengkap!
                 </h6>
                 <p class="text-secondary text-small-c mb-0" style="line-height: 1.5;">
-                    Anda belum dapat menambah pendaftaran mata kuliah karena terdapat data profil pengguna yang masih kosong. Silakan lengkapi profil Anda terlebih dahulu pada menu Biodata Mahasiswa bagian <span class="text-primary" style="font-weight: 500;">Profil Diri</span>.
+                    Anda belum dapat menambah pendaftaran mata kuliah karena terdapat data profil pengguna yang masih kosong. Silakan lengkapi profil Anda terlebih dahulu pada menu Biodata Mahasiswa bagian <a href="<?= base_url('student/profile'); ?>" class="text-primary" style="font-weight: 500;">Profil Diri</a>.
                 </p>
             </div>
         </div>
@@ -257,7 +257,7 @@ $pagedTaken = array_slice($allTaken, $offset, $perPage);
                                             data-target="#modalEditCourse<?= $row->id ?>">
                                             <i class="fa fa-edit"></i>
                                         </button>
-                                        <button class="btn btn-sm btn-danger font-weight-semibold rounded"
+                                        <button class="btn btn-sm btn-danger font-weight-semibold rounded" <?= ($profileIncomplete || $totalTaken >= $maxQuota) ? 'disabled' : '' ?>
                                             onclick="confirmDeleteCourse('<?= base_url('student/taken-courses/delete/' . $row->taken_course_code) ?>', '<?= esc($row->course_name, 'js') ?>', '<?= esc($row->program_name, 'js') ?>')">
                                             <i class="fa fa-trash"></i>
                                         </button>
@@ -286,22 +286,62 @@ $pagedTaken = array_slice($allTaken, $offset, $perPage);
                                         <div class="modal-body p-3 p-md-4">
                                             <div class="form-group mb-3">
                                                 <label class="font-weight-bold text-small-c text-dark">Pilih Mata Kuliah <span class="text-danger">*</span></label>
-                                                <select name="course_id" class="form-control select2" style="width: 100%;">
-                                                    <?php foreach ($availableCourses as $course): ?>
-                                                        <option value="<?= $course->id ?>" <?= old('course_id', $row->course_id) == $course->id ? 'selected' : '' ?>>
-                                                            [<?= esc($course->program_name) ?>] <?= esc($course->course_name) ?> - <?= esc($course->course_code) ?> - Semester <?= esc($course->semester) ?> - <?= esc($course->credits) ?> SKS
-                                                        </option>
-                                                    <?php endforeach; ?>
-                                                </select>
+
+                                                <?php if (!$profileIncomplete): ?>
+                                                    <select name="course_id" class="form-control select2 select_courses <?= session('errors.course_id') ? 'is-invalid' : '' ?>" style="width: 100%;">
+                                                        <option value="" disabled <?= old('course_id', $row->course_id ?? '') ? '' : 'selected' ?>>-- Pilih Mata Kuliah --</option>
+                                                        <?php foreach ($availableCourses as $course): ?>
+                                                            <?php
+                                                            $quotaNeeded = (int)($course->quota_needed ?? 0);
+                                                            $totalTaken  = (int)($course->total_taken ?? 0);
+                                                            $isFull      = ($quotaNeeded > 0 && $totalTaken >= $quotaNeeded);
+                                                            $isSelected  = old('course_id', $row->course_id ?? null) == $course->id;
+                                                            $isDisabled  = $isFull && !$isSelected;
+                                                            ?>
+                                                            <option value="<?= $course->id ?>"
+                                                                <?= $isSelected ? 'selected' : '' ?>
+                                                                <?= $isDisabled ? 'disabled' : '' ?>
+                                                                data-is-full="<?= $isFull ? 'true' : 'false' ?>"
+                                                                style="<?= $isFull ? 'color: red;' : '' ?>">
+                                                                [<?= esc($course->program_name) ?>] <?= esc($course->course_name) ?> - <?= esc($course->course_code) ?> - Semester <?= esc($course->semester) ?> - <?= esc($course->credits) ?> SKS
+                                                                <?php if ($quotaNeeded > 0): ?>
+                                                                    (Kuota: <?= $totalTaken ?>/<?= $quotaNeeded ?>) <?= $isFull ? ' - [KUOTA PENUH]' : '' ?>
+                                                                <?php else: ?>
+                                                                    (Kuota: Tanpa Batas)
+                                                                <?php endif; ?>
+                                                            </option>
+                                                        <?php endforeach; ?>
+                                                    </select>
+
+                                                    <?php if (session('errors.course_id')): ?>
+                                                        <span class="invalid-feedback d-block"><?= session('errors.course_id') ?></span>
+                                                    <?php endif; ?>
+                                                <?php else: ?>
+                                                    <div class="alert alert-light border text-center py-2 text-muted text-small-c mb-0">
+                                                        <i class="fa fa-info-circle mr-1"></i> Pilihan Mata Kuliah akan muncul setelah profil Anda dilengkapi.
+                                                    </div>
+                                                <?php endif; ?>
                                             </div>
 
                                             <div class="form-group mb-0">
                                                 <label class="font-weight-bold text-small-c text-dark">Target Grade / Nilai <span class="text-danger">*</span></label>
-                                                <select name="grade" class="form-control select2" style="width: 100%;">
-                                                    <?php foreach (['A', 'A-', 'B+', 'B'] as $g): ?>
-                                                        <option value="<?= $g ?>" <?= old('grade', $row->grade) === $g ? 'selected' : '' ?>><?= $g ?></option>
-                                                    <?php endforeach; ?>
-                                                </select>
+
+                                                <?php if (!$profileIncomplete): ?>
+                                                    <select name="grade" class="form-control select2 <?= session('errors.grade') ? 'is-invalid' : '' ?>" style="width: 100%;">
+                                                        <option value="" disabled <?= old('grade', $row->grade ?? '') ? '' : 'selected' ?>>-- Pilih Grade --</option>
+                                                        <?php foreach (['A', 'A-', 'B+', 'B'] as $g): ?>
+                                                            <option value="<?= $g ?>" <?= old('grade', $row->grade ?? null) === $g ? 'selected' : '' ?>><?= $g ?></option>
+                                                        <?php endforeach; ?>
+                                                    </select>
+
+                                                    <?php if (session('errors.grade')): ?>
+                                                        <span class="invalid-feedback d-block"><?= session('errors.grade') ?></span>
+                                                    <?php endif; ?>
+                                                <?php else: ?>
+                                                    <div class="alert alert-light border text-center py-2 text-muted text-small-c mb-0">
+                                                        <i class="fa fa-info-circle mr-1"></i> Pilihan Target Grade akan muncul setelah profil Anda dilengkapi.
+                                                    </div>
+                                                <?php endif; ?>
                                             </div>
                                         </div>
                                         <div class="modal-footer bg-light px-3 px-md-4 pt-3 pb-4 border-top-0 d-flex justify-content-end gap-2">
@@ -426,29 +466,60 @@ $pagedTaken = array_slice($allTaken, $offset, $perPage);
                 <div class="modal-body p-3 p-md-4">
                     <div class="form-group mb-3">
                         <label class="font-weight-bold text-small-c text-dark">Pilih Mata Kuliah <span class="text-danger">*</span></label>
-                        <select name="course_id" class="form-control select2 <?= session('errors.course_id') ? 'is-invalid' : '' ?>" style="width: 100%;">
-                            <option value="" disabled selected>-- Pilih Mata Kuliah --</option>
-                            <?php foreach ($availableCourses as $course): ?>
-                                <option value="<?= $course->id ?>" <?= old('course_id') == $course->id ? 'selected' : '' ?>>
-                                    [<?= esc($course->program_name) ?>] <?= esc($course->course_name) ?> - <?= esc($course->course_code) ?> - Semester <?= esc($course->semester) ?> - <?= esc($course->credits) ?> SKS
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                        <?php if (session('errors.course_id')): ?>
-                            <span class="invalid-feedback d-block"><?= session('errors.course_id') ?></span>
+
+                        <?php if (!$profileIncomplete): ?>
+                            <select name="course_id" class="form-control select2 select_courses <?= session('errors.course_id') ? 'is-invalid' : '' ?>" style="width: 100%;">
+                                <option value="" disabled <?= old('course_id') ? '' : 'selected' ?>>-- Pilih Mata Kuliah --</option>
+                                <?php foreach ($availableCourses as $course): ?>
+                                    <?php
+                                    $quotaNeeded = (int)($course->quota_needed ?? 0);
+                                    $totalTaken  = (int)($course->total_taken ?? 0);
+                                    $isFull      = ($quotaNeeded > 0 && $totalTaken >= $quotaNeeded);
+                                    $isSelected  = old('course_id') == $course->id;
+                                    $isDisabled  = $isFull;
+                                    ?>
+                                    <option value="<?= $course->id ?>"
+                                        <?= $isSelected ? 'selected' : '' ?>
+                                        <?= $isDisabled ? 'disabled' : '' ?>
+                                        data-is-full="<?= $isFull ? 'true' : 'false' ?>">
+                                        [<?= esc($course->program_name) ?>] <?= esc($course->course_name) ?> - <?= esc($course->course_code) ?> - Semester <?= esc($course->semester) ?> - <?= esc($course->credits) ?> SKS
+                                        <?php if ($quotaNeeded > 0): ?>
+                                            (Kuota: <?= $totalTaken ?>/<?= $quotaNeeded ?>) <?= $isFull ? ' - [KUOTA PENUH]' : '' ?>
+                                        <?php else: ?>
+                                            (Kuota: Tanpa Batas)
+                                        <?php endif; ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+
+                            <?php if (session('errors.course_id')): ?>
+                                <span class="invalid-feedback d-block"><?= session('errors.course_id') ?></span>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            <div class="alert alert-light border text-center py-2 text-muted text-small-c mb-0">
+                                <i class="fa fa-info-circle mr-1"></i> Pilihan Mata Kuliah akan muncul setelah profil Anda dilengkapi.
+                            </div>
                         <?php endif; ?>
                     </div>
 
                     <div class="form-group mb-0">
                         <label class="font-weight-bold text-small-c text-dark">Target Grade / Nilai <span class="text-danger">*</span></label>
-                        <select name="grade" class="form-control select2 <?= session('errors.grade') ? 'is-invalid' : '' ?>" style="width: 100%;">
-                            <option value="" disabled selected>-- Pilih Grade --</option>
-                            <?php foreach (['A', 'A-', 'B+', 'B'] as $g): ?>
-                                <option value="<?= $g ?>" <?= old('grade') === $g ? 'selected' : '' ?>><?= $g ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                        <?php if (session('errors.grade')): ?>
-                            <span class="invalid-feedback d-block"><?= session('errors.grade') ?></span>
+
+                        <?php if (!$profileIncomplete): ?>
+                            <select name="grade" class="form-control select2 <?= session('errors.grade') ? 'is-invalid' : '' ?>" style="width: 100%;">
+                                <option value="" disabled selected>-- Pilih Grade --</option>
+                                <?php foreach (['A', 'A-', 'B+', 'B'] as $g): ?>
+                                    <option value="<?= $g ?>" <?= old('grade') === $g ? 'selected' : '' ?>><?= $g ?></option>
+                                <?php endforeach; ?>
+                            </select>
+
+                            <?php if (session('errors.grade')): ?>
+                                <span class="invalid-feedback d-block"><?= session('errors.grade') ?></span>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            <div class="alert alert-light border text-center py-2 text-muted text-small-c mb-0">
+                                <i class="fa fa-info-circle mr-1"></i> Pilihan Target Grade akan muncul setelah profil Anda dilengkapi.
+                            </div>
                         <?php endif; ?>
                     </div>
                 </div>

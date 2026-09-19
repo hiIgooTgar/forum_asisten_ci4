@@ -55,6 +55,7 @@ class CourseModel extends Model
     public function getCoursesByFaculty(int $facultyId)
     {
         return $this->select('courses.*, study_programs.program_name')
+            ->select('(SELECT COUNT(*) FROM taken_courses WHERE taken_courses.course_id = courses.id) as total_taken')
             ->join('study_programs', 'study_programs.id = courses.study_program_id')
             ->where('study_programs.faculty_id', $facultyId)
             ->orderBy('study_programs.program_name', 'ASC')
@@ -65,6 +66,7 @@ class CourseModel extends Model
     public function getAvailableCoursesByProgram(int $studyProgramId)
     {
         return $this->select('courses.*, study_programs.program_name')
+            ->select('(SELECT COUNT(*) FROM taken_courses WHERE taken_courses.course_id = courses.id) as total_taken')
             ->join('study_programs', 'study_programs.id = courses.study_program_id')
             ->where('courses.study_program_id', $studyProgramId)
             ->orderBy('courses.semester', 'ASC')

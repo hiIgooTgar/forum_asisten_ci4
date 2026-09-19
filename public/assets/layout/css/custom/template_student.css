@@ -126,3 +126,15 @@
 .is-invalid + .select2-container--default .select2-selection--single {
   border-color: #dc3545;
 }
+
+.select2-container--default .select2-results__option[aria-disabled="true"] {
+  background-color: #fad3d7 !important;
+  color: #dc3545 !important;
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+select.form-control option:disabled {
+  background-color: #fad3d7 !important;
+  color: #dc3545 !important;
+}
