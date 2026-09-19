@@ -113,7 +113,7 @@ class ExperienceData extends BaseController
                 'student'
             );
 
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+            return redirect()->back()->withInput()->with('error', 'Gagal memperbarui data pengalaman. Silakan periksa kembali form Anda.')->with('errors', $this->validator->getErrors());
         }
 
         $isCurrent      = $this->request->getPost('is_current') ? 1 : 0;
@@ -157,7 +157,11 @@ class ExperienceData extends BaseController
             return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
         }
 
-        $experience = $this->experienceModel->where('experience_code', $experienceCode)->where('user_id', $userId)->first();
+        $experience = $this->experienceModel
+            ->where('experience_code', $experienceCode)
+            ->where('user_id', $userId)
+            ->first();
+
         if (!$experience) {
             $this->logActivity(
                 'FAILED_UPDATE_EXPERIENCE_NOT_FOUND',
@@ -199,7 +203,7 @@ class ExperienceData extends BaseController
             'year_occurred' => [
                 'rules'  => 'required|valid_date[Y]|greater_than[1990]|less_than_equal_to[' . date('Y') . ']',
                 'errors' => [
-                    'required'            => 'Tahun pelaksanaan wajib diisi.',
+                    'required'           => 'Tahun pelaksanaan wajib diisi.',
                     'valid_date'          => 'Format tahun pelaksanaan harus berupa 4 digit angka tahun (YYYY).',
                     'greater_than'        => 'Tahun pelaksanaan harus lebih besar dari tahun 1990.',
                     'less_than_equal_to'  => 'Tahun pelaksanaan tidak boleh melebihi tahun saat ini.',
@@ -231,28 +235,59 @@ class ExperienceData extends BaseController
                 'student'
             );
 
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+            return redirect()->back()->withInput()->with('error', 'Gagal memperbarui data pengalaman. Silakan periksa kembali form Anda.')->with('errors', $this->validator->getErrors());
         }
 
         $isCurrent = $this->request->getPost('is_current') ? 1 : 0;
 
-        $updateData = [
-            'title'             => $this->request->getPost('title'),
-            'organization_name' => $this->request->getPost('organization_name'),
-            'experience_type'   => $this->request->getPost('experience_type'),
-            'year_occurred'     => $this->request->getPost('year_occurred'),
-            'is_current'        => $isCurrent,
-            'description'       => $this->request->getPost('description'),
+        $newData = [
+            'title'             => trim((string)$this->request->getPost('title')),
+            'organization_name' => trim((string)$this->request->getPost('organization_name')),
+            'experience_type'   => (string)$this->request->getPost('experience_type'),
+            'year_occurred'     => (int)$this->request->getPost('year_occurred'),
+            'is_current'        => (int)$isCurrent,
+            'description'       => trim((string)$this->request->getPost('description')),
         ];
 
-        $this->experienceModel->where('experience_code', $experienceCode)->set($updateData)->update();
+        $isChanged     = false;
+        $changedFields = [];
+
+        foreach ($newData as $field => $value) {
+            $oldValue = is_object($experience) ? ($experience->$field ?? null) : ($experience[$field] ?? null);
+
+            if (in_array($field, ['year_occurred', 'is_current'])) {
+                $oldValue = (int)$oldValue;
+            } elseif (is_string($oldValue)) {
+                $oldValue = trim($oldValue);
+            }
+
+            if ($oldValue !== $value) {
+                $isChanged     = true;
+                $changedFields[] = $field;
+            }
+        }
+
+        if (!$isChanged) {
+            return redirect()
+                ->to('/student/experiences')
+                ->with('info', 'Tidak ada perubahan pada data pengalaman.');
+        }
+
+        $newData['updated_at'] = date('Y-m-d H:i:s');
+
+        $this->experienceModel
+            ->where('experience_code', $experienceCode)
+            ->set($newData)
+            ->update();
+
         $this->logActivity(
             'UPDATE_EXPERIENCE_SUCCESS',
-            'Mahasiswa memperbarui pengalaman Code: ' . $experienceCode,
+            'Mahasiswa berhasil memperbarui data pengalaman (' . implode(', ', $changedFields) . ') Code: ' . $experienceCode,
             [
                 'student_number'  => $studentNumber,
                 'experience_code' => $experienceCode,
-                'updated_fields'  => $updateData,
+                'updated_fields'  => $changedFields,
+                'updated_data'    => $newData,
             ],
             'student'
         );

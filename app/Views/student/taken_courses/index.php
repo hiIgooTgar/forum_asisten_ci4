@@ -82,7 +82,7 @@ $pagedTaken = array_slice($allTaken, $offset, $perPage);
 <?php endif; ?>
 
 <?php if (!empty($validationErrors) && is_array($validationErrors)): ?>
-    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm p-3 p-md-4 mb-4 position-relative overflow-hidden" role="alert" style="background-color: #fdf2f2; border-left: 4px solid #e53e3e !important;">
+    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm p-3 p-md-4 mb-4 position-relative overflow-hidden" role="alert" style="background-color: #fdf2f2; border-left: 4px solid #e53e3e !important; border-top: 1px solid rgba(229, 62, 62, 0.5) !important; border-right: 1px solid rgba(229, 62, 62, 0.5) !important; border-bottom: 1px solid rgba(229, 62, 62, 0.5) !important;">
         <div class="d-flex align-items-start" style="gap: 0.9rem">
             <div class="alert-icon-wrapper bg-soft-danger text-danger rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px; background-color: rgba(229, 62, 62, 0.12);">
                 <i class="fa fa-exclamation-circle fa-lg"></i>
