@@ -252,15 +252,29 @@ $pagedTaken = array_slice($allTaken, $offset, $perPage);
                                     </div>
 
                                     <div class="action-btns d-flex gap-2 mt-3 mt-md-0 align-self-end align-self-md-start">
-                                        <button class="btn btn-sm btn-warning text-dark font-weight-semibold rounded"
+                                        <button type="button"
+                                            class="btn btn-sm btn-warning text-dark font-weight-semibold rounded"
                                             data-toggle="modal"
                                             data-target="#modalEditCourse<?= $row->id ?>">
                                             <i class="fa fa-edit"></i>
                                         </button>
-                                        <button class="btn btn-sm btn-danger font-weight-semibold rounded" <?= ($profileIncomplete || $totalTaken >= $maxQuota) ? 'disabled' : '' ?>
-                                            onclick="confirmDeleteCourse('<?= base_url('student/taken-courses/delete/' . $row->taken_course_code) ?>', '<?= esc($row->course_name, 'js') ?>', '<?= esc($row->program_name, 'js') ?>')">
-                                            <i class="fa fa-trash"></i>
-                                        </button>
+                                        <?php if ($profileIncomplete): ?>
+                                            <button type="button"
+                                                class="btn btn-sm btn-danger font-weight-semibold rounded"
+                                                onclick="showWarningModal({
+    title: 'Profil Belum Lengkap',
+    text: 'Lengkapi data profil terlebih dahulu sebelum menghapus data.',
+    btnText: 'Mengerti'
+});">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        <?php else: ?>
+                                            <button type="button"
+                                                class="btn btn-sm btn-danger font-weight-semibold rounded"
+                                                onclick="confirmDeleteCourse('<?= base_url('student/taken-courses/delete/' . $row->taken_course_code) ?>', '<?= esc($row->course_name, 'js') ?>', '<?= esc($row->program_name, 'js') ?>')">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </div>
@@ -274,16 +288,31 @@ $pagedTaken = array_slice($allTaken, $offset, $perPage);
                                             <span class="avatar-icon-wrapper bg-soft-primary text-primary rounded-circle mr-2 d-inline-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
                                                 <i class="fa fa-edit"></i>
                                             </span>
-                                            Edit Data Pendaftaran Mata Kuliah
+                                            Edit Data Mata Kuliah
                                         </h5>
                                         <button type="button" class="close close-btn-c p-2 m-0" data-dismiss="modal" aria-label="Close" style="outline: none;">
                                             <span class="text-primary" aria-hidden="true" style="font-size: 1.5rem;">&times;</span>
                                         </button>
                                     </div>
 
+                                    <div class="px-3 px-md-4 mt-3 text-muted text-xs-c2 d-flex align-items-center gap-2">
+                                        <?php if ($profileIncomplete): ?>
+                                            <p class="py-2 px-3 m-0 alert alert-danger w-100 text-justify text-sm-start">
+                                                <i class="fa fa-info-circle mr-1"></i>
+                                                <span class="font-weight-bold">Profil Anda belum lengkap. Silakan lengkapi profil Anda terlebih dahulu.</span>
+                                            </p>
+                                        <?php else: ?>
+                                            <p class="p-0 m-0">
+                                                <i class="fa fa-info-circle text-primary mr-1"></i>
+                                                Pilih mata kuliah dari Fakultas Anda. Tanda (<span class="text-danger font-weight-bold mx-0.5">*</span>) wajib diisi.
+                                            </p>
+                                        <?php endif; ?>
+                                    </div>
+
                                     <form action="<?= base_url('student/taken-courses/update/' . $row->taken_course_code) ?>" method="POST">
                                         <?= csrf_field() ?>
                                         <div class="modal-body p-3 p-md-4">
+
                                             <div class="form-group mb-3">
                                                 <label class="font-weight-bold text-small-c text-dark">Pilih Mata Kuliah <span class="text-danger">*</span></label>
 
@@ -317,9 +346,9 @@ $pagedTaken = array_slice($allTaken, $offset, $perPage);
                                                         <span class="invalid-feedback d-block"><?= session('errors.course_id') ?></span>
                                                     <?php endif; ?>
                                                 <?php else: ?>
-                                                    <div class="alert alert-light border text-center py-2 text-muted text-small-c mb-0">
-                                                        <i class="fa fa-info-circle mr-1"></i> Pilihan Mata Kuliah akan muncul setelah profil Anda dilengkapi.
-                                                    </div>
+                                                    <select class="form-control select2 bg-light" disabled style="width: 100%;">
+                                                        <option value="" selected disabled>-- Lengkapi profil Anda terlebih dahulu --</option>
+                                                    </select>
                                                 <?php endif; ?>
                                             </div>
 
@@ -338,15 +367,19 @@ $pagedTaken = array_slice($allTaken, $offset, $perPage);
                                                         <span class="invalid-feedback d-block"><?= session('errors.grade') ?></span>
                                                     <?php endif; ?>
                                                 <?php else: ?>
-                                                    <div class="alert alert-light border text-center py-2 text-muted text-small-c mb-0">
-                                                        <i class="fa fa-info-circle mr-1"></i> Pilihan Target Grade akan muncul setelah profil Anda dilengkapi.
-                                                    </div>
+                                                    <select class="form-control select2 bg-light" disabled style="width: 100%;">
+                                                        <option value="" selected disabled>-- Lengkapi profil Anda terlebih dahulu --</option>
+                                                    </select>
                                                 <?php endif; ?>
                                             </div>
+
                                         </div>
-                                        <div class="modal-footer bg-light px-3 px-md-4 pt-3 pb-4 border-top-0 d-flex justify-content-end gap-2">
+
+                                        <div class="modal-footer bg-light px-3 px-md-4 pt-3 pb-4 border-top-0 d-flex flex-row justify-content-end align-items-center gap-2">
                                             <button type="button" class="btn btn-outline-secondary btn-modal-batal px-4 font-weight-semibold" data-dismiss="modal">Batal</button>
-                                            <button type="submit" class="btn btn-primary px-4 btn-modal-simpan font-weight-bold shadow-sm"><i class="fa fa-check-circle mr-1.5"></i> Simpan</button>
+                                            <button type="submit" class="btn btn-primary btn-modal-simpan px-4 font-weight-bold shadow-sm" <?= $profileIncomplete ? 'disabled' : '' ?>>
+                                                <i class="fa fa-check-circle mr-1.5"></i> Simpan
+                                            </button>
                                         </div>
                                     </form>
                                 </div>
@@ -456,14 +489,24 @@ $pagedTaken = array_slice($allTaken, $offset, $perPage);
                 </button>
             </div>
 
-            <div class="px-3 px-md-4 mt-3 text-muted small d-flex align-items-center gap-2">
-                <i class="fa fa-info-circle text-primary mr-1.5"></i>
-                <p class="p-0 m-0">Pilih mata kuliah dari Fakultas Anda. Tanda (<span class="text-danger font-weight-bold mx-0.5">*</span>) wajib diisi.</p>
+            <div class="px-3 px-md-4 mt-3 text-muted text-xs-c2 d-flex align-items-center gap-2">
+                <?php if ($profileIncomplete): ?>
+                    <p class="py-2 px-3 m-0 alert alert-danger w-100 text-justify text-sm-start">
+                        <i class="fa fa-info-circle mr-1"></i>
+                        <span class="font-weight-bold">Profil Anda belum lengkap. Silakan lengkapi profil Anda terlebih dahulu.</span>
+                    </p>
+                <?php else: ?>
+                    <p class="p-0 m-0 ">
+                        <i class="fa fa-info-circle text-primary mr-1"></i>
+                        Pilih mata kuliah dari Fakultas Anda. Tanda (<span class="text-danger font-weight-bold mx-0.5">*</span>) wajib diisi.
+                    </p>
+                <?php endif; ?>
             </div>
 
             <form action="<?= base_url('student/taken-courses/store') ?>" method="POST" class="needs-validation">
                 <?= csrf_field() ?>
                 <div class="modal-body p-3 p-md-4">
+
                     <div class="form-group mb-3">
                         <label class="font-weight-bold text-small-c text-dark">Pilih Mata Kuliah <span class="text-danger">*</span></label>
 
@@ -496,9 +539,9 @@ $pagedTaken = array_slice($allTaken, $offset, $perPage);
                                 <span class="invalid-feedback d-block"><?= session('errors.course_id') ?></span>
                             <?php endif; ?>
                         <?php else: ?>
-                            <div class="alert alert-light border text-center py-2 text-muted text-small-c mb-0">
-                                <i class="fa fa-info-circle mr-1"></i> Pilihan Mata Kuliah akan muncul setelah profil Anda dilengkapi.
-                            </div>
+                            <select class="form-control select2 bg-light" disabled style="width: 100%;">
+                                <option value="" selected disabled>-- Lengkapi profil Anda terlebih dahulu --</option>
+                            </select>
                         <?php endif; ?>
                     </div>
 
@@ -517,16 +560,18 @@ $pagedTaken = array_slice($allTaken, $offset, $perPage);
                                 <span class="invalid-feedback d-block"><?= session('errors.grade') ?></span>
                             <?php endif; ?>
                         <?php else: ?>
-                            <div class="alert alert-light border text-center py-2 text-muted text-small-c mb-0">
-                                <i class="fa fa-info-circle mr-1"></i> Pilihan Target Grade akan muncul setelah profil Anda dilengkapi.
-                            </div>
+                            <select class="form-control select2 bg-light" disabled style="width: 100%;">
+                                <option value="" selected disabled>-- Lengkapi profil Anda terlebih dahulu --</option>
+                            </select>
                         <?php endif; ?>
                     </div>
                 </div>
 
                 <div class="modal-footer bg-light px-3 px-md-4 pt-3 pb-4 border-top-0 d-flex flex-row justify-content-end align-items-center gap-2">
                     <button type="button" class="btn btn-outline-secondary btn-modal-batal px-4 font-weight-semibold" data-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary btn-modal-simpan px-4 font-weight-bold shadow-sm"><i class="fa fa-check-circle mr-1.5"></i> Simpan Data</button>
+                    <button type="submit" class="btn btn-primary btn-modal-simpan px-4 font-weight-bold shadow-sm" <?= $profileIncomplete ? 'disabled' : '' ?>>
+                        <i class="fa fa-check-circle mr-1.5"></i> Simpan Data
+                    </button>
                 </div>
             </form>
         </div>

@@ -179,6 +179,7 @@
     <main class="app-content">
         <?= $this->include('partials/toast') ?>
         <?= $this->include('components/confirm_modal') ?>
+        <?= $this->include('components/warning_modal') ?>
         <?= $this->renderSection('content') ?>
     </main>
 
