@@ -123,13 +123,13 @@ $pagedExperiences = array_slice($allExperiences, $offset, $perPage);
             </div>
 
             <div class="pr-4 flex-grow-1">
-                <h6 class="font-weight-bold text-danger mb-1" style="font-size: 0.95rem; letter-spacing: -0.2px;">
+                <h6 class="font-weight-bold text-danger mb-2" style="font-size: 0.95rem; letter-spacing: -0.2px;">
                     Terjadi Kesalahan Input Data
                 </h6>
                 <p class="text-muted small mb-2" style="font-size: 0.825rem;">
                     Mohon periksa kembali formulir Anda dan perbaiki beberapa kesalahan berikut:
                 </p>
-                <ul class="mb-0 pl-3 text-dark small" style="font-size: 0.85rem; line-height: 1.6;">
+                <ul class="mb-0 pl-4 text-dark small" style="font-size: 0.85rem; line-height: 1.6;">
                     <?php foreach ($validationErrors as $error): ?>
                         <li class="mb-1 text-secondary"><?= esc($error) ?></li>
                     <?php endforeach; ?>

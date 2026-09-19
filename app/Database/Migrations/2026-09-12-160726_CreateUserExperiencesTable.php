@@ -22,7 +22,7 @@ class CreateUserExperiencesTable extends Migration
             ],
             'experience_code' => [
                 'type'       => 'VARCHAR',
-                'constraint' => '64',
+                'constraint' => '255',
                 'unique'     => true,
             ],
             'title' => [

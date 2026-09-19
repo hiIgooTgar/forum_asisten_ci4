@@ -66,6 +66,10 @@ class Dashboard extends BaseController
             'place_of_birth',
             'date_of_birth',
             'gender',
+            'province',
+            'regency',
+            'subdistrict',
+            'village',
             'address',
             'gpa',
             'profile'

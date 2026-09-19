@@ -117,7 +117,7 @@ class ExperienceData extends BaseController
         }
 
         $isCurrent      = $this->request->getPost('is_current') ? 1 : 0;
-        $experienceCode = mt_rand(1000000, 9999999) . '_' . $studentNumber;
+        $experienceCode = mt_rand(1000000000, 9999999999) . '_' . $studentNumber;
 
         $saveData = [
             'user_id'           => $userId,

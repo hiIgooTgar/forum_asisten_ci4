@@ -55,6 +55,11 @@ $routes->group('student', ['filter' => 'student_auth'], static function ($routes
     $routes->post('experiences/store', 'Student\ExperienceData::store');
     $routes->post('experiences/update/(:segment)', 'Student\ExperienceData::update/$1');
     $routes->post('experiences/delete/(:segment)', 'Student\ExperienceData::delete/$1');
+
+    $routes->get('taken-courses', 'Student\TakenCourseData::index');
+    $routes->post('taken-courses/store', 'Student\TakenCourseData::store');
+    $routes->post('taken-courses/update/(:any)', 'Student\TakenCourseData::update/$1');
+    $routes->post('taken-courses/delete/(:any)', 'Student\TakenCourseData::delete/$1');
 });
 
 $routes->group('admin', ['filter' => 'admin_auth'], function ($routes) {

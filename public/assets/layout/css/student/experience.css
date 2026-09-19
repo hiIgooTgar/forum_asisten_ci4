@@ -12,6 +12,12 @@
   border: none !important;
 }
 
+.badge-soft-primary-c2 {
+  background-color: rgba(13, 110, 253, 0.25);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
 .badge-soft-primary-c {
   background-color: rgba(13, 110, 253, 0.25);
   color: #0d6efd;

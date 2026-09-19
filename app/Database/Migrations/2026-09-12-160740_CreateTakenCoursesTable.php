@@ -15,6 +15,11 @@ class CreateTakenCoursesTable extends Migration
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
+            'taken_course_code' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '255',
+                'unique'     => true,
+            ],
             'user_id' => [
                 'type'       => 'BIGINT',
                 'constraint' => 20,
@@ -26,8 +31,9 @@ class CreateTakenCoursesTable extends Migration
                 'unsigned'   => true,
             ],
             'grade' => [
-                'type'       => 'VARCHAR',
-                'constraint' => '3',
+                'type'       => 'ENUM',
+                'constraint' => ['A', 'A-', 'B+', 'B'],
+                'default'    => 'B',
             ],
             'created_at' => [
                 'type' => 'DATETIME',

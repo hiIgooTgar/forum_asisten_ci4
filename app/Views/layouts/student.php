@@ -27,6 +27,7 @@
 
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/student/profile.css'); ?>">
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/student/experience.css'); ?>">
+    <link rel="stylesheet" href="<?= base_url('assets/layout/css/student/taken-courses.css'); ?>">
 
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/custom/template_student.css'); ?>">
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/custom/layout.css'); ?>">
@@ -141,7 +142,7 @@
                 </ul>
             </li>
 
-            <li class="treeview <?= in_array($uri->getSegment(2), ['registration', 'history']) ? 'is-expanded' : ''; ?>">
+            <li class="treeview <?= in_array($uri->getSegment(2), ['taken-courses', 'history']) ? 'is-expanded' : ''; ?>">
                 <a class="app-menu__item" href="#" data-toggle="treeview">
                     <i class="app-menu__icon fa fa-file-text"></i>
                     <span class="app-menu__label">Pendaftaran Asisten</span>
@@ -149,7 +150,7 @@
                 </a>
                 <ul class="treeview-menu">
                     <li>
-                        <a class="treeview-item <?= ($uri->getSegment(2) == 'registration') ? 'active' : ''; ?>" href="<?= base_url('student/registration'); ?>">
+                        <a class="treeview-item <?= ($uri->getSegment(2) == 'taken-courses') ? 'active' : ''; ?>" href="<?= base_url('student/taken-courses'); ?>">
                             <i class="icon fa fa-circle-o"></i> Daftar Matakuliah
                         </a>
                     </li>
@@ -234,6 +235,7 @@
 
     <script src="<?= base_url('assets/layout/js/student/profile.js'); ?>"></script>
     <script src="<?= base_url('assets/layout/js/student/experience.js'); ?>"></script>
+    <script src="<?= base_url('assets/layout/js/student/taken-courses.js'); ?>"></script>
 
     <?= $this->include('components/confirm_modal') ?>
 
