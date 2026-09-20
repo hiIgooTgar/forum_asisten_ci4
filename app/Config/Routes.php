@@ -65,3 +65,7 @@ $routes->group('student', ['filter' => 'student_auth'], static function ($routes
 $routes->group('admin', ['filter' => 'admin_auth'], function ($routes) {
     $routes->get('dashboard', 'Admin\DashboardController::index');
 });
+
+$routes->set404Override(function () {
+    return view('errors/html/error_page_404');
+});
