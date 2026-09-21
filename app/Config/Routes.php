@@ -60,10 +60,19 @@ $routes->group('student', ['filter' => 'student_auth'], static function ($routes
     $routes->post('taken-courses/store', 'Student\TakenCourseData::store');
     $routes->post('taken-courses/update/(:any)', 'Student\TakenCourseData::update/$1');
     $routes->post('taken-courses/delete/(:any)', 'Student\TakenCourseData::delete/$1');
+
+    $routes->get('documents', 'Student\DocumentData::index');
+    $routes->post('documents/store', 'Student\DocumentData::store');
+    $routes->post('documents/update/(:segment)', 'Student\DocumentData::update/$1');
+    $routes->post('documents/reset/(:segment)', 'Student\DocumentData::reset/$1');
+
+    $routes->get('files/view/(:any)/(:any)/(:any)', 'FileViewer::show/$1/$2/$3');
 });
 
 $routes->group('admin', ['filter' => 'admin_auth'], function ($routes) {
     $routes->get('dashboard', 'Admin\DashboardController::index');
+
+    $routes->get('files/view/(:any)/(:any)/(:any)', 'FileViewer::show/$1/$2/$3');
 });
 
 $routes->set404Override(function () {

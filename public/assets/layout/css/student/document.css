@@ -1,0 +1,54 @@
+:root {
+  --primary: #0a2481;
+  --color-primary-combine: #0c2996;
+  --color-primary-combine-v2: #0c1d61;
+  --color-hover-primary: #081750;
+  --color-transparent-primary: rgba(10, 36, 129, 0.5);
+  --color-transparent-primary-v2: rgba(10, 36, 129, 0.25);
+}
+
+.custom-file-dropzone {
+  border: 2px dashed #cbd5e1;
+  border-radius: 4px;
+  padding: 1.25rem 1rem;
+  text-align: center;
+  background-color: #f8fafc;
+  transition: all 0.25s ease-in-out;
+  cursor: pointer;
+  position: relative;
+}
+
+.custom-file-dropzone:hover {
+  border-color: var(--primary);
+  background-color: #f1f5f9;
+}
+
+.custom-file-dropzone input[type="file"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.custom-file-dropzone.disabled {
+  background-color: #f1f5f9;
+  border-color: #e2e8f0;
+  cursor: not-allowed;
+}
+
+.custom-file-dropzone.disabled input[type="file"] {
+  cursor: not-allowed;
+}
+
+.naming-badge {
+  font-size: 0.72rem;
+  background-color: #e2e8f0;
+  color: #334155;
+  border-radius: 4px;
+  padding: 0.2rem 0.5rem;
+  font-family: monospace;
+  font-weight: 600;
+}

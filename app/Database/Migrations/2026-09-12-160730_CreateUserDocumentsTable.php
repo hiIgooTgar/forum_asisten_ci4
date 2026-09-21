@@ -15,6 +15,11 @@ class CreateUserDocumentsTable extends Migration
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
+            'document_code' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '255',
+                'unique'     => true,
+            ],
             'user_id' => [
                 'type'       => 'BIGINT',
                 'constraint' => 20,

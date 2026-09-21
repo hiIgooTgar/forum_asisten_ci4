@@ -1,0 +1,11 @@
+Options -Indexes
+
+<FilesMatch "\.(php|php5|php7|phtml|exe|pl|py|cgi|sh|bat)$">
+Order Deny,Allow
+Deny from all
+</FilesMatch>
+
+<FilesMatch "\.(pdf|doc|docx|png|jpg|jpeg)$">
+Order Deny,Allow
+Deny from all
+</FilesMatch>

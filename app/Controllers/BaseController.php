@@ -30,6 +30,7 @@ abstract class BaseController extends Controller
      */
 
     // protected $session;
+    protected $helpers = ['security', 'form', 'url'];
 
     /**
      * @return void

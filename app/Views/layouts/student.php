@@ -28,6 +28,7 @@
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/student/profile.css'); ?>">
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/student/experience.css'); ?>">
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/student/taken-courses.css'); ?>">
+    <link rel="stylesheet" href="<?= base_url('assets/layout/css/student/document.css'); ?>">
 
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/custom/template_student.css'); ?>">
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/custom/layout.css'); ?>">
@@ -151,7 +152,7 @@
                 <ul class="treeview-menu">
                     <li>
                         <a class="treeview-item <?= ($uri->getSegment(2) == 'taken-courses') ? 'active' : ''; ?>" href="<?= base_url('student/taken-courses'); ?>">
-                            <i class="icon fa fa-circle-o"></i> Daftar Matakuliah
+                            <i class="icon fa fa-circle-o"></i> Daftar Mata Kuliah
                         </a>
                     </li>
                     <li>
@@ -237,6 +238,7 @@
     <script src="<?= base_url('assets/layout/js/student/profile.js'); ?>"></script>
     <script src="<?= base_url('assets/layout/js/student/experience.js'); ?>"></script>
     <script src="<?= base_url('assets/layout/js/student/taken-courses.js'); ?>"></script>
+    <script src="<?= base_url('assets/layout/js/student/document.js'); ?>"></script>
 
     <?= $this->include('components/confirm_modal') ?>
 
