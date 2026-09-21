@@ -382,16 +382,32 @@ class DocumentData extends BaseController
             'registration_form_file',
         ];
 
+        $folderPath = null;
+
         foreach ($fileFields as $field) {
             if (!empty($document->$field)) {
                 $filePath = WRITEPATH . 'uploads/document_file/' . $document->$field;
+                if (!$folderPath) {
+                    $folderPath = dirname($filePath);
+                }
+
                 if (file_exists($filePath)) {
                     @unlink($filePath);
                 }
             }
         }
 
+        $baseUploadDir = realpath(WRITEPATH . 'uploads/document_file');
+
+        if ($folderPath && is_dir($folderPath)) {
+            $realFolderPath = realpath($folderPath);
+            if ($realFolderPath && $baseUploadDir && $realFolderPath !== $baseUploadDir && strpos($realFolderPath, $baseUploadDir) === 0) {
+                @rmdir($realFolderPath);
+            }
+        }
+
         $this->userDocumentModel->delete($document->id);
+
         $this->logActivity(
             'RESET_DOCUMENTS_SUCCESS',
             'Mahasiswa berhasil mereset seluruh berkas pendaftaran',
@@ -402,7 +418,7 @@ class DocumentData extends BaseController
             'student'
         );
 
-        return redirect()->to('/student/documents')->with('success', 'Seluruh berkas pendaftaran berhasil direset.');
+        return redirect()->to('/student/documents')->with('success', 'Seluruh berkas dan folder pendaftaran berhasil direset.');
     }
 
     private function generateSecureFileName(string $prefix, string $studentNumber): string

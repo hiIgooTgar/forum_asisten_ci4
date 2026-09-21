@@ -199,45 +199,49 @@ $warningReason  = $profileIncomplete ? 'profile' : ($hasNoTakenCourses ? 'course
                         <?php
                         $existingFile = $document->$fieldName ?? null;
                         $oldFileName  = old('old_' . $fieldName, $existingFile);
+                        $isUploaded = !empty($oldFileName);
 
-                        if (!empty($existingFile)) {
-                            $fileDisplayText = "Tersimpan: " . $existingFile;
-                            $textClass = "text-primary";
-                        } else {
-                            $fileDisplayText = "Pilih atau Seret Berkas PDF";
-                            $textClass = "text-dark";
-                        }
+                        $fileDisplayText = "Pilih atau Seret Berkas PDF";
+                        $textClass       = "text-dark";
                         ?>
                         <div class="col-md-6 col-12 mb-4">
                             <div class="card h-100 border rounded-lg p-3 shadow-xs">
                                 <div class="d-flex justify-content-between align-items-start mb-1">
                                     <label class="font-weight-bold text-dark text-small-c mb-0">
-                                        <?= $meta['label'] ?> <span class="text-danger">*</span>
+                                        <?= esc($meta['label']) ?> <span class="text-danger">*</span>
                                     </label>
-                                </div>
-                                <div class="mb-2">
-                                    <span class="naming-badge"><i class="fa fa-tag mr-1"></i>Format: <?= $meta['format'] ?></span>
+                                    <?php if ($isUploaded): ?>
+                                        <span class="badge badge-soft-success" style="font-size: 0.7rem;">
+                                            <i class="fa fa-check-circle mr-1"></i>Tersimpan
+                                        </span>
+                                    <?php endif; ?>
                                 </div>
 
-                                <input type="hidden" name="old_<?= $fieldName ?>" value="<?= esc($oldFileName) ?>">
+                                <div class="mb-2">
+                                    <span class="naming-badge"><i class="fa fa-tag mr-1"></i>Format: <?= esc($meta['format']) ?></span>
+                                </div>
+                                <input type="hidden" name="old_<?= esc($fieldName) ?>" value="<?= esc($oldFileName) ?>">
 
                                 <div class="custom-file-dropzone mb-3"
                                     data-disabled="<?= $isFormDisabled ? 'true' : 'false' ?>"
-                                    data-reason="<?= $warningReason ?>">
+                                    data-reason="<?= esc($warningReason) ?>">
                                     <i class="fa fa-cloud-upload-alt text-primary fa-2x mb-1"></i>
-                                    <span class="d-block font-weight-semibold small file-name-display <?= $textClass ?>"><?= esc($fileDisplayText) ?></span>
-                                    <input type="file" name="<?= $fieldName ?>" accept=".pdf,application/pdf" onchange="updateFileName(this)">
+                                    <span class="d-block font-weight-semibold small file-name-display <?= $textClass ?>">
+                                        <?= esc($fileDisplayText) ?>
+                                    </span>
+                                    <input type="file" name="<?= esc($fieldName) ?>" accept=".pdf,application/pdf" onchange="updateFileName(this)">
                                 </div>
 
                                 <div class="mt-auto d-flex justify-content-between align-items-center pt-2 border-top">
                                     <?php if (!empty($existingFile)): ?>
-                                        <a href="<?= base_url('student/files/view/document_file/' . $existingFile) ?>" target="_blank" class="btn btn-sm btn-outline-primary font-weight-semibold">
+                                        <a href="<?= base_url('student/files/view/document_file/' . esc($existingFile)) ?>" target="_blank" class="btn btn-sm btn-outline-primary font-weight-semibold">
                                             <i class="fa fa-eye mr-1"></i> Lihat Berkas
                                         </a>
                                     <?php else: ?>
                                         <span class="badge badge-soft-danger">Belum Diunggah</span>
                                     <?php endif; ?>
-                                    <a href="<?= base_url('assets/templates/' . $meta['template']) ?>" class="text-primary text-xs-c font-weight-bold" download>
+
+                                    <a href="<?= base_url('registration/templates_file/' . esc($meta['template'])) ?>" class="text-primary text-xs-c font-weight-bold" download>
                                         <i class="fa fa-download mr-1"></i> Template
                                     </a>
                                 </div>

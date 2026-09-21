@@ -1,9 +1,11 @@
 <?php
-$session = session();
-$redirectUrl = base_url('/');
-$btnLabel = 'Kembali ke Beranda';
 
-if ($session->get('is_admin_logged_in') && $session->get('admin_id')) {
+$session = session();
+
+if (isset($customRedirectUrl) && !empty($customRedirectUrl)) {
+    $redirectUrl = $customRedirectUrl;
+    $btnLabel = $customBtnLabel ?? 'Kembali';
+} elseif ($session->get('is_admin_logged_in') && $session->get('admin_id')) {
     $redirectUrl = base_url('admin/dashboard');
     $btnLabel = 'Kembali ke Dashboard Admin';
 } elseif ($session->get('is_student_logged_in')) {
@@ -13,14 +15,18 @@ if ($session->get('is_admin_logged_in') && $session->get('admin_id')) {
     $redirectUrl = base_url('auth/login');
     $btnLabel = 'Kembali ke Halaman Login';
 }
+
+$title = $errorTitle ?? 'Akses Ditolak';
+$description = $errorMessage ?? 'Anda tidak memiliki hak akses (izin) untuk membuka halaman ini. Silakan hubungi administrator sistem jika Anda merasa ini adalah kesalahan.';
 ?>
+
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 - Halaman Tidak Ditemukan</title>
+    <title>403 - Akses Ditolak</title>
     <link rel="stylesheet" href="<?= base_url('assets/font/font-style.css'); ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/errors/page_validation.css'); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -43,12 +49,14 @@ if ($session->get('is_admin_logged_in') && $session->get('admin_id')) {
 
             <div class="error-content">
                 <div class="error-text-section left-content-gsap">
-                    <span class="error-tag fade-up-gsap">Error 404</span>
+                    <span class="error-tag fade-up-gsap">
+                        Error 403
+                    </span>
                     <h1 class="error-title headline-animate-gsap">
-                        Oops! Halaman <span>Tidak Ditemukan</span>
+                        Akses <span>Ditolak!</span>
                     </h1>
                     <p class="error-description fade-up-gsap">
-                        Halaman yang Anda tuju mungkin telah dihapus, diubah namanya, atau tidak tersedia saat ini. Silakan kembali ke halaman utama sistem Anda.
+                        <?= esc($description) ?>
                     </p>
                     <div class="fade-up-gsap" style="width: 100%;">
                         <a href="<?= esc($redirectUrl) ?>" class="btn-redirect">
@@ -66,8 +74,12 @@ if ($session->get('is_admin_logged_in') && $session->get('admin_id')) {
                             <div class="dot dot-green"></div>
                         </div>
                         <div class="browser-body">
-                            <div class="big-code">404</div>
-                            <div class="sub-code">Page Not Found</div>
+                            <div class="big-code">
+                                403
+                            </div>
+                            <div class="sub-code">
+                                <i class="fa-solid fa-lock"></i> Forbidden Access
+                            </div>
 
                             <div class="graphic-barrier">
                                 <div class="barrier-stripe"></div>
@@ -76,11 +88,11 @@ if ($session->get('is_admin_logged_in') && $session->get('admin_id')) {
                     </div>
                 </div>
             </div>
+
             <footer class="fade-up-gsap">
                 <p>&copy; <span id="year_c"></span> <span class="text-primary-c">Forum Asisten</span> Universitas Amikom Purwokerto</p>
             </footer>
         </div>
-
     </div>
 
     <script src="<?= base_url('assets/js/animation/animation-gsap.js') ?>"></script>

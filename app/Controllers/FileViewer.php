@@ -14,7 +14,10 @@ class FileViewer extends BaseController
         $sessStudentNum   = (string) $session->get('student_number');
 
         if (!$isAdmin && !$isStudent) {
-            return $this->response->setStatusCode(403)->setBody('403 Forbidden: Anda harus login terlebih dahulu.');
+            $this->response->setStatusCode(403);
+            return view('errors/html/error_page_403', [
+                'errorMessage' => 'Anda harus melakukan login terlebih dahulu untuk mengakses berkas ini.'
+            ]);
         }
 
         $folder    = basename($folder);
@@ -23,7 +26,10 @@ class FileViewer extends BaseController
 
         if (!$isAdmin) {
             if (empty($sessStudentNum)) {
-                return $this->response->setStatusCode(403)->setBody('403 Forbidden: Sesi mahasiswa tidak valid.');
+                $this->response->setStatusCode(403);
+                return view('errors/html/error_page_403', [
+                    'errorMessage' => 'Sesi login mahasiswa Anda tidak valid atau telah kadaluarsa.'
+                ]);
             }
 
             $isFolderOwner = (strpos($subfolder, $sessStudentNum) === 0);
@@ -31,7 +37,11 @@ class FileViewer extends BaseController
 
             if (!$isFolderOwner && !$isFileOwner) {
                 log_message('warning', "Akses ilegal ditolak: Mahasiswa NIM {$sessStudentNum} mencoba membuka berkas milik {$subfolder}");
-                return $this->response->setStatusCode(403)->setBody('403 Forbidden: Anda tidak berhak mengakses berkas ini.');
+
+                $this->response->setStatusCode(403);
+                return view('errors/html/error_page_403', [
+                    'errorMessage' => 'Anda tidak memiliki hak akses untuk membaca atau mengunduh berkas ini.'
+                ]);
             }
         }
 
