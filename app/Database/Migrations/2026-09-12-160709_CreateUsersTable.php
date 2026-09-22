@@ -120,6 +120,12 @@ class CreateUsersTable extends Migration
                 'constraint' => 1,
                 'default'    => 0,
             ],
+            'verification_status' => [
+                'type'       => 'ENUM',
+                'constraint' => ['unsubmitted', 'completed'],
+                'default'    => 'unsubmitted',
+                'null'       => false,
+            ],
             'certificate_file' => [
                 'type'       => 'VARCHAR',
                 'constraint' => '255',
