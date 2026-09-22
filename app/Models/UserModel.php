@@ -36,6 +36,7 @@ class UserModel extends Model
         'otp_expires_at',
         'email_verified_at',
         'is_verified',
+        'verification_status',
         'certificate_file',
         'status_account',
         'remember_token'

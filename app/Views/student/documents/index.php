@@ -238,7 +238,7 @@ $warningReason  = $profileIncomplete ? 'profile' : ($hasNoTakenCourses ? 'course
                                             <i class="fa fa-eye mr-1"></i> Lihat Berkas
                                         </a>
                                     <?php else: ?>
-                                        <span class="badge badge-soft-danger">Belum Diunggah</span>
+                                        <span class="badge badge-soft-danger"> <i class="fa fa-times-circle"></i> Belum Diunggah</span>
                                     <?php endif; ?>
 
                                     <a href="<?= base_url('registration/templates_file/' . esc($meta['template'])) ?>" class="text-primary text-xs-c font-weight-bold" download>

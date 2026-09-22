@@ -79,6 +79,15 @@ class Dashboard extends BaseController
             $filledUserFields = 0;
             foreach ($userFields as $field) {
                 if (isset($student->$field) && $student->$field !== '' && $student->$field !== null) {
+
+                    if ($field === 'profile') {
+                        $defaultProfiles = ['profile-default.png', 'default.png'];
+                        $profileValue    = trim((string)$student->$field);
+                        if (in_array($profileValue, $defaultProfiles, true) || empty($profileValue)) {
+                            continue;
+                        }
+                    }
+
                     $filledUserFields++;
                 }
             }

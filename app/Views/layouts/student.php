@@ -29,6 +29,7 @@
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/student/experience.css'); ?>">
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/student/taken-courses.css'); ?>">
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/student/document.css'); ?>">
+    <link rel="stylesheet" href="<?= base_url('assets/layout/css/student/verification.css'); ?>">
 
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/custom/template_student.css'); ?>">
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/custom/layout.css'); ?>">
@@ -160,12 +161,19 @@
                             <i class="icon fa fa-circle-o"></i> Dokumen Berkas
                         </a>
                     </li>
-                    <li>
+                    <!-- <li>
                         <a class="treeview-item <?= ($uri->getSegment(2) == 'history') ? 'active' : ''; ?>" href="<?= base_url('student/history'); ?>">
                             <i class="icon fa fa-circle-o"></i> Riwayat Pendaftaran
                         </a>
-                    </li>
+                    </li> -->
                 </ul>
+            </li>
+
+            <li>
+                <a class="app-menu__item <?= ($uri->getSegment(2) == 'verification') ? 'active' : ''; ?>" href="<?= base_url('student/verification'); ?>">
+                    <i class="app-menu__icon fa fa-paste"></i>
+                    <span class="app-menu__label">Verifikasi Pendaftaran</span>
+                </a>
             </li>
 
             <li>
@@ -239,6 +247,7 @@
     <script src="<?= base_url('assets/layout/js/student/experience.js'); ?>"></script>
     <script src="<?= base_url('assets/layout/js/student/taken-courses.js'); ?>"></script>
     <script src="<?= base_url('assets/layout/js/student/document.js'); ?>"></script>
+    <script src="<?= base_url('assets/layout/js/student/verification.js'); ?>"></script>
 
     <?= $this->include('components/confirm_modal') ?>
 

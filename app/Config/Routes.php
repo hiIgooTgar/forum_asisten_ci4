@@ -66,6 +66,9 @@ $routes->group('student', ['filter' => 'student_auth'], static function ($routes
     $routes->post('documents/update/(:segment)', 'Student\DocumentData::update/$1');
     $routes->post('documents/reset/(:segment)', 'Student\DocumentData::reset/$1');
 
+    $routes->get('verification', 'Student\Verification::index');
+    $routes->post('verification/submit', 'Student\Verification::submit');
+
     $routes->get('files/view/(:any)/(:any)/(:any)', 'FileViewer::show/$1/$2/$3');
 });
 
