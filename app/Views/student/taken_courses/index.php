@@ -283,11 +283,7 @@ $pagedTaken = array_slice($allTaken, $offset, $perPage);
                                         <?php if ($profileIncomplete): ?>
                                             <button type="button"
                                                 class="btn btn-sm btn-danger font-weight-semibold rounded"
-                                                onclick="showWarningModal({
-    title: 'Profil Belum Lengkap',
-    text: 'Lengkapi data profil terlebih dahulu sebelum menghapus data.',
-    btnText: 'Mengerti'
-});">
+                                                onclick="handleIncompleteProfileDelete()">
                                                 <i class="fa fa-trash"></i>
                                             </button>
                                         <?php else: ?>
@@ -400,7 +396,7 @@ $pagedTaken = array_slice($allTaken, $offset, $perPage);
                                         <div class="modal-footer bg-light px-3 px-md-4 pt-3 pb-4 border-top-0 d-flex flex-row justify-content-end align-items-center gap-2">
                                             <button type="button" class="btn btn-outline-secondary btn-modal-batal px-4 font-weight-semibold" data-dismiss="modal">Batal</button>
                                             <?php if ($profileIncomplete): ?>
-                                                <button type="button" class="btn btn-primary btn-modal-simpan px-4 font-weight-bold shadow-sm" onclick="handleIncompleteProfileSubmitUpdate()">
+                                                <button type="button" class="btn btn-primary btn-modal-simpan px-4 font-weight-bold shadow-sm" onclick="handleIncompleteProfileUpdate()">
                                                     <i class="fa fa-check-circle mr-1.5"></i> Simpan Data
                                                 </button>
                                             <?php else: ?>
@@ -599,7 +595,7 @@ $pagedTaken = array_slice($allTaken, $offset, $perPage);
                     <button type="button" class="btn btn-outline-secondary btn-modal-batal px-4 font-weight-semibold" data-dismiss="modal">Batal</button>
 
                     <?php if ($profileIncomplete): ?>
-                        <button type="button" class="btn btn-primary btn-modal-simpan px-4 font-weight-bold shadow-sm" onclick="handleIncompleteProfileSubmitUpdate()">
+                        <button type="button" class="btn btn-primary btn-modal-simpan px-4 font-weight-bold shadow-sm" onclick="handleIncompleteProfileSubmit()">
                             <i class="fa fa-check-circle mr-1.5"></i> Simpan Data
                         </button>
                     <?php else: ?>

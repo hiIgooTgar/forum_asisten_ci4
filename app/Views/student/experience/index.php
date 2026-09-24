@@ -345,21 +345,29 @@ $pagedExperiences = array_slice($allExperiences, $offset, $perPage);
                                             data-target="#modalEditExperience<?= $expId ?>">
                                             <i class="fa fa-edit"></i>
                                         </button>
-                                        <button class="btn btn-sm btn-danger font-weight-semibold rounded"
-                                            onclick="confirmDeleteExperience('<?= base_url('student/experiences/delete/' . $expCode) ?>', '<?= esc($expData->title, 'js') ?>', '<?= esc($expData->organization_name, 'js') ?>')">
-                                            <i class="fa fa-trash"></i>
-                                        </button>
+                                        <?php if ($profileIncomplete): ?>
+                                            <button type="button"
+                                                class="btn btn-sm btn-danger font-weight-semibold rounded"
+                                                onclick="handleIncompleteProfileDelete()">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        <?php else: ?>
+                                            <button class="btn btn-sm btn-danger font-weight-semibold rounded"
+                                                onclick="confirmDeleteExperience('<?= base_url('student/experiences/delete/' . $expCode) ?>', '<?= esc($expData->title, 'js') ?>', '<?= esc($expData->organization_name, 'js') ?>')">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="modal fade" id="modalEditExperience<?= $expId ?>" tabindex="-1" role="dialog" aria-labelledby="modalEditExperienceLabel<?= $expId ?>" aria-hidden="true">
+                        <div class="modal fade modal-main-content" id="modalEditExperience<?= $expId ?>" tabindex="-1" role="dialog" aria-labelledby="modalEditExperienceLabel<?= $expId ?>" aria-hidden="true">
                             <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
                                 <div class="modal-content border-0 shadow-lg rounded-lg overflow-hidden">
 
                                     <div class="modal-header bg-light border-bottom-0 pb-3 pt-4 px-3 px-md-4 d-flex align-items-center justify-content-between">
-                                        <h5 class="modal-title font-weight-bold text-primary d-flex align-items-center gap-1 mb-0">
+                                        <h5 class="modal-title font-weight-bold text-primary d-flex align-items-center gap-1 mb-0" id="modalEditExperienceLabel<?= $expId ?>">
                                             <span class="avatar-icon-wrapper bg-soft-primary text-primary rounded-circle mr-2 d-inline-flex align-items-center justify-content-center" style="width: 38px; height: 38px; background-color: rgba(10, 36, 129, 0.2)">
                                                 <i class="fa fa-briefcase"></i>
                                             </span>
@@ -370,9 +378,18 @@ $pagedExperiences = array_slice($allExperiences, $offset, $perPage);
                                         </button>
                                     </div>
 
-                                    <div class="px-3 px-md-4 mt-3 text-muted small d-flex align-items-center gap-2">
-                                        <i class="fa fa-info-circle text-primary mr-1.5"></i>
-                                        <p class="p-0 m-0">Perbarui formulir di bawah ini. Tanda (<span class="text-danger font-weight-bold mx-0.5">*</span>) menunjukkan bidang yang wajib diisi.</p>
+                                    <div class="px-3 px-md-4 mt-3 text-muted text-xs-c2 d-flex align-items-center gap-2">
+                                        <?php if ($profileIncomplete): ?>
+                                            <p class="py-2 px-3 m-0 alert alert-danger w-100 text-justify text-sm-start">
+                                                <i class="fa fa-info-circle mr-1"></i>
+                                                <span class="font-weight-bold">Profil Anda belum lengkap. Silakan lengkapi profil Anda terlebih dahulu.</span>
+                                            </p>
+                                        <?php else: ?>
+                                            <p class="p-0 m-0">
+                                                <i class="fa fa-info-circle text-primary mr-1.5"></i>
+                                                Perbarui formulir di bawah ini. Tanda (<span class="text-danger font-weight-bold mx-0.5">*</span>) menunjukkan bidang yang wajib diisi.
+                                            </p>
+                                        <?php endif; ?>
                                     </div>
 
                                     <form action="<?= base_url('student/experiences/update/' . $expCode) ?>" method="POST" class="needs-validation">
@@ -382,7 +399,11 @@ $pagedExperiences = array_slice($allExperiences, $offset, $perPage);
                                             <div class="row">
                                                 <div class="col-12 col-md-6 mb-3">
                                                     <label class="font-weight-bold text-small-c text-dark">Judul Peran / Posisi <span class="text-danger">*</span></label>
-                                                    <input type="text" name="title" class="form-control <?= session('errors.title') ? 'is-invalid' : '' ?>" placeholder="Contoh: Ketua Himpunan / Frontend Dev" value="<?= old('title', $expData->title) ?>">
+                                                    <input type="text" name="title"
+                                                        class="form-control <?= session('errors.title') ? 'is-invalid' : '' ?> <?= $profileIncomplete ? 'bg-light' : '' ?>"
+                                                        placeholder="Contoh: Ketua Himpunan / Frontend Dev"
+                                                        value="<?= old('title', $expData->title) ?>"
+                                                        <?= $profileIncomplete ? 'disabled' : '' ?>>
                                                     <?php if (session('errors.title')): ?>
                                                         <span class="invalid-feedback d-block"><?= session('errors.title') ?></span>
                                                     <?php endif; ?>
@@ -390,7 +411,11 @@ $pagedExperiences = array_slice($allExperiences, $offset, $perPage);
 
                                                 <div class="col-12 col-md-6 mb-3">
                                                     <label class="font-weight-bold text-small-c text-dark">Nama Instansi / Organisasi <span class="text-danger">*</span></label>
-                                                    <input type="text" name="organization_name" class="form-control <?= session('errors.organization_name') ? 'is-invalid' : '' ?>" placeholder="Contoh: BEM / PT. Tech Solutions" value="<?= old('organization_name', $expData->organization_name) ?>">
+                                                    <input type="text" name="organization_name"
+                                                        class="form-control <?= session('errors.organization_name') ? 'is-invalid' : '' ?> <?= $profileIncomplete ? 'bg-light' : '' ?>"
+                                                        placeholder="Contoh: BEM / PT. Tech Solutions"
+                                                        value="<?= old('organization_name', $expData->organization_name) ?>"
+                                                        <?= $profileIncomplete ? 'disabled' : '' ?>>
                                                     <?php if (session('errors.organization_name')): ?>
                                                         <span class="invalid-feedback d-block"><?= session('errors.organization_name') ?></span>
                                                     <?php endif; ?>
@@ -400,38 +425,52 @@ $pagedExperiences = array_slice($allExperiences, $offset, $perPage);
                                             <div class="row">
                                                 <div class="col-12 col-md-6 mb-3">
                                                     <label class="font-weight-bold text-small-c text-dark">Jenis Pengalaman <span class="text-danger">*</span></label>
-                                                    <select name="experience_type" class="form-control select2 <?= session('errors.experience_type') ? 'is-invalid' : '' ?>" style="width: 100%;">
-                                                        <option value="" disabled>-- Pilih Jenis Pengalaman --</option>
-                                                        <?php foreach ($typeBadges as $key => $type): ?>
-                                                            <option value="<?= $key ?>" <?= old('experience_type', $expType) === $key ? 'selected' : '' ?>>
-                                                                <?= $type['label'] ?>
-                                                            </option>
-                                                        <?php endforeach; ?>
-                                                    </select>
-                                                    <?php if (session('errors.experience_type')): ?>
-                                                        <span class="invalid-feedback d-block"><?= session('errors.experience_type') ?></span>
+                                                    <?php if (!$profileIncomplete): ?>
+                                                        <select name="experience_type" class="form-control select2 <?= session('errors.experience_type') ? 'is-invalid' : '' ?>" style="width: 100%;">
+                                                            <option value="" disabled>-- Pilih Jenis Pengalaman --</option>
+                                                            <?php foreach ($typeBadges as $key => $type): ?>
+                                                                <option value="<?= $key ?>" <?= old('experience_type', $expType) === $key ? 'selected' : '' ?>>
+                                                                    <?= $type['label'] ?>
+                                                                </option>
+                                                            <?php endforeach; ?>
+                                                        </select>
+                                                        <?php if (session('errors.experience_type')): ?>
+                                                            <span class="invalid-feedback d-block"><?= session('errors.experience_type') ?></span>
+                                                        <?php endif; ?>
+                                                    <?php else: ?>
+                                                        <select class="form-control select2 bg-light" disabled style="width: 100%;">
+                                                            <option value="" selected disabled>-- Lengkapi profil Anda terlebih dahulu --</option>
+                                                        </select>
                                                     <?php endif; ?>
                                                 </div>
 
                                                 <div class="col-12 col-md-6 mb-3">
                                                     <label class="font-weight-bold text-small-c text-dark">Tahun Pelaksanaan <span class="text-danger">*</span></label>
-                                                    <select name="year_occurred" class="form-control select2 <?= session('errors.year_occurred') ? 'is-invalid' : '' ?>" style="width: 100%;">
-                                                        <option value="" disabled>-- Pilih Tahun --</option>
-                                                        <?php for ($y = $currentYear; $y >= 1990; $y--): ?>
-                                                            <option value="<?= $y ?>" <?= old('year_occurred', $expData->year_occurred) == $y ? 'selected' : '' ?>>
-                                                                <?= $y ?>
-                                                            </option>
-                                                        <?php endfor; ?>
-                                                    </select>
-                                                    <?php if (session('errors.year_occurred')): ?>
-                                                        <span class="invalid-feedback d-block"><?= session('errors.year_occurred') ?></span>
+                                                    <?php if (!$profileIncomplete): ?>
+                                                        <select name="year_occurred" class="form-control select2 <?= session('errors.year_occurred') ? 'is-invalid' : '' ?>" style="width: 100%;">
+                                                            <option value="" disabled>-- Pilih Tahun --</option>
+                                                            <?php for ($y = $currentYear; $y >= 1990; $y--): ?>
+                                                                <option value="<?= $y ?>" <?= old('year_occurred', $expData->year_occurred) == $y ? 'selected' : '' ?>>
+                                                                    <?= $y ?>
+                                                                </option>
+                                                            <?php endfor; ?>
+                                                        </select>
+                                                        <?php if (session('errors.year_occurred')): ?>
+                                                            <span class="invalid-feedback d-block"><?= session('errors.year_occurred') ?></span>
+                                                        <?php endif; ?>
+                                                    <?php else: ?>
+                                                        <select class="form-control select2 bg-light" disabled style="width: 100%;">
+                                                            <option value="" selected disabled>-- Lengkapi profil Anda terlebih dahulu --</option>
+                                                        </select>
                                                     <?php endif; ?>
                                                 </div>
                                             </div>
 
                                             <div class="form-group mb-3 p-3 bg-light rounded-lg border-0">
                                                 <div class="custom-control custom-checkbox">
-                                                    <input type="checkbox" class="custom-control-input" id="is_current_edit_<?= $expId ?>" name="is_current" value="1" <?= old('is_current', !empty($expData->is_current)) ? 'checked' : '' ?>>
+                                                    <input type="checkbox" class="custom-control-input" id="is_current_edit_<?= $expId ?>" name="is_current" value="1"
+                                                        <?= old('is_current', !empty($expData->is_current)) ? 'checked' : '' ?>
+                                                        <?= $profileIncomplete ? 'disabled' : '' ?>>
                                                     <label class="custom-control-label font-weight-semibold text-dark text-xs-c cursor-pointer" for="is_current_edit_<?= $expId ?>">
                                                         Saya masih aktif / kegiatan ini berlangsung sampai sekarang
                                                     </label>
@@ -440,7 +479,11 @@ $pagedExperiences = array_slice($allExperiences, $offset, $perPage);
 
                                             <div class="form-group mb-0">
                                                 <label class="font-weight-bold text-small-c text-dark">Deskripsi Kegiatan</label>
-                                                <textarea name="description" class="form-control <?= session('errors.description') ? 'is-invalid' : '' ?>" rows="4" placeholder="Jelaskan peran dan tanggung jawab Anda..."><?= old('description', $expData->description) ?></textarea>
+                                                <textarea name="description"
+                                                    class="form-control <?= session('errors.description') ? 'is-invalid' : '' ?> <?= $profileIncomplete ? 'bg-light' : '' ?>"
+                                                    rows="4"
+                                                    placeholder="Jelaskan peran dan tanggung jawab Anda..."
+                                                    <?= $profileIncomplete ? 'disabled' : '' ?>><?= old('description', $expData->description) ?></textarea>
                                                 <?php if (session('errors.description')): ?>
                                                     <span class="invalid-feedback d-block"><?= session('errors.description') ?></span>
                                                 <?php endif; ?>
@@ -451,16 +494,22 @@ $pagedExperiences = array_slice($allExperiences, $offset, $perPage);
                                             <button type="button" class="btn btn-outline-secondary px-2 px-sm-4 font-weight-semibold btn-modal-batal" data-dismiss="modal">
                                                 Batal
                                             </button>
-                                            <button type="submit" class="btn btn-primary px-2 px-sm-4 font-weight-bold shadow-sm btn-modal-simpan">
-                                                <i class="fa fa-check-circle mr-1.5"></i> Simpan Perubahan
-                                            </button>
+
+                                            <?php if ($profileIncomplete): ?>
+                                                <button type="button" class="btn btn-primary px-2 px-sm-4 font-weight-bold shadow-sm btn-modal-simpan" onclick="handleIncompleteProfileUpdate()">
+                                                    <i class="fa fa-check-circle mr-1.5"></i> Simpan Perubahan
+                                                </button>
+                                            <?php else: ?>
+                                                <button type="submit" class="btn btn-primary px-2 px-sm-4 font-weight-bold shadow-sm btn-modal-simpan">
+                                                    <i class="fa fa-check-circle mr-1.5"></i> Simpan Perubahan
+                                                </button>
+                                            <?php endif; ?>
                                         </div>
                                     </form>
 
                                 </div>
                             </div>
                         </div>
-
                     <?php endforeach; ?>
                 </div>
 
@@ -550,8 +599,7 @@ $pagedExperiences = array_slice($allExperiences, $offset, $perPage);
         </div>
     </div>
 </div>
-
-<div class="modal fade" id="modalAddExperience" tabindex="-1" role="dialog" aria-labelledby="modalAddExperienceLabel" aria-hidden="true">
+<div class="modal fade modal-main-content" id="modalAddExperience" tabindex="-1" role="dialog" aria-labelledby="modalAddExperienceLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content border-0 shadow-lg rounded-lg overflow-hidden">
 
@@ -568,8 +616,15 @@ $pagedExperiences = array_slice($allExperiences, $offset, $perPage);
             </div>
 
             <div class="px-3 px-md-4 mt-3 text-muted small d-flex align-items-center gap-2">
-                <i class="fa fa-info-circle text-primary mr-1.5"></i>
-                <p class="p-0 m-0">Lengkapi formulir di bawah ini. Tanda (<span class="text-danger font-weight-bold mx-0.5">*</span>) menunjukkan bidang yang wajib diisi.</p>
+                <?php if ($profileIncomplete): ?>
+                    <p class="py-2 px-3 m-0 alert alert-danger w-100 text-justify text-sm-start">
+                        <i class="fa fa-info-circle mr-1"></i>
+                        <span class="font-weight-bold">Profil Anda belum lengkap. Silakan lengkapi profil Anda terlebih dahulu.</span>
+                    </p>
+                <?php else: ?>
+                    <i class="fa fa-info-circle text-primary mr-1.5"></i>
+                    <p class="p-0 m-0">Lengkapi formulir di bawah ini. Tanda (<span class="text-danger font-weight-bold mx-0.5">*</span>) menunjukkan bidang yang wajib diisi.</p>
+                <?php endif; ?>
             </div>
 
             <form action="<?= base_url('student/experiences/store') ?>" method="POST" class="needs-validation">
@@ -579,7 +634,11 @@ $pagedExperiences = array_slice($allExperiences, $offset, $perPage);
                     <div class="row">
                         <div class="col-12 col-md-6 mb-3">
                             <label class="font-weight-bold text-small-c text-dark">Judul Peran / Posisi <span class="text-danger">*</span></label>
-                            <input type="text" name="title" class="form-control <?= session('errors.title') ? 'is-invalid' : '' ?>" placeholder="Contoh: Ketua Himpunan / Frontend Dev" value="<?= old('title') ?>">
+                            <input type="text" name="title"
+                                class="form-control <?= session('errors.title') ? 'is-invalid' : '' ?> <?= $profileIncomplete ? 'bg-light' : '' ?>"
+                                placeholder="Contoh: Ketua Himpunan / Frontend Dev"
+                                value="<?= old('title') ?>"
+                                <?= $profileIncomplete ? 'disabled' : '' ?>>
                             <?php if (session('errors.title')): ?>
                                 <span class="invalid-feedback d-block"><?= session('errors.title') ?></span>
                             <?php endif; ?>
@@ -587,7 +646,11 @@ $pagedExperiences = array_slice($allExperiences, $offset, $perPage);
 
                         <div class="col-12 col-md-6 mb-3">
                             <label class="font-weight-bold text-small-c text-dark">Nama Instansi / Organisasi <span class="text-danger">*</span></label>
-                            <input type="text" name="organization_name" class="form-control <?= session('errors.organization_name') ? 'is-invalid' : '' ?>" placeholder="Contoh: BEM / PT. Tech Solutions" value="<?= old('organization_name') ?>">
+                            <input type="text" name="organization_name"
+                                class="form-control <?= session('errors.organization_name') ? 'is-invalid' : '' ?> <?= $profileIncomplete ? 'bg-light' : '' ?>"
+                                placeholder="Contoh: BEM / PT. Tech Solutions"
+                                value="<?= old('organization_name') ?>"
+                                <?= $profileIncomplete ? 'disabled' : '' ?>>
                             <?php if (session('errors.organization_name')): ?>
                                 <span class="invalid-feedback d-block"><?= session('errors.organization_name') ?></span>
                             <?php endif; ?>
@@ -597,38 +660,52 @@ $pagedExperiences = array_slice($allExperiences, $offset, $perPage);
                     <div class="row">
                         <div class="col-12 col-md-6 mb-3">
                             <label class="font-weight-bold text-small-c text-dark">Jenis Pengalaman <span class="text-danger">*</span></label>
-                            <select name="experience_type" class="form-control select2 <?= session('errors.experience_type') ? 'is-invalid' : '' ?>" style="width: 100%;">
-                                <option value="" disabled <?= old('experience_type') ? '' : 'selected' ?>>-- Pilih Jenis Pengalaman --</option>
-                                <?php foreach ($typeBadges as $key => $type): ?>
-                                    <option value="<?= $key ?>" <?= old('experience_type') === $key ? 'selected' : '' ?>>
-                                        <?= $type['label'] ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                            <?php if (session('errors.experience_type')): ?>
-                                <span class="invalid-feedback d-block"><?= session('errors.experience_type') ?></span>
+                            <?php if (!$profileIncomplete): ?>
+                                <select name="experience_type" class="form-control select2 <?= session('errors.experience_type') ? 'is-invalid' : '' ?>" style="width: 100%;">
+                                    <option value="" disabled <?= old('experience_type') ? '' : 'selected' ?>>-- Pilih Jenis Pengalaman --</option>
+                                    <?php foreach ($typeBadges as $key => $type): ?>
+                                        <option value="<?= $key ?>" <?= old('experience_type') === $key ? 'selected' : '' ?>>
+                                            <?= $type['label'] ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <?php if (session('errors.experience_type')): ?>
+                                    <span class="invalid-feedback d-block"><?= session('errors.experience_type') ?></span>
+                                <?php endif; ?>
+                            <?php else: ?>
+                                <select class="form-control select2 bg-light" disabled style="width: 100%;">
+                                    <option value="" selected disabled>-- Lengkapi profil Anda terlebih dahulu --</option>
+                                </select>
                             <?php endif; ?>
                         </div>
 
                         <div class="col-12 col-md-6 mb-3">
                             <label class="font-weight-bold text-small-c text-dark">Tahun Pelaksanaan <span class="text-danger">*</span></label>
-                            <select name="year_occurred" class="form-control select2 <?= session('errors.year_occurred') ? 'is-invalid' : '' ?>" style="width: 100%;">
-                                <option value="" disabled <?= old('year_occurred') ? '' : 'selected' ?>>-- Pilih Tahun --</option>
-                                <?php for ($y = $currentYear; $y >= 1990; $y--): ?>
-                                    <option value="<?= $y ?>" <?= old('year_occurred', $currentYear) == $y ? 'selected' : '' ?>>
-                                        <?= $y ?>
-                                    </option>
-                                <?php endfor; ?>
-                            </select>
-                            <?php if (session('errors.year_occurred')): ?>
-                                <span class="invalid-feedback d-block"><?= session('errors.year_occurred') ?></span>
+                            <?php if (!$profileIncomplete): ?>
+                                <select name="year_occurred" class="form-control select2 <?= session('errors.year_occurred') ? 'is-invalid' : '' ?>" style="width: 100%;">
+                                    <option value="" disabled <?= old('year_occurred') ? '' : 'selected' ?>>-- Pilih Tahun --</option>
+                                    <?php for ($y = $currentYear; $y >= 1990; $y--): ?>
+                                        <option value="<?= $y ?>" <?= old('year_occurred', $currentYear) == $y ? 'selected' : '' ?>>
+                                            <?= $y ?>
+                                        </option>
+                                    <?php endfor; ?>
+                                </select>
+                                <?php if (session('errors.year_occurred')): ?>
+                                    <span class="invalid-feedback d-block"><?= session('errors.year_occurred') ?></span>
+                                <?php endif; ?>
+                            <?php else: ?>
+                                <select class="form-control select2 bg-light" disabled style="width: 100%;">
+                                    <option value="" selected disabled>-- Lengkapi profil Anda terlebih dahulu --</option>
+                                </select>
                             <?php endif; ?>
                         </div>
                     </div>
 
                     <div class="form-group mb-3 p-3 bg-light rounded-lg border-0">
                         <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="is_current_add" name="is_current" value="1" <?= old('is_current') ? 'checked' : '' ?>>
+                            <input type="checkbox" class="custom-control-input" id="is_current_add" name="is_current" value="1"
+                                <?= old('is_current') ? 'checked' : '' ?>
+                                <?= $profileIncomplete ? 'disabled' : '' ?>>
                             <label class="custom-control-label font-weight-semibold text-dark text-xs-c cursor-pointer" for="is_current_add">
                                 Saya masih aktif / kegiatan ini berlangsung sampai sekarang
                             </label>
@@ -637,7 +714,11 @@ $pagedExperiences = array_slice($allExperiences, $offset, $perPage);
 
                     <div class="form-group mb-0">
                         <label class="font-weight-bold text-small-c text-dark">Deskripsi Kegiatan</label>
-                        <textarea name="description" class="form-control <?= session('errors.description') ? 'is-invalid' : '' ?>" rows="4" placeholder="Jelaskan secara singkat tugas dan tanggung jawab Anda..."><?= old('description') ?></textarea>
+                        <textarea name="description"
+                            class="form-control <?= session('errors.description') ? 'is-invalid' : '' ?> <?= $profileIncomplete ? 'bg-light' : '' ?>"
+                            rows="4"
+                            placeholder="Jelaskan secara singkat tugas dan tanggung jawab Anda..."
+                            <?= $profileIncomplete ? 'disabled' : '' ?>><?= old('description') ?></textarea>
                         <?php if (session('errors.description')): ?>
                             <span class="invalid-feedback d-block"><?= session('errors.description') ?></span>
                         <?php endif; ?>
@@ -648,9 +729,16 @@ $pagedExperiences = array_slice($allExperiences, $offset, $perPage);
                     <button type="button" class="btn btn-outline-secondary px-2 px-sm-4 font-weight-semibold btn-modal-batal" data-dismiss="modal">
                         Batal
                     </button>
-                    <button type="submit" class="btn btn-primary px-2 px-sm-4 font-weight-bold shadow-sm btn-modal-simpan">
-                        <i class="fa fa-check-circle mr-1.5"></i> Simpan Data
-                    </button>
+
+                    <?php if ($profileIncomplete): ?>
+                        <button type="button" class="btn btn-primary px-2 px-sm-4 font-weight-bold shadow-sm btn-modal-simpan" onclick="handleIncompleteProfileSubmit()">
+                            <i class="fa fa-check-circle mr-1.5"></i> Simpan Data
+                        </button>
+                    <?php else: ?>
+                        <button type="submit" class="btn btn-primary px-2 px-sm-4 font-weight-bold shadow-sm btn-modal-simpan">
+                            <i class="fa fa-check-circle mr-1.5"></i> Simpan Data
+                        </button>
+                    <?php endif; ?>
                 </div>
             </form>
 

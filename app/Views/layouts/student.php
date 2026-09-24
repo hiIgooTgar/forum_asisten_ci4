@@ -243,6 +243,7 @@
     <script src="<?= base_url('assets/layout/js/custom/cropper.js'); ?>"></script>
     <script src="<?= base_url('assets/layout/js/custom/wilayah.js'); ?>"></script>
 
+    <script src="<?= base_url('assets/layout/js/student/layout-student.js'); ?>"></script>
     <script src="<?= base_url('assets/layout/js/student/profile.js'); ?>"></script>
     <script src="<?= base_url('assets/layout/js/student/experience.js'); ?>"></script>
     <script src="<?= base_url('assets/layout/js/student/taken-courses.js'); ?>"></script>

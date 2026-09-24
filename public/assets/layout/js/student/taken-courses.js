@@ -16,24 +16,3 @@ function confirmDeleteCourse(deleteUrl, courseName, programName) {
     method: "POST",
   });
 }
-
-function handleIncompleteProfileSubmitUpdate() {
-  var $modal = $(".modal-main-content");
-  if ($modal.hasClass("show")) {
-    $modal
-      .one("hidden.bs.modal", function () {
-        showWarningModal({
-          title: "Profil Belum Lengkap",
-          text: "Silakan lengkapi seluruh data profil dan unggah foto profil Anda terlebih dahulu sebelum mengubah/menambah data.",
-          btnText: "Mengerti",
-        });
-      })
-      .modal("hide");
-  } else {
-    showWarningModal({
-      title: "Profil Belum Lengkap",
-      text: "Silakan lengkapi seluruh data profil dan unggah foto profil Anda terlebih dahulu sebelum mengubah/menambah data.",
-      btnText: "Mengerti",
-    });
-  }
-}
