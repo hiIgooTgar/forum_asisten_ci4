@@ -3,6 +3,7 @@
 <?= $this->section('content') ?>
 <?php
 
+$canVerify         = $canVerify ?? false;
 $faculties     = $faculties ?? [];
 $studyPrograms = $studyPrograms ?? [];
 $classGroups   = $classGroups ?? [];
@@ -48,6 +49,27 @@ $profileImg = (!empty($student->profile) && file_exists(FCPATH . 'uploads/profil
         <li class="breadcrumb-item active text-primary font-weight-semibold">Profil Saya</li>
     </ul>
 </div>
+
+<?php if ($canVerify): ?>
+    <div class="alert alert-primary border-0 shadow-sm p-3 p-md-4 mb-4 rounded-lg" style="background-color: #ffffff; border-left: 4px solid #0a2481 !important;">
+        <div class="d-flex align-items-start" style="gap: 0.9rem">
+            <div class="text-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px; background-color: rgba(10, 36, 129, 0.15);">
+                <i class="fa fa-check-circle fa-lg"></i>
+            </div>
+            <div class="flex-grow-1">
+                <h6 class="font-weight-bold text-primary mb-1" style="font-size: 0.95rem;">
+                    Berkas & Persyaratan Lengkap!
+                </h6>
+                <p class="text-dark text-small-c mb-2" style="line-height: 1.5;">
+                    Seluruh profil, mata kuliah pilihan, dan 6 dokumen persyaratan Anda telah lengkap. Silakan lakukan verifikasi akhir pendaftaran Anda sekarang.
+                </p>
+                <a href="<?= base_url('student/verification'); ?>" class="btn btn-sm btn-primary px-3 font-weight-bold shadow-sm rounded">
+                    <i class="fa fa-shield-alt mr-1"></i> Verifikasi Pendaftaran Sekarang
+                </a>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
 
 <div class="row">
     <div class="col-xl-3 col-lg-4 col-12 mb-4">

@@ -12,6 +12,8 @@ if (!isset($student) || empty($student)) {
 }
 
 $student = (object) $student;
+$profileIncomplete = $profileIncomplete ?? false;
+$canVerify         = $canVerify ?? false;
 
 $profileImg = (!empty($student->profile) && file_exists(FCPATH . 'uploads/profile_student/' . $student->profile))
     ? base_url('uploads/profile_student/' . $student->profile)
@@ -114,6 +116,45 @@ $pagedExperiences = array_slice($allExperiences, $offset, $perPage);
         <li class="breadcrumb-item active text-primary font-weight-semibold">Pengalaman</li>
     </ul>
 </div>
+
+<?php if ($profileIncomplete): ?>
+    <div class="alert alert-primary border-0 shadow-sm p-3 p-md-4 mb-4 rounded-lg" style="background-color: #ffffff; border-left: 4px solid #0a2481 !important;">
+        <div class="d-flex align-items-start" style="gap: 0.9rem">
+            <div class="text-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px; background-color: rgba(10, 36, 129, 0.15);">
+                <i class="fa fa-exclamation-triangle fa-lg"></i>
+            </div>
+            <div>
+                <h6 class="font-weight-bold text-dark mb-1" style="font-size: 0.95rem;">
+                    Profil Belum Lengkap!
+                </h6>
+                <p class="text-secondary text-small-c mb-0" style="line-height: 1.5;">
+                    Anda belum dapat mengunggah berkas pendaftaran karena terdapat data profil pengguna yang masih kosong. Silakan lengkapi profil Anda terlebih dahulu pada menu Biodata Mahasiswa bagian <a href="<?= base_url('student/profile'); ?>" class="text-primary font-weight-bold">Profil Diri</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
+
+<?php if ($canVerify): ?>
+    <div class="alert alert-primary border-0 shadow-sm p-3 p-md-4 mb-4 rounded-lg" style="background-color: #ffffff; border-left: 4px solid #0a2481 !important;">
+        <div class="d-flex align-items-start" style="gap: 0.9rem">
+            <div class="text-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px; background-color: rgba(10, 36, 129, 0.15);">
+                <i class="fa fa-check-circle fa-lg"></i>
+            </div>
+            <div class="flex-grow-1">
+                <h6 class="font-weight-bold text-primary mb-1" style="font-size: 0.95rem;">
+                    Berkas & Persyaratan Lengkap!
+                </h6>
+                <p class="text-dark text-small-c mb-2" style="line-height: 1.5;">
+                    Seluruh profil, mata kuliah pilihan, dan 6 dokumen persyaratan Anda telah lengkap. Silakan lakukan verifikasi akhir pendaftaran Anda sekarang.
+                </p>
+                <a href="<?= base_url('student/verification'); ?>" class="btn btn-sm btn-primary px-3 font-weight-bold shadow-sm rounded">
+                    <i class="fa fa-shield-alt mr-1"></i> Verifikasi Pendaftaran Sekarang
+                </a>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
 
 <?php if (!empty($validationErrors) && is_array($validationErrors)): ?>
     <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm p-3 p-md-4 mb-4 position-relative overflow-hidden" role="alert" style="background-color: #fdf2f2; border-left: 4px solid #e53e3e !important; border-top: 1px solid rgba(229, 62, 62, 0.5) !important; border-right: 1px solid rgba(229, 62, 62, 0.5) !important; border-bottom: 1px solid rgba(229, 62, 62, 0.5) !important;">

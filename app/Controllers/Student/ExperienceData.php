@@ -5,16 +5,22 @@ namespace App\Controllers\Student;
 use App\Controllers\BaseController;
 use App\Models\UserExperienceModel;
 use App\Models\UserModel;
+use App\Models\TakenCourseModel;
+use App\Models\UserDocumentModel;
 
 class ExperienceData extends BaseController
 {
     protected $experienceModel;
     protected $userModel;
+    protected $takenCourseModel;
+    protected $userDocumentModel;
 
     public function __construct()
     {
         $this->experienceModel = new UserExperienceModel();
         $this->userModel        = new UserModel();
+        $this->takenCourseModel = new TakenCourseModel();
+        $this->userDocumentModel = new UserDocumentModel();
     }
 
     public function index()
@@ -29,18 +35,85 @@ class ExperienceData extends BaseController
         $student     = $this->userModel->getStudentProfile($userId);
         $experiences = $this->experienceModel->getByUserId($userId);
 
+        $requiredFields = [
+            'student_number',
+            'full_name',
+            'email',
+            'phone_number',
+            'faculty_id',
+            'study_program_id',
+            'place_of_birth',
+            'date_of_birth',
+            'gender',
+            'province',
+            'regency',
+            'subdistrict',
+            'village',
+            'address',
+            'gpa',
+        ];
+
+        $profileIncomplete = false;
+        foreach ($requiredFields as $field) {
+            if (empty($student->$field)) {
+                $profileIncomplete = true;
+                break;
+            }
+        }
+
+        if (!$profileIncomplete) {
+            $profilePhoto = trim($student->profile ?? '');
+            if (empty($profilePhoto) || $profilePhoto === 'profile-default.png') {
+                $profileIncomplete = true;
+            }
+        }
+
+        $takenCoursesCount = $this->takenCourseModel->countUserTakenCourses($userId);
+        $hasTakenCourses   = ($takenCoursesCount > 0);
+
+        $document = $this->userDocumentModel->getDocumentByUserId($userId);
+        $allDocumentsUploaded = false;
+
+        if ($document) {
+            $docFields = [
+                'student_card_file',
+                'application_letter_file',
+                'cv_file',
+                'latest_transcript_file',
+                'statement_letter_file',
+                'registration_form_file'
+            ];
+
+            $uploadedCount = 0;
+            foreach ($docFields as $field) {
+                if (!empty($document->$field)) {
+                    $uploadedCount++;
+                }
+            }
+
+            $allDocumentsUploaded = ($uploadedCount === count($docFields));
+        }
+
+        $canVerify = (!$profileIncomplete && $hasTakenCourses && $allDocumentsUploaded);
+
         $this->logActivity(
             'VIEW_EXPERIENCES',
             'Mahasiswa melihat daftar pengalaman',
-            ['student_number' => $studentNumber],
+            [
+                'student_number'     => $studentNumber,
+                'profile_incomplete' => $profileIncomplete,
+                'can_verify'         => $canVerify,
+            ],
             'student'
         );
 
         $data = [
-            'title'       => 'Pengalaman & Portofolio',
-            'student'     => $student,
-            'experiences' => $experiences,
-            'activeTab'   => 'experience',
+            'title'             => 'Pengalaman & Portofolio',
+            'student'           => $student,
+            'experiences'       => $experiences,
+            'profileIncomplete' => $profileIncomplete,
+            'canVerify'         => $canVerify,
+            'activeTab'         => 'experience',
         ];
 
         return view('student/experience/index', $data);

@@ -3,6 +3,7 @@
 <?= $this->section('content') ?>
 <?php
 $profileIncomplete = $profileIncomplete ?? false;
+$canVerify         = $canVerify ?? false;
 $availableCourses  = $availableCourses ?? [];
 
 if (!isset($student) || empty($student)) {
@@ -76,6 +77,27 @@ $pagedTaken = array_slice($allTaken, $offset, $perPage);
                 <p class="text-secondary text-small-c mb-0" style="line-height: 1.5;">
                     Anda belum dapat menambah pendaftaran mata kuliah karena terdapat data profil pengguna yang masih kosong. Silakan lengkapi profil Anda terlebih dahulu pada menu Biodata Mahasiswa bagian <a href="<?= base_url('student/profile'); ?>" class="text-primary" style="font-weight: 500;">Profil Diri</a>.
                 </p>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
+
+<?php if ($canVerify): ?>
+    <div class="alert alert-primary border-0 shadow-sm p-3 p-md-4 mb-4 rounded-lg" style="background-color: #ffffff; border-left: 4px solid #0a2481 !important;">
+        <div class="d-flex align-items-start" style="gap: 0.9rem">
+            <div class="text-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px; background-color: rgba(10, 36, 129, 0.15);">
+                <i class="fa fa-check-circle fa-lg"></i>
+            </div>
+            <div class="flex-grow-1">
+                <h6 class="font-weight-bold text-primary mb-1" style="font-size: 0.95rem;">
+                    Berkas & Persyaratan Lengkap!
+                </h6>
+                <p class="text-dark text-small-c mb-2" style="line-height: 1.5;">
+                    Seluruh profil, mata kuliah pilihan, dan 6 dokumen persyaratan Anda telah lengkap. Silakan lakukan verifikasi akhir pendaftaran Anda sekarang.
+                </p>
+                <a href="<?= base_url('student/verification'); ?>" class="btn btn-sm btn-primary px-3 font-weight-bold shadow-sm rounded">
+                    <i class="fa fa-shield-alt mr-1"></i> Verifikasi Pendaftaran Sekarang
+                </a>
             </div>
         </div>
     </div>
@@ -280,7 +302,7 @@ $pagedTaken = array_slice($allTaken, $offset, $perPage);
                             </div>
                         </div>
 
-                        <div class="modal fade" id="modalEditCourse<?= $row->id ?>" tabindex="-1" role="dialog" aria-hidden="true">
+                        <div class="modal fade modal-main-content" id="modalEditCourse<?= $row->id ?>" tabindex="-1" role="dialog" aria-hidden="true">
                             <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
                                 <div class="modal-content border-0 shadow-lg rounded-lg overflow-hidden">
                                     <div class="modal-header bg-light border-bottom-0 pb-3 pt-4 px-3 px-md-4 d-flex align-items-center justify-content-between">
@@ -377,9 +399,15 @@ $pagedTaken = array_slice($allTaken, $offset, $perPage);
 
                                         <div class="modal-footer bg-light px-3 px-md-4 pt-3 pb-4 border-top-0 d-flex flex-row justify-content-end align-items-center gap-2">
                                             <button type="button" class="btn btn-outline-secondary btn-modal-batal px-4 font-weight-semibold" data-dismiss="modal">Batal</button>
-                                            <button type="submit" class="btn btn-primary btn-modal-simpan px-4 font-weight-bold shadow-sm" <?= $profileIncomplete ? 'disabled' : '' ?>>
-                                                <i class="fa fa-check-circle mr-1.5"></i> Simpan
-                                            </button>
+                                            <?php if ($profileIncomplete): ?>
+                                                <button type="button" class="btn btn-primary btn-modal-simpan px-4 font-weight-bold shadow-sm" onclick="handleIncompleteProfileSubmitUpdate()">
+                                                    <i class="fa fa-check-circle mr-1.5"></i> Simpan Data
+                                                </button>
+                                            <?php else: ?>
+                                                <button type="submit" class="btn btn-primary btn-modal-simpan px-4 font-weight-bold shadow-sm">
+                                                    <i class="fa fa-check-circle mr-1.5"></i> Simpan Data
+                                                </button>
+                                            <?php endif; ?>
                                         </div>
                                     </form>
                                 </div>
@@ -474,7 +502,7 @@ $pagedTaken = array_slice($allTaken, $offset, $perPage);
     </div>
 </div>
 
-<div class="modal fade" id="modalAddCourse" tabindex="-1" role="dialog" aria-labelledby="modalAddCourseLabel" aria-hidden="true">
+<div class="modal fade modal-main-content" id="modalAddCourse" tabindex="-1" role="dialog" aria-labelledby="modalAddCourseLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content border-0 shadow-lg rounded-lg overflow-hidden">
             <div class="modal-header bg-light border-bottom-0 pb-3 pt-4 px-3 px-md-4 d-flex align-items-center justify-content-between">
@@ -569,9 +597,16 @@ $pagedTaken = array_slice($allTaken, $offset, $perPage);
 
                 <div class="modal-footer bg-light px-3 px-md-4 pt-3 pb-4 border-top-0 d-flex flex-row justify-content-end align-items-center gap-2">
                     <button type="button" class="btn btn-outline-secondary btn-modal-batal px-4 font-weight-semibold" data-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary btn-modal-simpan px-4 font-weight-bold shadow-sm" <?= $profileIncomplete ? 'disabled' : '' ?>>
-                        <i class="fa fa-check-circle mr-1.5"></i> Simpan Data
-                    </button>
+
+                    <?php if ($profileIncomplete): ?>
+                        <button type="button" class="btn btn-primary btn-modal-simpan px-4 font-weight-bold shadow-sm" onclick="handleIncompleteProfileSubmitUpdate()">
+                            <i class="fa fa-check-circle mr-1.5"></i> Simpan Data
+                        </button>
+                    <?php else: ?>
+                        <button type="submit" class="btn btn-primary btn-modal-simpan px-4 font-weight-bold shadow-sm">
+                            <i class="fa fa-check-circle mr-1.5"></i> Simpan Data
+                        </button>
+                    <?php endif; ?>
                 </div>
             </form>
         </div>

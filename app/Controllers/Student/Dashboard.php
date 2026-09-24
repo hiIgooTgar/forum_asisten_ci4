@@ -4,14 +4,20 @@ namespace App\Controllers\Student;
 
 use App\Controllers\BaseController;
 use App\Models\student\StudentDashboardModel;
+use App\Models\TakenCourseModel;
+use App\Models\UserDocumentModel;
 
 class Dashboard extends BaseController
 {
     protected $dashboardModel;
+    protected $takenCourseModel;
+    protected $userDocumentModel;
 
     public function __construct()
     {
         $this->dashboardModel = new StudentDashboardModel();
+        $this->takenCourseModel = new TakenCourseModel();
+        $this->userDocumentModel = new UserDocumentModel();
     }
 
     public function index()
@@ -30,14 +36,76 @@ class Dashboard extends BaseController
             return redirect()->to('/auth/login')->with('error', 'Data mahasiswa tidak ditemukan.');
         }
 
+        $requiredFields = [
+            'student_number',
+            'full_name',
+            'email',
+            'phone_number',
+            'faculty_id',
+            'study_program_id',
+            'place_of_birth',
+            'date_of_birth',
+            'gender',
+            'province',
+            'regency',
+            'subdistrict',
+            'village',
+            'address',
+            'gpa',
+        ];
+
+        $profileIncomplete = false;
+        foreach ($requiredFields as $field) {
+            if (empty($student->$field)) {
+                $profileIncomplete = true;
+                break;
+            }
+        }
+
+        if (!$profileIncomplete) {
+            $profilePhoto = trim($student->profile ?? '');
+            if (empty($profilePhoto) || $profilePhoto === 'profile-default.png') {
+                $profileIncomplete = true;
+            }
+        }
+
+        $takenCoursesCount = $this->takenCourseModel->countUserTakenCourses((int)$userId);
+        $hasTakenCourses   = ($takenCoursesCount > 0);
+
+        $allDocumentsUploaded = false;
+        if ($documents) {
+            $docFields = [
+                'student_card_file',
+                'application_letter_file',
+                'cv_file',
+                'latest_transcript_file',
+                'statement_letter_file',
+                'registration_form_file'
+            ];
+
+            $uploadedCount = 0;
+            foreach ($docFields as $field) {
+                if (!empty($documents->$field)) {
+                    $uploadedCount++;
+                }
+            }
+
+            $allDocumentsUploaded = ($uploadedCount === count($docFields));
+        }
+
+        $canVerify = (!$profileIncomplete && $hasTakenCourses && $allDocumentsUploaded);
+
         $completionPercentage = $this->calculateProfileCompletion($student, $documents);
+
         $this->logActivity(
             'VIEW_DASHBOARD',
             'Mahasiswa melihat halaman dashboard utama',
             [
                 'student_number'        => $studentNumber,
                 'completion_percentage' => $completionPercentage,
-            ]
+                'can_verify'            => $canVerify,
+            ],
+            'student'
         );
 
         $data = [
@@ -46,6 +114,7 @@ class Dashboard extends BaseController
             'documents'             => $documents,
             'active_event'          => $this->dashboardModel->getActiveEvent(),
             'completion_percentage' => $completionPercentage,
+            'canVerify'             => $canVerify,
         ];
 
         return view('student/dashboard', $data);

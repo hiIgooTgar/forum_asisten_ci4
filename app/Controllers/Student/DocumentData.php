@@ -34,6 +34,10 @@ class DocumentData extends BaseController
             'place_of_birth',
             'date_of_birth',
             'gender',
+            'province',
+            'regency',
+            'subdistrict',
+            'village',
             'address',
             'gpa',
             'profile',
@@ -82,7 +86,6 @@ class DocumentData extends BaseController
         }
 
         $student = $this->userModel->getStudentProfile($userId);
-        $profileIncomplete = false;
 
         $requiredFields = [
             'student_number',
@@ -94,11 +97,16 @@ class DocumentData extends BaseController
             'place_of_birth',
             'date_of_birth',
             'gender',
+            'province',
+            'regency',
+            'subdistrict',
+            'village',
             'address',
             'gpa',
             'profile',
         ];
 
+        $profileIncomplete = false;
         foreach ($requiredFields as $field) {
             if (empty($student->$field)) {
                 $profileIncomplete = true;
@@ -113,10 +121,35 @@ class DocumentData extends BaseController
             }
         }
 
+
         $takenCoursesCount = $this->takenCourseModel->countUserTakenCourses($userId);
         $hasNoTakenCourses = ($takenCoursesCount === 0);
 
         $document = $this->userDocumentModel->getDocumentByUserId($userId);
+        $allDocumentsUploaded = false;
+
+        if ($document) {
+            $docFields = [
+                'student_card_file',
+                'application_letter_file',
+                'cv_file',
+                'latest_transcript_file',
+                'statement_letter_file',
+                'registration_form_file'
+            ];
+
+            $uploadedCount = 0;
+            foreach ($docFields as $field) {
+                if (!empty($document->$field)) {
+                    $uploadedCount++;
+                }
+            }
+
+            $allDocumentsUploaded = ($uploadedCount === count($docFields));
+        }
+
+        $canVerify = (!$profileIncomplete && !$hasNoTakenCourses && $allDocumentsUploaded);
+
         $this->logActivity(
             'VIEW_USER_DOCUMENTS',
             'Mahasiswa melihat halaman kelengkapan berkas pendaftaran',
@@ -124,6 +157,7 @@ class DocumentData extends BaseController
                 'student_number'     => $studentNumber,
                 'profile_incomplete' => $profileIncomplete,
                 'has_taken_courses'  => !$hasNoTakenCourses,
+                'can_verify'         => $canVerify,
             ],
             'student'
         );
@@ -134,6 +168,7 @@ class DocumentData extends BaseController
             'document'          => $document,
             'profileIncomplete' => $profileIncomplete,
             'hasNoTakenCourses' => $hasNoTakenCourses,
+            'canVerify'         => $canVerify,
             'activeTab'         => 'user_documents',
         ];
 

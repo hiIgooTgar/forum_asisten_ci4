@@ -4,15 +4,21 @@ namespace App\Controllers\Student;
 
 use App\Controllers\BaseController;
 use App\Models\UserModel;
+use App\Models\TakenCourseModel;
+use App\Models\UserDocumentModel;
 
 class ProfileData extends BaseController
 {
     protected $userModel;
     protected $db;
+    protected $takenCourseModel;
+    protected $userDocumentModel;
 
     public function __construct()
     {
         $this->userModel = new UserModel();
+        $this->takenCourseModel = new TakenCourseModel();
+        $this->userDocumentModel = new UserDocumentModel();
         $this->db        = \Config\Database::connect();
     }
 
@@ -30,6 +36,66 @@ class ProfileData extends BaseController
         if (!$student) {
             return redirect()->to('/auth/login')->with('error', 'Data mahasiswa tidak ditemukan.');
         }
+
+        $requiredFields = [
+            'student_number',
+            'full_name',
+            'email',
+            'phone_number',
+            'faculty_id',
+            'study_program_id',
+            'place_of_birth',
+            'date_of_birth',
+            'gender',
+            'province',
+            'regency',
+            'subdistrict',
+            'village',
+            'address',
+            'gpa',
+        ];
+
+        $profileIncomplete = false;
+        foreach ($requiredFields as $field) {
+            if (empty($student->$field)) {
+                $profileIncomplete = true;
+                break;
+            }
+        }
+
+        if (!$profileIncomplete) {
+            $profilePhoto = trim($student->profile ?? '');
+            if (empty($profilePhoto) || $profilePhoto === 'profile-default.png') {
+                $profileIncomplete = true;
+            }
+        }
+
+        $takenCoursesCount = $this->takenCourseModel->countUserTakenCourses($userId);
+        $hasTakenCourses   = ($takenCoursesCount > 0);
+        $document = $this->userDocumentModel->getDocumentByUserId($userId);
+        $allDocumentsUploaded = false;
+
+        if ($document) {
+            $docFields = [
+                'student_card_file',
+                'application_letter_file',
+                'cv_file',
+                'latest_transcript_file',
+                'statement_letter_file',
+                'registration_form_file'
+            ];
+
+            $uploadedCount = 0;
+            foreach ($docFields as $field) {
+                if (!empty($document->$field)) {
+                    $uploadedCount++;
+                }
+            }
+
+            $allDocumentsUploaded = ($uploadedCount === count($docFields));
+        }
+
+        $canVerify = (!$profileIncomplete && $hasTakenCourses && $allDocumentsUploaded);
 
         $selectedFacultyId = old('faculty_id', $student->faculty_id ?? null);
         $selectedProgramId = old('study_program_id', $student->study_program_id ?? null);
@@ -58,6 +124,7 @@ class ProfileData extends BaseController
             [
                 'tab'            => $activeTab,
                 'student_number' => $studentNumber,
+                'can_verify'     => $canVerify,
             ],
             'student'
         );
@@ -69,6 +136,7 @@ class ProfileData extends BaseController
             'studyPrograms' => $studyPrograms,
             'classGroups'   => $classGroups,
             'activeTab'     => $activeTab,
+            'canVerify'     => $canVerify,
         ];
 
         return view('student/profile/index', $data);
@@ -406,7 +474,10 @@ class ProfileData extends BaseController
                 mkdir($realUploadPath, 0755, true);
             }
 
-            $fileName = 'profile_' . $studentNumber . '_' . time() . '_' . $userId . '.png';
+            $randomString = random_string('alnum', 32);
+            $dateTimeNow  = date('Ymd_His');
+
+            $fileName = 'profile_' . $studentNumber . '_' . $randomString . '_' . $dateTimeNow . '-' . $userId . '.png';
 
             if (!empty($currentProfilePhoto) && $currentProfilePhoto !== 'profile-default.png') {
                 if (file_exists($baseUploadPath . $currentProfilePhoto)) {

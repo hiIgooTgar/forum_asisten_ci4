@@ -6,18 +6,21 @@ use App\Controllers\BaseController;
 use App\Models\TakenCourseModel;
 use App\Models\CourseModel;
 use App\Models\UserModel;
+use App\Models\userDocumentModel;
 
 class TakenCourseData extends BaseController
 {
     protected $takenCourseModel;
     protected $courseModel;
     protected $userModel;
+    protected $userDocumentModel;
 
     public function __construct()
     {
-        $this->takenCourseModel = new TakenCourseModel();
-        $this->courseModel      = new CourseModel();
-        $this->userModel        = new UserModel();
+        $this->takenCourseModel  = new TakenCourseModel();
+        $this->courseModel       = new CourseModel();
+        $this->userModel         = new UserModel();
+        $this->userDocumentModel = new userDocumentModel();
     }
     public function index()
     {
@@ -29,7 +32,6 @@ class TakenCourseData extends BaseController
         }
 
         $student = $this->userModel->getStudentProfile($userId);
-        $profileIncomplete = false;
 
         $requiredFields = [
             'student_number',
@@ -49,6 +51,7 @@ class TakenCourseData extends BaseController
             'gpa',
         ];
 
+        $profileIncomplete = false;
         foreach ($requiredFields as $field) {
             if (empty($student->$field)) {
                 $profileIncomplete = true;
@@ -64,10 +67,37 @@ class TakenCourseData extends BaseController
         }
 
         $takenCourses     = $this->takenCourseModel->getTakenCoursesByUser($userId);
+        $hasTakenCourses  = count($takenCourses) > 0;
+
         $availableCourses = [];
         if (!$profileIncomplete && !empty($student->faculty_id)) {
             $availableCourses = $this->courseModel->getCoursesByFaculty($student->faculty_id);
         }
+
+        $document = $this->userDocumentModel->getDocumentByUserId($userId);
+        $allDocumentsUploaded = false;
+
+        if ($document) {
+            $docFields = [
+                'student_card_file',
+                'application_letter_file',
+                'cv_file',
+                'latest_transcript_file',
+                'statement_letter_file',
+                'registration_form_file'
+            ];
+
+            $uploadedCount = 0;
+            foreach ($docFields as $field) {
+                if (!empty($document->$field)) {
+                    $uploadedCount++;
+                }
+            }
+
+            $allDocumentsUploaded = ($uploadedCount === count($docFields));
+        }
+
+        $canVerify = (!$profileIncomplete && $hasTakenCourses && $allDocumentsUploaded);
 
         $this->logActivity(
             'VIEW_TAKEN_COURSES',
@@ -76,6 +106,7 @@ class TakenCourseData extends BaseController
                 'student_number'     => $studentNumber,
                 'profile_incomplete' => $profileIncomplete,
                 'taken_count'        => count($takenCourses),
+                'can_verify'         => $canVerify,
             ],
             'student'
         );
@@ -86,6 +117,7 @@ class TakenCourseData extends BaseController
             'takenCourses'      => $takenCourses,
             'availableCourses'  => $availableCourses,
             'profileIncomplete' => $profileIncomplete,
+            'canVerify'         => $canVerify,
             'activeTab'         => 'taken_courses',
         ];
 
