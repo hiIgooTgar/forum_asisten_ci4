@@ -60,9 +60,9 @@ $verificationStatus = $student->verification_status ?? '';
                 <i class="fa fa-circle-check fa-lg"></i>
             </div>
             <div>
-                <h5 class="font-weight-bold text-dark mb-1">
+                <h6 class="font-weight-bold text-dark mb-1" style="font-size: 0.95rem;">
                     Data Anda Sudah Diverifikasi
-                </h5>
+                </h6>
                 <p class="text-secondary text-small-c mb-0" style="line-height: 1.5;">
                     Verifikasi data Anda telah kami terima. Tunggu pengumuman seleksi administrasi dan persiapkan presentasi / projek mengenai materi mata kuliah yang didaftarkan untuk dipergunakan dalam tahap selanjutnya. Terima kasih.
                 </p>

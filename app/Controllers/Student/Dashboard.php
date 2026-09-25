@@ -93,7 +93,8 @@ class Dashboard extends BaseController
             $allDocumentsUploaded = ($uploadedCount === count($docFields));
         }
 
-        $canVerify = (!$profileIncomplete && $hasTakenCourses && $allDocumentsUploaded);
+        $isAlreadyVerified = isset($student->verification_status) && $student->verification_status === 'completed';
+        $canVerify = (!$profileIncomplete && $hasTakenCourses && $allDocumentsUploaded && !$isAlreadyVerified);
 
         $completionPercentage = $this->calculateProfileCompletion($student, $documents);
 
@@ -108,6 +109,9 @@ class Dashboard extends BaseController
             'student'
         );
 
+        $appProfileModel = new \App\Models\CompanyApplicationModel();
+        $appProfile = $appProfileModel->first();
+
         $data = [
             'title'                 => 'Dashboard Student',
             'student'               => $student,
@@ -115,6 +119,8 @@ class Dashboard extends BaseController
             'active_event'          => $this->dashboardModel->getActiveEvent(),
             'completion_percentage' => $completionPercentage,
             'canVerify'             => $canVerify,
+            'appProfile'            => $appProfile
+
         ];
 
         return view('student/dashboard', $data);

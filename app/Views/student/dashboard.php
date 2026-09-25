@@ -58,7 +58,7 @@ $canVerify = $canVerify ?? false;
     </div>
 </div>
 
-<?php if ($canVerify): ?>
+<?php if ($canVerify && ($student->verification_status ?? '') !== 'completed'): ?>
     <div class="alert alert-primary border-0 shadow-sm p-3 p-md-4 mb-4 rounded-lg" style="background-color: #ffffff; border-left: 4px solid #0a2481 !important;">
         <div class="d-flex align-items-start" style="gap: 0.9rem">
             <div class="text-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px; background-color: rgba(10, 36, 129, 0.15);">

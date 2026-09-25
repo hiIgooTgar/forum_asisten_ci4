@@ -22,6 +22,7 @@ class TakenCourseData extends BaseController
         $this->userModel         = new UserModel();
         $this->userDocumentModel = new userDocumentModel();
     }
+
     public function index()
     {
         $userId        = session()->get('user_id');
@@ -66,15 +67,15 @@ class TakenCourseData extends BaseController
             }
         }
 
-        $takenCourses     = $this->takenCourseModel->getTakenCoursesByUser($userId);
-        $hasTakenCourses  = count($takenCourses) > 0;
+        $takenCourses    = $this->takenCourseModel->getTakenCoursesByUser($userId);
+        $hasTakenCourses = count($takenCourses) > 0;
 
         $availableCourses = [];
         if (!$profileIncomplete && !empty($student->faculty_id)) {
             $availableCourses = $this->courseModel->getCoursesByFaculty($student->faculty_id);
         }
 
-        $document = $this->userDocumentModel->getDocumentByUserId($userId);
+        $document             = $this->userDocumentModel->getDocumentByUserId($userId);
         $allDocumentsUploaded = false;
 
         if ($document) {
@@ -97,7 +98,8 @@ class TakenCourseData extends BaseController
             $allDocumentsUploaded = ($uploadedCount === count($docFields));
         }
 
-        $canVerify = (!$profileIncomplete && $hasTakenCourses && $allDocumentsUploaded);
+        $isAlreadyVerified = isset($student->verification_status) && $student->verification_status === 'completed';
+        $canVerify         = (!$profileIncomplete && $hasTakenCourses && $allDocumentsUploaded && !$isAlreadyVerified);
 
         $this->logActivity(
             'VIEW_TAKEN_COURSES',
@@ -111,6 +113,10 @@ class TakenCourseData extends BaseController
             'student'
         );
 
+        $appProfileModel = new \App\Models\CompanyApplicationModel();
+        $appProfile = $appProfileModel->first();
+
+
         $data = [
             'title'             => 'Pendaftaran Mata Kuliah',
             'student'           => $student,
@@ -119,6 +125,7 @@ class TakenCourseData extends BaseController
             'profileIncomplete' => $profileIncomplete,
             'canVerify'         => $canVerify,
             'activeTab'         => 'taken_courses',
+            'appProfile'        => $appProfile
         ];
 
         return view('student/taken_courses/index', $data);
@@ -128,9 +135,14 @@ class TakenCourseData extends BaseController
     {
         $userId        = session()->get('user_id');
         $studentNumber = session()->get('student_number');
+        $student = $this->userModel->getStudentProfile($userId);
 
         if (!$userId || !$studentNumber) {
             return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        }
+
+        if (isset($student->verification_status) && $student->verification_status === 'completed') {
+            return redirect()->back()->with('error', 'Akses ditolak: Pendaftaran Anda telah terverifikasi dan data telah terkunci.');
         }
 
         $currentCount = $this->takenCourseModel->countUserTakenCourses($userId);
@@ -267,9 +279,14 @@ class TakenCourseData extends BaseController
     {
         $userId        = session()->get('user_id');
         $studentNumber = session()->get('student_number');
+        $student = $this->userModel->getStudentProfile($userId);
 
         if (!$userId || !$studentNumber) {
             return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        }
+
+        if (isset($student->verification_status) && $student->verification_status === 'completed') {
+            return redirect()->back()->with('error', 'Akses ditolak: Pendaftaran Anda telah terverifikasi dan data telah terkunci.');
         }
 
         $taken = $this->takenCourseModel
@@ -420,9 +437,14 @@ class TakenCourseData extends BaseController
     {
         $userId        = session()->get('user_id');
         $studentNumber = session()->get('student_number');
+        $student = $this->userModel->getStudentProfile($userId);
 
         if (!$userId || !$studentNumber) {
             return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        }
+
+        if (isset($student->verification_status) && $student->verification_status === 'completed') {
+            return redirect()->back()->with('error', 'Akses ditolak: Pendaftaran Anda telah terverifikasi dan data telah terkunci.');
         }
 
         $taken = $this->takenCourseModel

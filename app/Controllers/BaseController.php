@@ -10,6 +10,7 @@ use CodeIgniter\HTTP\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use DateTime;
 use DateTimeZone;
+use App\Models\CompanyApplicationModel;
 
 /**
  * BaseController provides a convenient place for loading components
@@ -30,7 +31,10 @@ abstract class BaseController extends Controller
      */
 
     // protected $session;
+    protected $request;
     protected $helpers = ['security', 'form', 'url', 'date', 'text'];
+
+    protected $appProfile;
 
     /**
      * @return void
@@ -44,8 +48,17 @@ abstract class BaseController extends Controller
         // Caution: Do not edit this line.
         parent::initController($request, $response, $logger);
 
+        $appModel = new CompanyApplicationModel();
+        $this->appProfile = $appModel->getAppProfile();
+
+        \Config\Services::renderer()->setData([
+            'appProfile' => $this->appProfile
+        ]);
+
         // Preload any models, libraries, etc, here.
         // $this->session = service('session');
+
+
     }
 
     protected function logActivity(

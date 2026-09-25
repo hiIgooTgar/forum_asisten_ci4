@@ -138,3 +138,145 @@ select.form-control option:disabled {
   background-color: #fad3d7 !important;
   color: #dc3545 !important;
 }
+
+.verified-card {
+  background: #ffffff;
+  border: 1px solid rgba(10, 36, 129, 0.12);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 30px -5px rgba(10, 36, 129, 0.08);
+}
+
+.verified-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(
+    90deg,
+    var(--primary) 0%,
+    var(--color-primary-combine) 50%,
+    var(--color-hover-primary) 100%
+  );
+}
+
+.verified-card-bg-accent {
+  position: absolute;
+  top: -30px;
+  right: -30px;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(
+    circle,
+    rgba(10, 36, 129, 0.05) 0%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.logo-container {
+  position: relative;
+  display: inline-block;
+}
+
+.verified-logo {
+  width: 85px;
+  height: 85px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(10, 36, 129, 0.15));
+  transition: transform 0.3s ease;
+}
+
+.status-check-badge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: #28a745;
+  color: #ffffff;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  box-shadow: 0 2px 6px rgba(40, 167, 69, 0.4);
+}
+
+.verified-status-tag {
+  background-color: rgba(10, 36, 129, 0.08);
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 0.7rem;
+  letter-spacing: 0.8px;
+  padding: 4.5px 14px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--color-transparent-primary-v2);
+}
+
+.sdm-help-box {
+  background: linear-gradient(
+    135deg,
+    rgba(10, 36, 129, 0.03) 0%,
+    rgba(12, 41, 150, 0.06) 100%
+  );
+  border: 1px dashed rgba(10, 36, 129, 0.25);
+  border-radius: 4px;
+  padding: 16px 20px;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.sdm-help-box:hover {
+  border: 1px dashed var(--primary);
+  background: rgba(10, 36, 129, 0.1);
+}
+
+.btn-sdm-contact {
+  background-color: var(--primary);
+  color: #ffffff !important;
+  font-weight: 600;
+  font-size: 0.825rem;
+  padding: 8px 18px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  text-decoration: none !important;
+  box-shadow: 0 4px 12px rgba(10, 36, 129, 0.2);
+}
+
+.btn-sdm-contact:hover {
+  background-color: #081750;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(8, 23, 80, 0.3);
+}
+
+@media (max-width: 575.98px) {
+  .verified-card {
+    padding: 1.5rem 1rem !important;
+  }
+  .verified-logo {
+    width: 70px;
+    height: 70px;
+  }
+  .status-check-badge {
+    width: 24px;
+    height: 24px;
+    font-size: 0.63rem;
+  }
+  .sdm-help-box {
+    padding: 14px;
+    text-align: center;
+  }
+}

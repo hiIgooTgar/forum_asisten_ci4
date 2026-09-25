@@ -148,7 +148,8 @@ class DocumentData extends BaseController
             $allDocumentsUploaded = ($uploadedCount === count($docFields));
         }
 
-        $canVerify = (!$profileIncomplete && !$hasNoTakenCourses && $allDocumentsUploaded);
+        $isAlreadyVerified = isset($student->verification_status) && $student->verification_status === 'completed';
+        $canVerify = (!$profileIncomplete && $hasNoTakenCourses && $allDocumentsUploaded && !$isAlreadyVerified);
 
         $this->logActivity(
             'VIEW_USER_DOCUMENTS',
@@ -162,6 +163,9 @@ class DocumentData extends BaseController
             'student'
         );
 
+        $appProfileModel = new \App\Models\CompanyApplicationModel();
+        $appProfile = $appProfileModel->first();
+
         $data = [
             'title'             => 'Upload Berkas Pendaftaran',
             'student'           => $student,
@@ -170,6 +174,8 @@ class DocumentData extends BaseController
             'hasNoTakenCourses' => $hasNoTakenCourses,
             'canVerify'         => $canVerify,
             'activeTab'         => 'user_documents',
+            'appProfile'        => $appProfile
+
         ];
 
         return view('student/documents/index', $data);
@@ -179,9 +185,14 @@ class DocumentData extends BaseController
     {
         $userId        = session()->get('user_id');
         $studentNumber = session()->get('student_number');
+        $student = $this->userModel->getStudentProfile($userId);
 
         if (!$userId || !$studentNumber) {
             return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        }
+
+        if (isset($student->verification_status) && $student->verification_status === 'completed') {
+            return redirect()->back()->with('error', 'Akses ditolak: Pendaftaran Anda telah terverifikasi dan data telah terkunci.');
         }
 
         $check = $this->checkEligibility($userId);
@@ -303,9 +314,14 @@ class DocumentData extends BaseController
     {
         $userId        = session()->get('user_id');
         $studentNumber = session()->get('student_number');
+        $student = $this->userModel->getStudentProfile($userId);
 
         if (!$userId || !$studentNumber) {
             return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        }
+
+        if (isset($student->verification_status) && $student->verification_status === 'completed') {
+            return redirect()->back()->with('error', 'Akses ditolak: Pendaftaran Anda telah terverifikasi dan data telah terkunci.');
         }
 
         $check = $this->checkEligibility($userId);
@@ -392,9 +408,14 @@ class DocumentData extends BaseController
     {
         $userId        = session()->get('user_id');
         $studentNumber = session()->get('student_number');
+        $student = $this->userModel->getStudentProfile($userId);
 
         if (!$userId || !$studentNumber) {
             return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        }
+
+        if (isset($student->verification_status) && $student->verification_status === 'completed') {
+            return redirect()->back()->with('error', 'Akses ditolak: Pendaftaran Anda telah terverifikasi dan data telah terkunci.');
         }
 
         $check = $this->checkEligibility($userId);

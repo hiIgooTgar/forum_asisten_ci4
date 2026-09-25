@@ -87,6 +87,9 @@ class Verification extends BaseController
         $isCompleted           = ($student->verification_status ?? 'unsubmitted') === 'completed';
         $canSubmitVerification = (!$profileIncomplete && !$hasNoTakenCourses && !$documentsIncomplete && !$isCompleted);
 
+        $appProfileModel = new \App\Models\CompanyApplicationModel();
+        $appProfile = $appProfileModel->first();
+
         $data = [
             'title'                 => 'Verifikasi Pendaftaran Asisten',
             'student'               => $student,
@@ -98,6 +101,7 @@ class Verification extends BaseController
             'totalDocsCount'        => count($docFields),
             'canSubmitVerification' => $canSubmitVerification,
             'isCompleted'           => $isCompleted,
+            'appProfile'            => $appProfile
         ];
 
         return view('student/verification/index', $data);

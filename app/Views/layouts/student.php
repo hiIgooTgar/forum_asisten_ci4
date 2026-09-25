@@ -1,3 +1,25 @@
+<?php
+$appName  = $appProfile->application_name ?? 'Forum Asisten';
+$appTitle = $appProfile->application_title ?? 'Student Panel';
+
+$favIconName = $appProfile->favicon ?? 'favicon.ico';
+$favIcon     = (!empty($appProfile->favicon) && file_exists(FCPATH . 'uploads/logo/' . $appProfile->favicon))
+    ? base_url('uploads/logo/' . $appProfile->favicon)
+    : base_url('assets/images/logo/' . $favIconName);
+
+$logoColor = (!empty($appProfile->logo) && file_exists(FCPATH . 'uploads/logo/' . $appProfile->logo))
+    ? base_url('uploads/logo/' . $appProfile->logo)
+    : base_url('assets/images/logo/logo-fa.png');
+
+$logoWhite = (!empty($appProfile->logo_white) && file_exists(FCPATH . 'uploads/logo/' . $appProfile->logo_white))
+    ? base_url('uploads/logo/' . $appProfile->logo_white)
+    : base_url('assets/images/logo/logo-fa-white.png');
+
+$logoSidebar = (!empty($appProfile->logo_sidebar) && file_exists(FCPATH . 'uploads/logo/' . $appProfile->logo_sidebar))
+    ? base_url('uploads/logo/' . $appProfile->logo_sidebar)
+    : base_url('assets/images/logo/logo-fa-white-v2.png');
+?>
+
 <!DOCTYPE html>
 <html lang="id">
 
@@ -6,8 +28,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <meta name="description" content="Forum Asisten - Student Panel Universitas Amikom Purwokerto">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="icon" type="image/x-icon" href="<?= $favIcon; ?>">
 
-    <title><?= esc($title ?? 'Student Panel'); ?> - Forum Asisten</title>
+    <title><?= esc($title ?? $appTitle); ?> - Forum Asisten</title>
 
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/base.css'); ?>">
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/components-form.css'); ?>">
@@ -40,7 +63,7 @@
 <body class="app sidebar-mini">
     <header class="app-header">
         <a class="app-header__logo" href="<?= base_url('student/dashboard'); ?>">
-            <img src="<?= base_url('assets/images/logo/logo-fa-white-v2.png'); ?>" alt="Forum Asisten" style="height: 30px; padding: 2px 0;">
+            <img src="<?= $logoSidebar; ?>" alt="Forum Asisten" style="height: 30px; padding: 2px 0;">
             <span class="d-none d-sm-inline ml-2" style="font-size: 16px; font-weight: 600;">Forum Asisten</span>
         </a>
         <a class="app-sidebar__toggle" href="#" data-toggle="sidebar" aria-label="Hide Sidebar"></a>

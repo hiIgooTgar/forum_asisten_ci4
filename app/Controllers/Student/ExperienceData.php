@@ -94,7 +94,8 @@ class ExperienceData extends BaseController
             $allDocumentsUploaded = ($uploadedCount === count($docFields));
         }
 
-        $canVerify = (!$profileIncomplete && $hasTakenCourses && $allDocumentsUploaded);
+        $isAlreadyVerified = isset($student->verification_status) && $student->verification_status === 'completed';
+        $canVerify = (!$profileIncomplete && $hasTakenCourses && $allDocumentsUploaded && !$isAlreadyVerified);
 
         $this->logActivity(
             'VIEW_EXPERIENCES',
@@ -107,6 +108,9 @@ class ExperienceData extends BaseController
             'student'
         );
 
+        $appProfileModel = new \App\Models\CompanyApplicationModel();
+        $appProfile = $appProfileModel->first();
+
         $data = [
             'title'             => 'Pengalaman & Portofolio',
             'student'           => $student,
@@ -114,6 +118,8 @@ class ExperienceData extends BaseController
             'profileIncomplete' => $profileIncomplete,
             'canVerify'         => $canVerify,
             'activeTab'         => 'experience',
+            'appProfile'            => $appProfile
+
         ];
 
         return view('student/experience/index', $data);
@@ -123,9 +129,14 @@ class ExperienceData extends BaseController
     {
         $userId        = session()->get('user_id');
         $studentNumber = session()->get('student_number');
+        $student = $this->userModel->getStudentProfile($userId);
 
         if (!$userId || !$studentNumber) {
             return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        }
+
+        if (isset($student->verification_status) && $student->verification_status === 'completed') {
+            return redirect()->back()->with('error', 'Akses ditolak: Pendaftaran Anda telah terverifikasi dan data telah terkunci.');
         }
 
         $validationRules = [
@@ -225,9 +236,14 @@ class ExperienceData extends BaseController
     {
         $userId        = session()->get('user_id');
         $studentNumber = session()->get('student_number');
+        $student = $this->userModel->getStudentProfile($userId);
 
         if (!$userId || !$studentNumber) {
             return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        }
+
+        if (isset($student->verification_status) && $student->verification_status === 'completed') {
+            return redirect()->back()->with('error', 'Akses ditolak: Pendaftaran Anda telah terverifikasi dan data telah terkunci.');
         }
 
         $experience = $this->experienceModel
@@ -372,9 +388,14 @@ class ExperienceData extends BaseController
     {
         $userId        = session()->get('user_id');
         $studentNumber = session()->get('student_number');
+        $student = $this->userModel->getStudentProfile($userId);
 
         if (!$userId || !$studentNumber) {
             return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        }
+
+        if (isset($student->verification_status) && $student->verification_status === 'completed') {
+            return redirect()->back()->with('error', 'Akses ditolak: Pendaftaran Anda telah terverifikasi dan data telah terkunci.');
         }
 
         $experience = $this->experienceModel->where('experience_code', $experienceCode)->where('user_id', $userId)->first();

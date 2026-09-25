@@ -15,18 +15,38 @@ class CreateSystemEventSettingsTable extends Migration
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
+            'parent_id' => [
+                'type'       => 'BIGINT',
+                'constraint' => 20,
+                'unsigned'   => true,
+                'null'       => true,
+            ],
             'event_key' => [
                 'type'       => 'VARCHAR',
-                'constraint' => '255',
+                'constraint' => '100',
                 'unique'     => true,
             ],
             'event_name' => [
                 'type'       => 'VARCHAR',
                 'constraint' => '255',
             ],
+            'category' => [
+                'type'       => 'ENUM',
+                'constraint' => ['recruitment_period', 'recruitment_stage', 'general_announcement'],
+                'default'    => 'recruitment_stage',
+            ],
             'is_active' => [
                 'type'    => 'BOOLEAN',
                 'default' => false,
+            ],
+            'is_default' => [
+                'type'    => 'BOOLEAN',
+                'default' => false,
+            ],
+            'status_override' => [
+                'type'       => 'ENUM',
+                'constraint' => ['auto', 'coming_soon', 'open', 'closed'],
+                'default'    => 'auto',
             ],
             'start_at' => [
                 'type' => 'DATETIME',
@@ -40,6 +60,11 @@ class CreateSystemEventSettingsTable extends Migration
                 'type' => 'TEXT',
                 'null' => true,
             ],
+            'action_url' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '255',
+                'null'       => true,
+            ],
             'created_at' => [
                 'type' => 'DATETIME',
                 'null' => true,
@@ -51,6 +76,7 @@ class CreateSystemEventSettingsTable extends Migration
         ]);
 
         $this->forge->addKey('id', true);
+        $this->forge->addForeignKey('parent_id', 'system_event_settings', 'id', 'CASCADE', 'SET NULL');
         $this->forge->createTable('system_event_settings');
     }
 

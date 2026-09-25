@@ -95,7 +95,8 @@ class ProfileData extends BaseController
             $allDocumentsUploaded = ($uploadedCount === count($docFields));
         }
 
-        $canVerify = (!$profileIncomplete && $hasTakenCourses && $allDocumentsUploaded);
+        $isAlreadyVerified = isset($student->verification_status) && $student->verification_status === 'completed';
+        $canVerify = (!$profileIncomplete && $hasTakenCourses && $allDocumentsUploaded && !$isAlreadyVerified);
 
         $selectedFacultyId = old('faculty_id', $student->faculty_id ?? null);
         $selectedProgramId = old('study_program_id', $student->study_program_id ?? null);
@@ -129,6 +130,10 @@ class ProfileData extends BaseController
             'student'
         );
 
+
+        $appProfileModel = new \App\Models\CompanyApplicationModel();
+        $appProfile = $appProfileModel->first();
+
         $data = [
             'title'         => 'Profil & Biodata Mahasiswa',
             'student'       => $student,
@@ -137,6 +142,7 @@ class ProfileData extends BaseController
             'classGroups'   => $classGroups,
             'activeTab'     => $activeTab,
             'canVerify'     => $canVerify,
+            'appProfile'        => $appProfile
         ];
 
         return view('student/profile/index', $data);
@@ -165,9 +171,14 @@ class ProfileData extends BaseController
     {
         $userId        = session()->get('user_id');
         $studentNumber = session()->get('student_number');
+        $student = $this->userModel->getStudentProfile($userId);
 
         if (!$userId || !$studentNumber) {
             return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        }
+
+        if (isset($student->verification_status) && $student->verification_status === 'completed') {
+            return redirect()->back()->with('error', 'Akses ditolak: Pendaftaran Anda telah terverifikasi dan data telah terkunci.');
         }
 
         $currentUser = $this->userModel->find($userId);
@@ -367,9 +378,14 @@ class ProfileData extends BaseController
     {
         $userId        = session()->get('user_id');
         $studentNumber = session()->get('student_number');
+        $student = $this->userModel->getStudentProfile($userId);
 
-        if (!$userId) {
+        if (!$userId || !$studentNumber) {
             return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        }
+
+        if (isset($student->verification_status) && $student->verification_status === 'completed') {
+            return redirect()->back()->with('error', 'Akses ditolak: Pendaftaran Anda telah terverifikasi dan data telah terkunci.');
         }
 
         $user = $this->userModel->find($userId);
