@@ -30,7 +30,7 @@ $logoSidebar = (!empty($appProfile->logo_sidebar) && file_exists(FCPATH . 'uploa
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <link rel="icon" type="image/x-icon" href="<?= $favIcon; ?>">
 
-    <title><?= esc($title ?? $appTitle); ?> - Forum Asisten</title>
+    <title><?= esc($title ?? ''); ?> - <?= esc($appName ?? 'Forum Asisten'); ?></title>
 
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/base.css'); ?>">
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/components-form.css'); ?>">
@@ -64,7 +64,7 @@ $logoSidebar = (!empty($appProfile->logo_sidebar) && file_exists(FCPATH . 'uploa
     <header class="app-header">
         <a class="app-header__logo" href="<?= base_url('student/dashboard'); ?>">
             <img src="<?= $logoSidebar; ?>" alt="Forum Asisten" style="height: 30px; padding: 2px 0;">
-            <span class="d-none d-sm-inline ml-2" style="font-size: 16px; font-weight: 600;">Forum Asisten</span>
+            <span class="d-none d-sm-inline ml-2" style="font-size: 16px; font-weight: 600;"><?= esc($appName ?? 'Forum Asisten'); ?></span>
         </a>
         <a class="app-sidebar__toggle" href="#" data-toggle="sidebar" aria-label="Hide Sidebar"></a>
 
@@ -104,8 +104,7 @@ $logoSidebar = (!empty($appProfile->logo_sidebar) && file_exists(FCPATH . 'uploa
                     </span>
                 </a>
                 <ul class="dropdown-menu settings-menu dropdown-menu-right">
-                    <li><a class="dropdown-item" href="<?= base_url('student/profile'); ?>"><i class="fa fa-user fa-lg"></i> Profil Saya</a></li>
-                    <li><a class="dropdown-item" href="<?= base_url('student/settings'); ?>"><i class="fa fa-cog fa-lg"></i> Pengaturan</a></li>
+                    <li><a class="dropdown-item" href="<?= base_url('student/account-settings'); ?>"><i class="fa fa-cog fa-lg"></i> Pengaturan Akun</a></li>
                     <li class="dropdown-divider"></li>
                     <li>
                         <a class="dropdown-item" href="<?= base_url('auth/logout'); ?>">
@@ -267,6 +266,7 @@ $logoSidebar = (!empty($appProfile->logo_sidebar) && file_exists(FCPATH . 'uploa
     <script src="<?= base_url('assets/layout/js/custom/wilayah.js'); ?>"></script>
 
     <script src="<?= base_url('assets/layout/js/student/layout-student.js'); ?>"></script>
+    <script src="<?= base_url('assets/layout/js/student/account-settings.js'); ?>"></script>
     <script src="<?= base_url('assets/layout/js/student/profile.js'); ?>"></script>
     <script src="<?= base_url('assets/layout/js/student/experience.js'); ?>"></script>
     <script src="<?= base_url('assets/layout/js/student/taken-courses.js'); ?>"></script>
