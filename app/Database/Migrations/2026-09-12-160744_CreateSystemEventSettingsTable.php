@@ -15,6 +15,11 @@ class CreateSystemEventSettingsTable extends Migration
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
+            'system_event_code' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '255',
+                'unique'     => true,
+            ],
             'parent_id' => [
                 'type'       => 'BIGINT',
                 'constraint' => 20,
@@ -23,7 +28,7 @@ class CreateSystemEventSettingsTable extends Migration
             ],
             'event_key' => [
                 'type'       => 'VARCHAR',
-                'constraint' => '100',
+                'constraint' => '255',
                 'unique'     => true,
             ],
             'event_name' => [

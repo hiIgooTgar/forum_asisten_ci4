@@ -1,5 +1,10 @@
 :root {
   --primary: #0a2481;
+  --color-primary-combine: #0c2996;
+  --color-primary-combine-v2: #0c1d61;
+  --color-hover-primary: #081750;
+  --color-transparent-primary: rgba(10, 36, 129, 0.5);
+  --color-transparent-primary-v2: rgba(10, 36, 129, 0.25);
 }
 
 .border-left-primary-title {
@@ -65,14 +70,22 @@
 }
 
 .custom-pills .nav-link {
-  color: #64748b;
-  border-radius: 6px;
+  color: #555555;
+  border-radius: 4px;
   padding: 8px 16px;
+  transition: all 0.3s ease;
+  border: 1px solid #e9ecef;
+  background-color: #f8f9fa;
 }
 
 .custom-pills .nav-link.active {
   background-color: var(--primary) !important;
   color: #fff !important;
+}
+
+.custom-pills .nav-link:hover:not(.active) {
+  background-color: #e9ecef;
+  color: var(--primary);
 }
 
 .gap-2 {

@@ -18,5 +18,6 @@ class DatabaseSeeder extends Seeder
         $this->call('CoursesSeeder');
         $this->call('TakenCoursesSeeder');
         $this->call('SystemEventSettingsSeeder');
+        $this->call('CompanyApplicationSeeder');
     }
 }

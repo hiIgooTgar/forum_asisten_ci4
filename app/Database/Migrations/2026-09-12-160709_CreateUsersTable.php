@@ -15,6 +15,11 @@ class CreateUsersTable extends Migration
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
+            'registration_code' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '255',
+                'unique'     => true,
+            ],
             'student_number' => [
                 'type'       => 'VARCHAR',
                 'constraint' => '20',
@@ -130,6 +135,11 @@ class CreateUsersTable extends Migration
                 'type'       => 'VARCHAR',
                 'constraint' => '255',
                 'null'       => true,
+            ],
+            'membership_status' => [
+                'type'       => 'ENUM',
+                'constraint' => ['candidate', 'failed', 'member'],
+                'default'    => 'candidate',
             ],
             'status_account' => [
                 'type'       => 'ENUM',

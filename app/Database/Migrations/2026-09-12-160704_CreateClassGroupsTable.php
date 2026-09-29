@@ -15,6 +15,11 @@ class CreateClassGroupsTable extends Migration
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
+            'class_params' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '255',
+                'unique'     => true,
+            ],
             'study_program_id' => [
                 'type'       => 'BIGINT',
                 'constraint' => 20,

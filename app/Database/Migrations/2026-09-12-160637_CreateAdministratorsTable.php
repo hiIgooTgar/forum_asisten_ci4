@@ -15,6 +15,11 @@ class CreateAdministratorsTable extends Migration
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
+            'administrator_code' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '255',
+                'unique'     => true,
+            ],
             'username' => [
                 'type'       => 'VARCHAR',
                 'constraint' => '255',

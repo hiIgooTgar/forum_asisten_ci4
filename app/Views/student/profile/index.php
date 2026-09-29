@@ -462,7 +462,7 @@ $profileImg = (!empty($student->profile) && file_exists(FCPATH . 'uploads/profil
                                 <ol class="pl-3 mb-3 text-xs-c" style="line-height: 1.6;">
                                     <li>Background foto berwarna <strong>merah</strong>.</li>
                                     <li>Rasio/Ukuran foto <strong>4x6</strong> (posisi portrait).</li>
-                                    <li>Mengenakan kemeja putih, jas almamater, serta <strong>dasi</strong> (khusus laki-laki).</li>
+                                    <li>Mengenakan kemeja, jas almamater, serta <strong>dasi</strong> (khusus laki-laki).</li>
                                     <li>Wajah menghadap lurus ke depan, terlihat jelas, dan tidak memakai kacamata hitam/aksesoris berlebih.</li>
                                     <li>Ukuran file foto maksimal <strong>1.5 MB</strong> (format JPG/JPEG/PNG).</li>
                                 </ol>

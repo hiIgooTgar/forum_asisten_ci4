@@ -9,7 +9,6 @@ class CompanyApplicationSeeder extends Seeder
     public function run()
     {
         $now = date('Y-m-d H:i:s');
-
         $randomCode = 'FA_' . strtoupper(bin2hex(random_bytes(16)));
 
         $data = [

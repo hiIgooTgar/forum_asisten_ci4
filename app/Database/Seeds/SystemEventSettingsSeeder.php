@@ -9,8 +9,10 @@ class SystemEventSettingsSeeder extends Seeder
     public function run()
     {
         $now = date('Y-m-d H:i:s');
+        $randomCode = 'system_event_' . strtoupper(bin2hex(random_bytes(32)));
 
         $this->db->table('system_event_settings')->insert([
+            'system_event_code' => $randomCode,
             'event_key'       => 'REGISTRATION_CLOSED_DEFAULT',
             'event_name'      => 'Pendaftaran Ditutup',
             'category'        => 'general_announcement',
@@ -23,6 +25,7 @@ class SystemEventSettingsSeeder extends Seeder
         ]);
 
         $this->db->table('system_event_settings')->insert([
+            'system_event_code' => $randomCode,
             'event_key'       => 'RECRUITMENT_GEN_2024_ODD',
             'event_name'      => 'Seleksi Asisten Praktikum Ganjil 2024/2025',
             'category'        => 'recruitment_period',
@@ -42,6 +45,7 @@ class SystemEventSettingsSeeder extends Seeder
         $stages = [
             [
                 'parent_id'       => $parentId,
+                'system_event_code' => $randomCode,
                 'event_key'       => 'MICROTEACHING_PHASE_2024_ODD',
                 'event_name'      => 'Jadwal Tes Microteaching & Wawancara',
                 'category'        => 'recruitment_stage',
@@ -56,6 +60,7 @@ class SystemEventSettingsSeeder extends Seeder
             ],
             [
                 'parent_id'       => $parentId,
+                'system_event_code' => $randomCode,
                 'event_key'       => 'FINAL_ANNOUNCEMENT_2024_ODD',
                 'event_name'      => 'Pengumuman Kelulusan Akhir Asisten',
                 'category'        => 'recruitment_stage',

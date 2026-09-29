@@ -13,6 +13,7 @@ class SystemEventSettingModel extends Model
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields    = [
+        'system_event_code',
         'parent_id',
         'event_key',
         'event_name',

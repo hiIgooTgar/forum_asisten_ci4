@@ -44,8 +44,8 @@ $canVerify = $canVerify ?? false;
                 </div>
                 <div class="col-lg-4 col-md-5 text-md-right">
                     <?php if (!empty($eventData)): ?>
-                        <a href="<?= base_url('student/registration') ?>" class="btn btn-warning btn-block btn-sm-inline font-weight-bold text-dark px-4 py-2 shadow-sm rounded">
-                            <i class="fa fa-paper-plane mr-1"></i> Masuk Pendaftaran
+                        <a href="<?= base_url('student/registration-flow') ?>" class="btn btn-warning btn-block btn-sm-inline font-weight-bold text-dark px-4 py-2 shadow-sm rounded">
+                            <i class="fa fa-paper-plane mr-1"></i> Tata Cara Pendaftaran
                         </a>
                     <?php else: ?>
                         <button class="btn btn-light btn-block btn-sm-inline px-4 py-2 font-weight-semibold text-muted" disabled>

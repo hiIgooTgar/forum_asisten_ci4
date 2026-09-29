@@ -15,6 +15,11 @@ class CreateCoursesTable extends Migration
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
+            'course_params' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '255',
+                'unique'     => true,
+            ],
             'study_program_id' => [
                 'type'       => 'BIGINT',
                 'constraint' => 20,
@@ -22,7 +27,7 @@ class CreateCoursesTable extends Migration
             ],
             'course_code' => [
                 'type'       => 'VARCHAR',
-                'constraint' => '20',
+                'constraint' => '255',
                 'unique'     => true,
             ],
             'course_name' => [

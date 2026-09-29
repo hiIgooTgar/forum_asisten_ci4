@@ -13,6 +13,7 @@ class CourseModel extends Model
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields    = [
+        'course_params',
         'study_program_id',
         'course_code',
         'course_name',
@@ -69,6 +70,19 @@ class CourseModel extends Model
             ->select('(SELECT COUNT(*) FROM taken_courses WHERE taken_courses.course_id = courses.id) as total_taken')
             ->join('study_programs', 'study_programs.id = courses.study_program_id')
             ->where('courses.study_program_id', $studyProgramId)
+            ->orderBy('courses.semester', 'ASC')
+            ->findAll();
+    }
+
+    public function getActiveCoursesGroupedByFaculty()
+    {
+        return $this->select('courses.*, study_programs.program_name, faculties.faculty_name, faculties.id as faculty_id')
+            ->select('(SELECT COUNT(*) FROM taken_courses WHERE taken_courses.course_id = courses.id) as total_taken')
+            ->join('study_programs', 'study_programs.id = courses.study_program_id')
+            ->join('faculties', 'faculties.id = study_programs.faculty_id')
+            ->where('courses.is_active', 1)
+            ->orderBy('faculties.faculty_name', 'ASC')
+            ->orderBy('study_programs.program_name', 'ASC')
             ->orderBy('courses.semester', 'ASC')
             ->findAll();
     }

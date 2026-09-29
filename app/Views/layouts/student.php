@@ -53,6 +53,7 @@ $logoSidebar = (!empty($appProfile->logo_sidebar) && file_exists(FCPATH . 'uploa
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/student/taken-courses.css'); ?>">
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/student/document.css'); ?>">
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/student/verification.css'); ?>">
+    <link rel="stylesheet" href="<?= base_url('assets/layout/css/student/registration-flow.css'); ?>">
 
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/custom/template_student.css'); ?>">
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/custom/layout.css'); ?>">
@@ -143,6 +144,13 @@ $logoSidebar = (!empty($appProfile->logo_sidebar) && file_exists(FCPATH . 'uploa
                 <a class="app-menu__item <?= ($uri->getSegment(2) == 'dashboard' || $uri->getSegment(2) == '') ? 'active' : ''; ?>" href="<?= base_url('student/dashboard'); ?>">
                     <i class="app-menu__icon fa fa-dashboard"></i>
                     <span class="app-menu__label">Dashboard</span>
+                </a>
+            </li>
+
+            <li>
+                <a class="app-menu__item <?= ($uri->getSegment(2) == 'registration-flow' || $uri->getSegment(2) == '') ? 'active' : ''; ?>" href="<?= base_url('student/registration-flow'); ?>">
+                    <i class="app-menu__icon fa fa-chalkboard-teacher"></i>
+                    <span class="app-menu__label">Tata Cara Pendaftaran</span>
                 </a>
             </li>
 

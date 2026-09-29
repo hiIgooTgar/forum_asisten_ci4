@@ -73,6 +73,8 @@ $routes->group('student', ['filter' => 'student_auth'], static function ($routes
     $routes->post('account-settings/change-password', 'Student\AccountSettings::changePassword');
     $routes->post('account-settings/delete-account', 'Student\AccountSettings::deleteAccount');
 
+    $routes->get('registration-flow', 'Student\RegistrationFlow::index');
+
     $routes->get('files/view/(:any)/(:any)/(:any)', 'FileViewer::show/$1/$2/$3');
 });
 

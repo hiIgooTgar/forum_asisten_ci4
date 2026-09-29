@@ -1,0 +1,195 @@
+:root {
+  --primary-color: #0a2481;
+  --color-primary-combine: #0c2996;
+  --color-primary-combine-v2: #0c1d61;
+  --color-hover-primary: #081750;
+  --color-transparent-primary: rgba(10, 36, 129, 0.5);
+  --color-transparent-primary-v2: rgba(10, 36, 129, 0.25);
+  --color-transparent-primary-v3: rgba(10, 36, 129, 0.135);
+  --color-transparent-primary-v4: rgba(10, 36, 129, 0.08);
+}
+
+.bg-soft-primary-custom-v3 {
+  background-color: var(--color-transparent-primary-v4);
+}
+
+.custom-pills .nav-link {
+  color: #555555;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  border: 1px solid #e9ecef;
+  background-color: #f8f9fa;
+}
+
+.custom-pills .nav-link.active {
+  background-color: var(--primary-color) !important;
+  color: #ffffff !important;
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 4px 10px rgba(10, 36, 129, 0.25);
+}
+
+.custom-pills .nav-link:hover:not(.active) {
+  background-color: #e9ecef;
+  color: var(--primary-color);
+}
+
+.timeline-responsive {
+  position: relative;
+  padding: 10px 0;
+  margin: 0 auto;
+}
+
+.timeline-responsive::before {
+  content: "";
+  position: absolute;
+  top: 20px;
+  bottom: 20px;
+  left: 20px;
+  width: 3px;
+  background: linear-gradient(180deg, var(--primary-color) 0%, #cbd5e1 100%);
+  border-radius: 4px;
+  z-index: 1;
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 35px;
+  clear: both;
+}
+
+.timeline-item:last-child {
+  margin-bottom: 0;
+}
+
+.timeline-badge {
+  position: absolute;
+  left: 20px;
+  top: 0;
+  transform: translateX(-50%);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+  box-shadow:
+    0 0 0 5px #ffffff,
+    0 4px 12px rgba(10, 36, 129, 0.25);
+  z-index: 3;
+  transition: all 0.3s ease;
+}
+
+.timeline-item:hover .timeline-badge {
+  transform: translateX(-50%) scale(1.1);
+  background-color: var(--color-primary-combine);
+}
+
+.timeline-content {
+  position: relative;
+  margin-left: 55px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 20px 22px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.timeline-content:hover {
+  box-shadow: 0 2px 8px var(--color-transparent-primary-v3);
+  border-color: var(--color-transparent-primary);
+}
+
+.timeline-step-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 4px;
+  background-color: var(--color-transparent-primary-v2);
+  color: var(--primary-color);
+  margin-bottom: 0.3rem;
+}
+
+.badge-optional-tag {
+  background-color: rgba(217, 119, 6, 0.25);
+  color: #d97706;
+}
+
+.badge-success-tag {
+  background-color: rgba(5, 150, 105, 0.25);
+  color: #059669;
+}
+
+@media (min-width: 992px) {
+  .timeline-responsive::before {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .timeline-badge {
+    left: 50%;
+  }
+
+  .timeline-item {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .timeline-item:nth-child(odd) {
+    justify-content: flex-start;
+  }
+
+  .timeline-content {
+    width: 45%;
+    margin-left: 0;
+  }
+
+  .timeline-item:nth-child(odd) .timeline-content {
+    text-align: right;
+  }
+
+  .timeline-item:nth-child(odd) .timeline-header {
+    flex-direction: row-reverse;
+  }
+}
+
+.req-icon-box {
+  width: 38px;
+  height: 38px;
+  border-radius: 4px;
+  background-color: var(--color-transparent-primary-v2);
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.badge-quota {
+  background-color: rgba(12, 41, 150, 0.1);
+  color: var(--color-primary-combine);
+  font-weight: 500;
+}
+
+.table-custom-responsive-registration {
+  min-width: 760px;
+  margin-bottom: 0;
+}
+
+.table-custom-responsive-registration th,
+.table-custom-responsive-registration td {
+  vertical-align: middle !important;
+  white-space: nowrap;
+}
+
+.table-custom-responsive-registration td.col-course-name {
+  white-space: normal !important;
+  min-width: 250px;
+}

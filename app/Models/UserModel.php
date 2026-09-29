@@ -13,6 +13,7 @@ class UserModel extends Model
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields    = [
+        'registration_code',
         'student_number',
         'full_name',
         'email',
@@ -38,6 +39,7 @@ class UserModel extends Model
         'is_verified',
         'verification_status',
         'certificate_file',
+        'membership_status',
         'status_account',
         'remember_token'
     ];

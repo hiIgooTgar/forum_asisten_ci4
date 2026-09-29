@@ -15,6 +15,11 @@ class CreateStudyProgramsTable extends Migration
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
+            'program_params' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '255',
+                'unique'     => true,
+            ],
             'faculty_id' => [
                 'type'       => 'BIGINT',
                 'constraint' => 20,
@@ -22,7 +27,7 @@ class CreateStudyProgramsTable extends Migration
             ],
             'program_code' => [
                 'type'       => 'VARCHAR',
-                'constraint' => '20',
+                'constraint' => '255',
                 'unique'     => true,
             ],
             'program_name' => [

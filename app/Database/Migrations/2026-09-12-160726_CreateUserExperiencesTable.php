@@ -15,15 +15,15 @@ class CreateUserExperiencesTable extends Migration
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
-            'user_id' => [
-                'type'       => 'BIGINT',
-                'constraint' => 20,
-                'unsigned'   => true,
-            ],
             'experience_code' => [
                 'type'       => 'VARCHAR',
                 'constraint' => '255',
                 'unique'     => true,
+            ],
+            'user_id' => [
+                'type'       => 'BIGINT',
+                'constraint' => 20,
+                'unsigned'   => true,
             ],
             'title' => [
                 'type'       => 'VARCHAR',

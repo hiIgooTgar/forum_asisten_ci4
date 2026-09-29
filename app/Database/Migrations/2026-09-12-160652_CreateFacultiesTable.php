@@ -15,9 +15,14 @@ class CreateFacultiesTable extends Migration
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
+            'faculty_params' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '255',
+                'unique'     => true,
+            ],
             'faculty_code' => [
                 'type'       => 'VARCHAR',
-                'constraint' => '20',
+                'constraint' => '255',
                 'unique'     => true,
             ],
             'faculty_name' => [
