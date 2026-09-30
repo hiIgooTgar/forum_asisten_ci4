@@ -9,12 +9,15 @@ class UserExperiencesSeeder extends Seeder
     public function run()
     {
         $now = date('Y-m-d H:i:s');
-        $randomCode = 'experience_' . strtoupper(bin2hex(random_bytes(32)));
+        $generateCode = function () {
+            return 'fa_experience_' . strtoupper(bin2hex(random_bytes(16)));
+        };
+
 
         $data = [
             [
                 'user_id'         => 1,
-                'experience_code' => $randomCode,
+                'experience_code' => $generateCode(),
                 'title'           => 'Asisten Praktikum Pemrograman Web',
                 'organization_name' => 'Laboratorium Komputer AMIKOM',
                 'experience_type' => 'teaching_assistant',
@@ -26,7 +29,7 @@ class UserExperiencesSeeder extends Seeder
             ],
             [
                 'user_id'         => 1,
-                'experience_code' => $randomCode,
+                'experience_code' => $generateCode(),
                 'title'           => 'Ketua Divisi Pemrograman',
                 'organization_name' => 'HIMA Informatika',
                 'experience_type' => 'organizational',
@@ -38,7 +41,7 @@ class UserExperiencesSeeder extends Seeder
             ],
             [
                 'user_id'         => 2,
-                'experience_code' => $randomCode,
+                'experience_code' => $generateCode(),
                 'title'           => 'Asisten Basis Data',
                 'organization_name' => 'Laboratorium Komputer AMIKOM',
                 'experience_type' => 'teaching_assistant',
@@ -50,7 +53,7 @@ class UserExperiencesSeeder extends Seeder
             ],
             [
                 'user_id'         => 3,
-                'experience_code' => $randomCode,
+                'experience_code' => $generateCode(),
                 'title'           => 'Freelance Web Developer',
                 'organization_name' => 'PT Solusi Digital',
                 'experience_type' => 'work',
@@ -62,7 +65,7 @@ class UserExperiencesSeeder extends Seeder
             ],
             [
                 'user_id'         => 4,
-                'experience_code' => $randomCode,
+                'experience_code' => $generateCode(),
                 'title'           => 'Volunteer Relawan TIK',
                 'organization_name' => 'RTIK Banyumas',
                 'experience_type' => 'volunteering',

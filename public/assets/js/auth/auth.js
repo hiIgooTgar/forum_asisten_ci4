@@ -40,10 +40,10 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       dots.forEach((dot, i) => {
         if (i === index) {
-          dot.classList.add("bg-[#0037ff]", "w-[24px]");
+          dot.classList.add("bg-[#ffc107]", "w-[24px]");
           dot.classList.remove("bg-white/30", "w-[12px]");
         } else {
-          dot.classList.remove("bg-[#0037ff]", "w-[24px]");
+          dot.classList.remove("bg-[#ffc107]", "w-[24px]");
           dot.classList.add("bg-white/30", "w-[12px]");
         }
       });

@@ -15,7 +15,7 @@ class CreateActivityLogsTable extends Migration
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
-            'activiy_log_code' => [
+            'activity_log_code' => [
                 'type'       => 'VARCHAR',
                 'constraint' => '255',
                 'unique'     => true,

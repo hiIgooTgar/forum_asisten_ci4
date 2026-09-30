@@ -74,15 +74,20 @@ abstract class BaseController extends Controller
         $dateTime    = new DateTime('now', $timezone);
         $currentTime = $dateTime->format('Y-m-d H:i:s');
 
+        $randomHex       = strtoupper(bin2hex(random_bytes(16)));
+        $dateSuffix      = $dateTime->format('YmdHis');
+        $activityLogCode = "fa_activity_log-{$randomHex}-{$dateSuffix}";
+
         $logData = [
-            'user_id'     => $userId ?: null,
-            'user_type'   => $userType,
-            'action'      => $action,
-            'description' => $description,
-            'details'     => !empty($details) ? json_encode($details) : null,
-            'ip_address'  => $this->request->getIPAddress(),
-            'user_agent'  => substr((string) $this->request->getUserAgent(), 0, 500),
-            'created_at'  => $currentTime,
+            'activity_log_code' => $activityLogCode,
+            'user_id'           => $userId ?: null,
+            'user_type'         => $userType,
+            'action'            => $action,
+            'description'       => $description,
+            'details'           => !empty($details) ? json_encode($details) : null,
+            'ip_address'        => $this->request->getIPAddress(),
+            'user_agent'        => substr((string) $this->request->getUserAgent(), 0, 500),
+            'created_at'        => $currentTime,
         ];
 
         $db->table('activity_logs')->insert($logData);

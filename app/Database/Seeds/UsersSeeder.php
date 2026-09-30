@@ -9,11 +9,13 @@ class UsersSeeder extends Seeder
     public function run()
     {
         $now = date('Y-m-d H:i:s');
-        $randomCode = 'registration_' . strtoupper(bin2hex(random_bytes(32)));
+        $generateCode = function () {
+            return 'fa_registration_' . strtoupper(bin2hex(random_bytes(16)));
+        };
 
         $data = [
             [
-                'registration_code' => $randomCode,
+                'registration_code' => $generateCode(),
                 'student_number'    => '22.11.4501',
                 'full_name'         => 'Igo Tegar Prambudhy',
                 'email'             => 'igo.tegar@students.amikom.ac.id',
@@ -41,7 +43,7 @@ class UsersSeeder extends Seeder
                 'updated_at'        => $now,
             ],
             [
-                'registration_code' => $randomCode,
+                'registration_code' => $generateCode(),
                 'student_number'    => '22.11.4502',
                 'full_name'         => 'Siti Nurhaliza',
                 'email'             => 'siti.nurhaliza@students.amikom.ac.id',
@@ -69,7 +71,7 @@ class UsersSeeder extends Seeder
                 'updated_at'        => $now,
             ],
             [
-                'registration_code' => $randomCode,
+                'registration_code' => $generateCode(),
                 'student_number'    => '22.12.3301',
                 'full_name'         => 'Rian Ardianto',
                 'email'             => 'rian.ardianto@students.amikom.ac.id',
@@ -97,7 +99,7 @@ class UsersSeeder extends Seeder
                 'updated_at'        => $now,
             ],
             [
-                'registration_code' => $randomCode,
+                'registration_code' => $generateCode(),
                 'student_number'    => '23.01.2210',
                 'full_name'         => 'Anisa Rahmawati',
                 'email'             => 'anisa.rahma@students.amikom.ac.id',
@@ -125,7 +127,7 @@ class UsersSeeder extends Seeder
                 'updated_at'        => $now,
             ],
             [
-                'registration_code' => $randomCode,
+                'registration_code' => $generateCode(),
                 'student_number'    => '22.21.1099',
                 'full_name'         => 'Fajar Pratama',
                 'email'             => 'fajar.pratama@students.amikom.ac.id',

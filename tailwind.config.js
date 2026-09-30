@@ -18,6 +18,7 @@ module.exports = {
           primary_combine_v2: "#0c1d61",
           primary_hover: "#0c1d61",
           primary_hover_v2: "#081750",
+          warning_custom: "#ffc107",
           dark: "#0B0521",
         },
       },

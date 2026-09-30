@@ -40,41 +40,44 @@ class AuthenticationStudent extends BaseController
         ];
 
         if (!$this->validate($rules, $messages)) {
-            session()->setFlashdata('error', implode('<br>', $this->validator->getErrors()));
-            return redirect()->back()->withInput();
+            $errors = $this->validator->getErrors();
+            return redirect()->back()->withInput()->with('error', $errors);
         }
 
-        $email    = $this->request->getPost('email', FILTER_SANITIZE_EMAIL);
-        $password = $this->request->getPost('password');
+        $email    = strtolower(trim((string)$this->request->getPost('email', FILTER_SANITIZE_EMAIL)));
+        $password = (string)$this->request->getPost('password');
         $user     = $this->userModel->getByEmail($email);
 
         if ($user && password_verify($password, $user->password)) {
             if ($user->status_account === 'inactive') {
-                $this->logActivity('LOGIN_FAILED', 'Percobaan login dengan akun nonaktif: ' . $email, ['target_user_id' => $user->id, 'email' => $email]);
+                $this->logActivity('LOGIN_FAILED', 'Percobaan login dengan akun nonaktif: ' . $email, [
+                    'target_user_code' => $user->registration_code,
+                    'email'            => $email
+                ]);
 
-                session()->setFlashdata('error', 'Akun Anda sedang dinonaktifkan. Silakan hubungi admin.');
-                return redirect()->back()->withInput();
+                return redirect()->back()->withInput()->with('error', 'Akun Anda sedang dinonaktifkan. Silakan hubungi admin.');
             }
 
             if (!$user->is_verified) {
                 if ($this->sendOtp($user)) {
-                    session()->set('pending_user_id', $user->id);
-                    session()->setFlashdata('info', 'Akun belum terverifikasi. Kode OTP baru telah dikirim ke email.');
-                    return redirect()->to('auth/verify-otp');
+                    session()->set('pending_user_code', $user->registration_code);
+                    return redirect()->to('auth/verify-otp')->with('info', 'Akun belum terverifikasi. Kode OTP baru telah dikirim ke email.');
                 }
 
-                session()->setFlashdata('error', 'Gagal mengirim kode OTP ke email.');
-                return redirect()->back()->withInput();
+                return redirect()->back()->withInput()->with('error', 'Gagal mengirim kode OTP ke email.');
             }
 
-            session()->regenerate();
+            session()->regenerate(true);
             session()->set([
                 'user_id'              => $user->id,
+                'registration_code'    => $user->registration_code,
                 'student_number'       => $user->student_number,
                 'full_name'            => $user->full_name,
                 'email'                => $user->email,
                 'profile'              => $user->profile,
-                'is_student_logged_in' => true
+                'membership_status'    => $user->membership_status ?? 'candidate',
+                'is_student_logged_in' => true,
+                'logged_in_at'         => time()
             ]);
 
             $this->logActivity('LOGIN_SUCCESS', 'Mahasiswa ' . $user->full_name . ' (' . $user->student_number . ') berhasil login.');
@@ -82,9 +85,7 @@ class AuthenticationStudent extends BaseController
         }
 
         $this->logActivity('LOGIN_FAILED', 'Gagal login, email atau password salah untuk email: ' . $email, ['attempted_email' => $email]);
-
-        session()->setFlashdata('error', 'Email atau password salah.');
-        return redirect()->back()->withInput();
+        return redirect()->back()->withInput()->with('error', 'Email atau password salah.');
     }
 
     public function register()
@@ -100,7 +101,8 @@ class AuthenticationStudent extends BaseController
             'full_name'             => 'required|trim',
             'email'                 => 'required|valid_email|is_unique[users.email]',
             'password'              => 'required|min_length[8]|regex_match[/[A-Z]/]|regex_match[/[0-9]/]|regex_match[/[\W_]/]',
-            'password_confirmation' => 'required|matches[password]'
+            'password_confirmation' => 'required|matches[password]',
+            'terms_privacy'         => 'required'
         ];
 
         $messages = [
@@ -124,43 +126,52 @@ class AuthenticationStudent extends BaseController
             'password_confirmation' => [
                 'required' => 'Konfirmasi Password tidak boleh kosong.',
                 'matches'  => 'Konfirmasi Password tidak cocok dengan password.'
+            ],
+            'terms_privacy' => [
+                'required' => 'Anda harus menyetujui Syarat & Ketentuan serta Kebijakan Privasi untuk mendaftar.'
             ]
         ];
 
         if (!$this->validate($rules, $messages)) {
-            session()->setFlashdata('error', implode('<br>', $this->validator->getErrors()));
-            return redirect()->back()->withInput();
+            $errors = $this->validator->getErrors();
+            return redirect()->back()->withInput()->with('error', $errors);
         }
 
-        $currentTime = date('Y-m-d H:i:s');
+        $currentTime      = date('Y-m-d H:i:s');
+        $registrationCode = 'fa_registration-' . strtoupper(bin2hex(random_bytes(16))) . '-' . date('YmdHis');
+
         $data = [
-            'student_number' => trim((string)$this->request->getPost('student_number')),
-            'full_name'      => trim((string)$this->request->getPost('full_name')),
-            'email'          => strtolower(trim((string)$this->request->getPost('email'))),
-            'password'       => password_hash($this->request->getPost('password'), PASSWORD_BCRYPT),
-            'is_verified'    => 0,
-            'status_account' => 'active',
-            'created_at'     => $currentTime,
-            'updated_at'     => $currentTime
+            'registration_code'   => $registrationCode,
+            'student_number'      => trim((string)$this->request->getPost('student_number')),
+            'full_name'           => trim((string)$this->request->getPost('full_name')),
+            'email'               => strtolower(trim((string)$this->request->getPost('email'))),
+            'password'            => password_hash($this->request->getPost('password'), PASSWORD_BCRYPT),
+            'is_verified'         => 0,
+            'membership_status'   => 'candidate',
+            'verification_status' => 'unsubmitted',
+            'status_account'      => 'active',
+            'created_at'          => $currentTime,
+            'updated_at'          => $currentTime
         ];
 
         $userId = $this->userModel->insert($data);
         $user   = $this->userModel->find($userId);
 
-        $this->logActivity('REGISTER', 'Registrasi mahasiswa baru berhasil: ' . $data['full_name'] . ' (' . $data['student_number'] . ')', ['registered_user_id' => $userId]);
+        $this->logActivity('REGISTER', 'Registrasi mahasiswa baru berhasil: ' . $data['full_name'] . ' (' . $data['student_number'] . ')', [
+            'registered_code' => $registrationCode
+        ]);
+
         if ($this->sendOtp($user)) {
-            session()->set('pending_user_id', $userId);
-            session()->setFlashdata('success', 'Registrasi berhasil. Silakan cek OTP di email Anda.');
-            return redirect()->to('auth/verify-otp');
+            session()->set('pending_user_code', $user->registration_code);
+            return redirect()->to('auth/verify-otp')->with('success', 'Registrasi berhasil. Silakan cek OTP di email Anda.');
         }
 
-        session()->setFlashdata('error', 'Registrasi berhasil, namun gagal mengirimkan email OTP.');
-        return redirect()->to('auth/login');
+        return redirect()->to('auth/login')->with('error', 'Registrasi berhasil, namun gagal mengirimkan email OTP.');
     }
 
     public function verifyOtp()
     {
-        if (!session()->get('pending_user_id')) {
+        if (!session()->get('pending_user_code')) {
             return redirect()->to('auth/login');
         }
 
@@ -170,27 +181,24 @@ class AuthenticationStudent extends BaseController
 
     public function processOtp()
     {
-        $pendingId = session()->get('pending_user_id');
-
-        if (!$pendingId) {
-            session()->setFlashdata('error', 'Sesi verifikasi telah habis. Silakan login kembali.');
-            return redirect()->to('auth/login');
+        $pendingCode = session()->get('pending_user_code');
+        if (!$pendingCode) {
+            return redirect()->to('auth/login')->with('error', 'Sesi verifikasi telah habis. Silakan login kembali.');
         }
 
         $otpArray = $this->request->getPost('otp');
         $inputOtp = is_array($otpArray) ? implode('', $otpArray) : $otpArray;
         $inputOtp = trim((string) $inputOtp);
 
-        $user = $this->userModel->find($pendingId);
+        $user = $this->userModel->where('registration_code', $pendingCode)->first();
 
         if (!$user) {
-            session()->setFlashdata('error', 'Pengguna tidak ditemukan.');
-            return redirect()->to('auth/login');
+            return redirect()->to('auth/login')->with('error', 'Pengguna tidak ditemukan.');
         }
 
         $dbOtp        = trim((string) $user->otp_code);
         $isValidOtp   = ($dbOtp !== '' && hash_equals($dbOtp, $inputOtp));
-        $isNotExpired = (strtotime($user->otp_expires_at) >= time());
+        $isNotExpired = ($user->otp_expires_at && strtotime($user->otp_expires_at) >= time());
 
         if ($isValidOtp && $isNotExpired) {
             $currentTime = date('Y-m-d H:i:s');
@@ -204,20 +212,21 @@ class AuthenticationStudent extends BaseController
                 'updated_at'        => $currentTime
             ]);
 
-            $this->logActivity('VERIFY_OTP_SUCCESS', 'Verifikasi akun via OTP berhasil untuk user ID: ' . $user->id, ['target_user_id' => $user->id]);
-            session()->remove('pending_user_id');
-            session()->setFlashdata('success', 'Email berhasil diverifikasi! Silakan login.');
-            return redirect()->to('auth/login');
+            $this->logActivity('VERIFY_OTP_SUCCESS', 'Verifikasi akun via OTP berhasil untuk user code: ' . $user->registration_code, [
+                'target_user_code' => $user->registration_code
+            ]);
+
+            session()->remove('pending_user_code');
+            return redirect()->to('auth/login')->with('success', 'Email berhasil diverifikasi! Silakan login.');
         }
 
-        $this->logActivity('VERIFY_OTP_FAILED', 'Gagal verifikasi OTP untuk user ID: ' . $user->id, ['target_user_id' => $user->id, 'reason' => !$isNotExpired ? 'Expired' : 'Invalid OTP']);
-        if (!$isNotExpired) {
-            session()->setFlashdata('error', 'Kode OTP telah kedaluwarsa. Silakan kirim ulang OTP.');
-        } else {
-            session()->setFlashdata('error', 'Kode OTP tidak sesuai.');
-        }
+        $this->logActivity('VERIFY_OTP_FAILED', 'Gagal verifikasi OTP untuk user code: ' . $user->registration_code, [
+            'target_user_code' => $user->registration_code,
+            'reason'           => !$isNotExpired ? 'Expired' : 'Invalid OTP'
+        ]);
 
-        return redirect()->to('auth/verify-otp');
+        $errorMessage = !$isNotExpired ? 'Kode OTP telah kedaluwarsa. Silakan kirim ulang OTP.' : 'Kode OTP tidak sesuai.';
+        return redirect()->to('auth/verify-otp')->with('error', $errorMessage);
     }
 
     public function forgetPassword()
@@ -237,30 +246,31 @@ class AuthenticationStudent extends BaseController
         ];
 
         if (!$this->validate($rules, $messages)) {
-            session()->setFlashdata('error', implode('<br>', $this->validator->getErrors()));
-            return redirect()->back()->withInput();
+            $errors = $this->validator->getErrors();
+            return redirect()->back()->withInput()->with('error', $errors);
         }
 
-        $email = $this->request->getPost('email');
+        $email = strtolower(trim((string)$this->request->getPost('email')));
         $user  = $this->userModel->getByEmail($email);
 
         if (!$user) {
-            session()->setFlashdata('error', 'Alamat email tidak ditemukan.');
-            return redirect()->back()->withInput();
+            return redirect()->back()->withInput()->with('error', 'Alamat email tidak ditemukan.');
         }
 
-        $token = bin2hex(random_bytes(32));
+        $token     = bin2hex(random_bytes(32));
         $this->userModel->saveResetToken($email, $token);
         $resetLink = base_url("auth/reset-password?token={$token}&email=" . urlencode($email));
 
         if ($this->sendResetPasswordEmail($user, $resetLink)) {
-            $this->logActivity('FORGET_PASSWORD_REQUEST', 'Tautan reset password dikirimkan ke email: ' . $email, ['target_user_id' => $user->id, 'email' => $email]);
-            session()->setFlashdata('success', 'Tautan reset password telah dikirim ke email Anda.');
-        } else {
-            session()->setFlashdata('error', 'Gagal mengirim email reset password.');
+            $this->logActivity('FORGET_PASSWORD_REQUEST', 'Tautan reset password dikirimkan ke email: ' . $email, [
+                'target_user_code' => $user->registration_code,
+                'email'            => $email
+            ]);
+
+            return redirect()->to('auth/forget-password')->with('success', 'Tautan reset password telah dikirim ke email Anda.');
         }
 
-        return redirect()->to('auth/forget-password');
+        return redirect()->to('auth/forget-password')->with('error', 'Gagal mengirim email reset password.');
     }
 
     public function resetPassword()
@@ -271,8 +281,7 @@ class AuthenticationStudent extends BaseController
         $resetData = $this->userModel->getResetToken($token);
 
         if (!$resetData || $resetData->email !== $email) {
-            session()->setFlashdata('error', 'Tautan reset password tidak valid atau sudah kadaluwarsa.');
-            return redirect()->to('auth/login');
+            return redirect()->to('auth/login')->with('error', 'Tautan reset password tidak valid atau sudah kadaluwarsa.');
         }
 
         $data = [
@@ -286,7 +295,7 @@ class AuthenticationStudent extends BaseController
     public function processResetPassword()
     {
         $token = $this->request->getPost('token');
-        $email = $this->request->getPost('email');
+        $email = strtolower(trim((string)$this->request->getPost('email')));
 
         $rules = [
             'email'                 => 'required|valid_email',
@@ -311,23 +320,22 @@ class AuthenticationStudent extends BaseController
         ];
 
         if (!$this->validate($rules, $messages)) {
-            session()->setFlashdata('error', implode('<br>', $this->validator->getErrors()));
-            return redirect()->to('auth/reset-password?token=' . $token . '&email=' . urlencode($email));
+            $errors = $this->validator->getErrors();
+            return redirect()->to('auth/reset-password?token=' . $token . '&email=' . urlencode($email))->with('error', $errors);
         }
 
         $resetData = $this->userModel->getResetToken($token);
         if (!$resetData || $resetData->email !== $email) {
-            session()->setFlashdata('error', 'Sesi reset password tidak valid.');
-            return redirect()->to('auth/login');
+            return redirect()->to('auth/login')->with('error', 'Sesi reset password tidak valid.');
         }
 
         $password = password_hash($this->request->getPost('password'), PASSWORD_BCRYPT);
         $this->userModel->updatePasswordByEmail($email, $password);
         $this->userModel->deleteResetToken($email);
+
         $this->logActivity('RESET_PASSWORD_SUCCESS', 'Berhasil memperbarui password untuk email: ' . $email, ['email' => $email]);
 
-        session()->setFlashdata('success', 'Password berhasil diperbarui. Silakan login kembali.');
-        return redirect()->to('auth/login');
+        return redirect()->to('auth/login')->with('success', 'Password berhasil diperbarui. Silakan login kembali.');
     }
 
     public function resendVerification()
@@ -347,40 +355,38 @@ class AuthenticationStudent extends BaseController
         ];
 
         if (!$this->validate($rules, $messages)) {
-            session()->setFlashdata('error', implode('<br>', $this->validator->getErrors()));
-            return redirect()->back()->withInput();
+            $errors = $this->validator->getErrors();
+            return redirect()->back()->withInput()->with('error', $errors);
         }
 
-        $email = $this->request->getPost('email');
+        $email = strtolower(trim((string)$this->request->getPost('email')));
         $user  = $this->userModel->getByEmail($email);
 
         if (!$user) {
-            session()->setFlashdata('error', 'Alamat email tidak terdaftar.');
-            return redirect()->back()->withInput();
+            return redirect()->back()->withInput()->with('error', 'Alamat email tidak terdaftar.');
         }
 
         if ($user->is_verified) {
-            session()->setFlashdata('info', 'Akun Anda sudah terverifikasi. Silakan login.');
-            return redirect()->to('auth/login');
+            return redirect()->to('auth/login')->with('info', 'Akun Anda sudah terverifikasi. Silakan login.');
         }
 
         if ($this->sendOtp($user)) {
-            $this->logActivity('RESEND_VERIFICATION', 'Kode OTP dikirim ulang ke: ' . $email, ['target_user_id' => $user->id, 'email' => $email]);
+            $this->logActivity('RESEND_VERIFICATION', 'Kode OTP dikirim ulang ke: ' . $email, [
+                'target_user_code' => $user->registration_code,
+                'email'            => $email
+            ]);
 
-            session()->set('pending_user_id', $user->id);
-            session()->setFlashdata('success', 'Kode OTP verifikasi baru berhasil dikirim ke email Anda.');
-            return redirect()->to('auth/verify-otp');
+            session()->set('pending_user_code', $user->registration_code);
+            return redirect()->to('auth/verify-otp')->with('success', 'Kode OTP verifikasi baru berhasil dikirim ke email Anda.');
         }
 
-        session()->setFlashdata('error', 'Gagal mengirimkan kode OTP baru.');
-        return redirect()->back()->withInput();
+        return redirect()->back()->withInput()->with('error', 'Gagal mengirimkan kode OTP baru.');
     }
 
     public function resendOtpAction()
     {
-        $pendingId = session()->get('pending_user_id');
-
-        if (!$pendingId) {
+        $pendingCode = session()->get('pending_user_code');
+        if (!$pendingCode) {
             return redirect()->to('auth/login');
         }
 
@@ -389,29 +395,28 @@ class AuthenticationStudent extends BaseController
 
         if ($lastSent && (time() - $lastSent) < $cooldown) {
             $remaining = $cooldown - (time() - $lastSent);
-            session()->setFlashdata('error', "Harap tunggu {$remaining} detik lagi untuk mengirim ulang OTP.");
-            return redirect()->to('auth/verify-otp');
+            return redirect()->to('auth/verify-otp')->with('error', "Harap tunggu {$remaining} detik lagi untuk mengirim ulang OTP.");
         }
 
-        $user = $this->userModel->find($pendingId);
+        $user = $this->userModel->where('registration_code', $pendingCode)->first();
 
         if ($user && $this->sendOtp($user)) {
-            $this->logActivity('RESEND_OTP_ACTION', 'Permintaan ulang OTP untuk user ID: ' . $pendingId, ['target_user_id' => $pendingId]);
+            $this->logActivity('RESEND_OTP_ACTION', 'Permintaan ulang OTP untuk user code: ' . $pendingCode, [
+                'target_user_code' => $pendingCode
+            ]);
 
             session()->set('otp_last_sent', time());
-            session()->setFlashdata('success', 'Kode OTP baru telah berhasil dikirim ke email Anda.');
-        } else {
-            session()->setFlashdata('error', 'Gagal mengirimkan kode OTP baru.');
+            return redirect()->to('auth/verify-otp')->with('success', 'Kode OTP baru telah berhasil dikirim ke email Anda.');
         }
 
-        return redirect()->to('auth/verify-otp');
+        return redirect()->to('auth/verify-otp')->with('error', 'Gagal mengirimkan kode OTP baru.');
     }
 
     public function logout()
     {
-        $userId = session()->get('user_id');
-        if ($userId) {
-            $this->logActivity('LOGOUT', 'User ID ' . $userId . ' telah logout.');
+        $userCode = session()->get('registration_code');
+        if ($userCode) {
+            $this->logActivity('LOGOUT', 'User Code ' . $userCode . ' telah logout.');
         }
 
         session()->destroy();
@@ -428,7 +433,7 @@ class AuthenticationStudent extends BaseController
             'otp_code'       => (string) $otp,
             'otp_created_at' => $createdAt,
             'otp_expires_at' => $expiresAt,
-            'updated_at'     => $createdAt
+            'updated_at'      => $createdAt
         ]);
 
         session()->set('otp_last_sent', time());

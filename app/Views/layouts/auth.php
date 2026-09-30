@@ -48,7 +48,7 @@
                 </div>
 
                 <div class="flex items-center space-x-2 pt-1">
-                    <span class="banner-dot cursor-pointer h-[4px] inline-block transition-all duration-500 bg-brand-primary_light w-[24px] rounded-full"></span>
+                    <span class="banner-dot cursor-pointer h-[4px] inline-block transition-all duration-500 bg-brand-warning_custom w-[24px] rounded-full"></span>
                     <span class="banner-dot cursor-pointer h-[4px] inline-block transition-all duration-500 bg-white/30 hover:bg-white/60 w-[12px] rounded-full"></span>
                     <span class="banner-dot cursor-pointer h-[4px] inline-block transition-all duration-500 bg-white/30 hover:bg-white/60 w-[12px] rounded-full"></span>
                 </div>

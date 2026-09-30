@@ -78,6 +78,14 @@
 		</div>
 	</div>
 
+	<div class="fade-up-gsap flex items-start gap-2.5 pt-1">
+		<input type="checkbox" id="terms_privacy" name="terms_privacy" value="1" <?= old('terms_privacy') ? 'checked' : ''; ?>
+			class="accent-brand-primary mt-0.5 h-4 w-4 rounded border-slate-300 cursor-pointer focus:ring-brand-primary">
+		<label for="terms_privacy" class="text-xs text-slate-600 leading-snug cursor-pointer select-none">
+			Iya, saya menyetujui <span class="text-brand-primary font-bold">Syarat & Ketentuan</span> serta <span class="text-brand-primary font-bold">Kebijakan Privasi</span> Forum Asisten.
+		</label>
+	</div>
+
 	<div class="fade-up-gsap">
 		<button type="submit"
 			class="w-full py-3 sm:py-3.5 bg-brand-primary hover:bg-brand-primary_hover text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2.5 rounded-md transition-all shadow-lg shadow-brand-primary/25 cursor-pointer !mt-5">
