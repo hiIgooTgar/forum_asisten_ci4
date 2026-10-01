@@ -1,13 +1,15 @@
 document.addEventListener("DOMContentLoaded", function () {
-  const facultySelect = $("#faculty_id");
-  const studyProgramSelect = $("#study_program_id");
-  const classGroupSelect = $("#class_id");
+  const facultySelect = $("#faculty_params");
+  const studyProgramSelect = $("#study_program_params");
+  const classGroupSelect = $("#class_params");
 
   const baseUrl = (window.baseUrl || "").replace(/\/+$/, "");
 
-  facultySelect.on("change", function () {
-    const facultyId = $(this).val();
-
+  function fetchStudyPrograms(
+    facultyParams,
+    selectedProgramParams = null,
+    selectedClassParams = null,
+  ) {
     studyProgramSelect
       .empty()
       .append(
@@ -22,49 +24,60 @@ document.addEventListener("DOMContentLoaded", function () {
       .prop("disabled", true)
       .trigger("change.select2");
 
-    if (facultyId) {
-      fetch(`${baseUrl}/student/profile/get-study-programs/${facultyId}`)
-        .then((res) => {
-          if (!res.ok) throw new Error("Network response was not ok");
-          return res.json();
-        })
-        .then((data) => {
-          studyProgramSelect
-            .empty()
-            .append(
-              '<option value="" disabled selected>-- Pilih Program Studi --</option>',
+    if (!facultyParams) return;
+
+    fetch(`${baseUrl}/student/profile/get-study-programs/${facultyParams}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Network response was not ok");
+        return res.json();
+      })
+      .then((data) => {
+        studyProgramSelect
+          .empty()
+          .append(
+            '<option value="" disabled selected>-- Pilih Program Studi --</option>',
+          );
+
+        if (data && data.length > 0) {
+          data.forEach((item) => {
+            const level = item.degree_level ? ` (${item.degree_level})` : "";
+            const isSelected =
+              selectedProgramParams &&
+              String(selectedProgramParams) === String(item.program_main);
+
+            const newOption = new Option(
+              item.program_name + level,
+              item.program_main,
+              false,
+              isSelected,
             );
+            studyProgramSelect.append(newOption);
+          });
+          studyProgramSelect.prop("disabled", false);
+        } else {
+          studyProgramSelect.append(
+            '<option value="" disabled selected>-- Tidak ada prodi --</option>',
+          );
+        }
+        studyProgramSelect.trigger("change.select2");
 
-          if (data && data.length > 0) {
-            data.forEach((item) => {
-              const level = item.degree_level ? ` (${item.degree_level})` : "";
-              studyProgramSelect.append(
-                new Option(item.program_name + level, item.id),
-              );
-            });
-            studyProgramSelect.prop("disabled", false);
-          } else {
-            studyProgramSelect.append(
-              '<option value="" disabled>-- Tidak ada prodi --</option>',
-            );
-          }
-          studyProgramSelect.trigger("change.select2");
-        })
-        .catch((err) => {
-          console.error("Error fetching study programs:", err);
-          studyProgramSelect
-            .empty()
-            .append(
-              '<option value="" disabled selected>-- Gagal Memuat Data --</option>',
-            )
-            .trigger("change.select2");
-        });
-    }
-  });
+        const currentProdi = studyProgramSelect.val();
+        if (currentProdi) {
+          fetchClassGroups(currentProdi, selectedClassParams);
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching study programs:", err);
+        studyProgramSelect
+          .empty()
+          .append(
+            '<option value="" disabled selected>-- Gagal Memuat Data --</option>',
+          )
+          .trigger("change.select2");
+      });
+  }
 
-  studyProgramSelect.on("change", function () {
-    const studyProgramId = $(this).val();
-
+  function fetchClassGroups(studyProgramParams, selectedClassParams = null) {
     classGroupSelect
       .empty()
       .append(
@@ -73,42 +86,70 @@ document.addEventListener("DOMContentLoaded", function () {
       .prop("disabled", true)
       .trigger("change.select2");
 
-    if (studyProgramId) {
-      fetch(`${baseUrl}/student/profile/get-class-groups/${studyProgramId}`)
-        .then((res) => {
-          if (!res.ok) throw new Error("Network response was not ok");
-          return res.json();
-        })
-        .then((data) => {
-          classGroupSelect
-            .empty()
-            .append(
-              '<option value="" disabled selected>-- Pilih Kelas --</option>',
-            );
+    if (!studyProgramParams) return;
 
-          if (data && data.length > 0) {
-            data.forEach((item) => {
-              classGroupSelect.append(new Option(item.class_name, item.id));
-            });
-            classGroupSelect.prop("disabled", false);
-          } else {
-            classGroupSelect.append(
-              '<option value="" disabled>-- Tidak ada kelas --</option>',
+    fetch(`${baseUrl}/student/profile/get-class-groups/${studyProgramParams}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Network response was not ok");
+        return res.json();
+      })
+      .then((data) => {
+        classGroupSelect
+          .empty()
+          .append(
+            '<option value="" disabled selected>-- Pilih Kelas --</option>',
+          );
+
+        if (data && data.length > 0) {
+          data.forEach((item) => {
+            const isSelected =
+              selectedClassParams &&
+              String(selectedClassParams) === String(item.class_main);
+
+            const newOption = new Option(
+              item.class_name,
+              item.class_main,
+              false,
+              isSelected,
             );
-          }
-          classGroupSelect.trigger("change.select2");
-        })
-        .catch((err) => {
-          console.error("Error fetching class groups:", err);
-          classGroupSelect
-            .empty()
-            .append(
-              '<option value="" disabled selected>-- Gagal Memuat Data --</option>',
-            )
-            .trigger("change.select2");
-        });
-    }
+            classGroupSelect.append(newOption);
+          });
+          classGroupSelect.prop("disabled", false);
+        } else {
+          classGroupSelect.append(
+            '<option value="" disabled selected>-- Tidak ada kelas --</option>',
+          );
+        }
+        classGroupSelect.trigger("change.select2");
+      })
+      .catch((err) => {
+        console.error("Error fetching class groups:", err);
+        classGroupSelect
+          .empty()
+          .append(
+            '<option value="" disabled selected>-- Gagal Memuat Data --</option>',
+          )
+          .trigger("change.select2");
+      });
+  }
+
+  facultySelect.on("change", function () {
+    const facultyParams = $(this).val();
+    fetchStudyPrograms(facultyParams);
   });
+
+  studyProgramSelect.on("change", function () {
+    const studyProgramParams = $(this).val();
+    fetchClassGroups(studyProgramParams);
+  });
+
+  const initialFaculty = facultySelect.val();
+  const initialProdi = studyProgramSelect.attr("data-selected");
+  const initialClass = classGroupSelect.attr("data-selected");
+
+  if (initialFaculty && studyProgramSelect.children("option").length <= 1) {
+    fetchStudyPrograms(initialFaculty, initialProdi, initialClass);
+  }
 });
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -177,9 +218,9 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 })();
 
-document
-  .querySelector(".crop-file-input")
-  .addEventListener("change", function (e) {
+const cropInput = document.querySelector(".crop-file-input");
+if (cropInput) {
+  cropInput.addEventListener("change", function (e) {
     const file = e.target.files[0];
     const maxSizeBytes = 1.5 * 1024 * 1024;
 
@@ -192,8 +233,12 @@ document
         return;
       }
 
-      const dataTransfer = new DataTransfer();
-      dataTransfer.items.add(file);
-      document.getElementById("profile_real_input").files = dataTransfer.files;
+      const profileRealInput = document.getElementById("profile_real_input");
+      if (profileRealInput) {
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        profileRealInput.files = dataTransfer.files;
+      }
     }
   });
+}

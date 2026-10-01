@@ -15,15 +15,14 @@ class CreateUserDocumentsTable extends Migration
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
-            'document_code' => [
+            'document_main' => [
                 'type'       => 'VARCHAR',
                 'constraint' => '255',
                 'unique'     => true,
             ],
-            'user_id' => [
-                'type'       => 'BIGINT',
-                'constraint' => 20,
-                'unsigned'   => true,
+            'user_params' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '255',
                 'unique'     => true,
             ],
             'student_card_file' => [
@@ -67,7 +66,7 @@ class CreateUserDocumentsTable extends Migration
         ]);
 
         $this->forge->addKey('id', true);
-        $this->forge->addForeignKey('user_id', 'users', 'id', 'CASCADE', 'CASCADE');
+        $this->forge->addForeignKey('user_params', 'users', 'registration_main', 'CASCADE', 'CASCADE');
         $this->forge->createTable('user_documents');
     }
 

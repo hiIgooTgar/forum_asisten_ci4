@@ -16,22 +16,25 @@ class ProfileData extends BaseController
 
     public function __construct()
     {
-        $this->userModel = new UserModel();
-        $this->takenCourseModel = new TakenCourseModel();
+        $this->userModel         = new UserModel();
+        $this->takenCourseModel  = new TakenCourseModel();
         $this->userDocumentModel = new UserDocumentModel();
-        $this->db        = \Config\Database::connect();
+        $this->db                = \Config\Database::connect();
     }
 
     public function index()
     {
-        $userId        = session()->get('user_id');
-        $studentNumber = session()->get('student_number');
+        $registrationMain = $this->getStudentSession('registration_main');
+        $studentNumber    = $this->getStudentSession('student_number');
+        $fullName         = $this->getStudentSession('full_name');
+        $email            = $this->getStudentSession('email');
+        $isStudentLogged  = $this->getStudentSession('is_student_logged_in');
 
-        if (!$userId || !$studentNumber) {
-            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        if (!$registrationMain || !$studentNumber || !$fullName || !$email || !$isStudentLogged) {
+            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir atau tidak valid.');
         }
 
-        $student = $this->userModel->getStudentProfile($userId);
+        $student = $this->userModel->getStudentProfile($registrationMain);
 
         if (!$student) {
             return redirect()->to('/auth/login')->with('error', 'Data mahasiswa tidak ditemukan.');
@@ -42,8 +45,8 @@ class ProfileData extends BaseController
             'full_name',
             'email',
             'phone_number',
-            'faculty_id',
-            'study_program_id',
+            'faculty_params',
+            'study_program_params',
             'place_of_birth',
             'date_of_birth',
             'gender',
@@ -64,15 +67,15 @@ class ProfileData extends BaseController
         }
 
         if (!$profileIncomplete) {
-            $profilePhoto = trim($student->profile ?? '');
-            if (empty($profilePhoto) || $profilePhoto === 'profile-default.png') {
+            $profilePhoto = basename(trim((string) ($student->profile ?? '')));
+            if (empty($profilePhoto) || in_array($profilePhoto, ['profile-default.png', 'default.png'], true)) {
                 $profileIncomplete = true;
             }
         }
 
-        $takenCoursesCount = $this->takenCourseModel->countUserTakenCourses($userId);
-        $hasTakenCourses   = ($takenCoursesCount > 0);
-        $document = $this->userDocumentModel->getDocumentByUserId($userId);
+        $takenCoursesCount    = $this->takenCourseModel->countUserTakenCourses($registrationMain);
+        $hasTakenCourses      = ($takenCoursesCount > 0);
+        $document             = $this->userDocumentModel->getDocumentByUserParams($registrationMain);
         $allDocumentsUploaded = false;
 
         if ($document) {
@@ -96,43 +99,29 @@ class ProfileData extends BaseController
         }
 
         $isAlreadyVerified = isset($student->verification_status) && $student->verification_status === 'completed';
-        $canVerify = (!$profileIncomplete && $hasTakenCourses && $allDocumentsUploaded && !$isAlreadyVerified);
+        $canVerify          = (!$profileIncomplete && $hasTakenCourses && $allDocumentsUploaded && !$isAlreadyVerified);
 
-        $selectedFacultyId = old('faculty_id', $student->faculty_id ?? null);
-        $selectedProgramId = old('study_program_id', $student->study_program_id ?? null);
-        $faculties         = $this->db->table('faculties')->get()->getResult();
+        $selectedFacultyParams = old('faculty_params', $student->faculty_params ?? null);
+        $selectedProgramParams = old('study_program_params', $student->study_program_params ?? null);
+
+        $faculties = $this->db->table('faculties')->get()->getResult();
 
         $studyPrograms = [];
-        if (!empty($selectedFacultyId)) {
+        if (!empty($selectedFacultyParams)) {
             $studyPrograms = $this->db->table('study_programs')
-                ->where('faculty_id', $selectedFacultyId)
+                ->where('faculty_params', $selectedFacultyParams)
                 ->get()->getResult();
         }
 
         $classGroups = [];
-        if (!empty($selectedProgramId)) {
+        if (!empty($selectedProgramParams)) {
             $classGroups = $this->db->table('class_groups')
-                ->where('study_program_id', $selectedProgramId)
+                ->where('study_program_params', $selectedProgramParams)
                 ->where('is_active', 1)
                 ->get()->getResult();
         }
 
         $activeTab = filter_var($this->request->getGet('tab'), FILTER_SANITIZE_SPECIAL_CHARS) ?: 'biodata';
-
-        $this->logActivity(
-            'VIEW_PROFILE',
-            'Mahasiswa melihat halaman profil tab: ' . $activeTab,
-            [
-                'tab'            => $activeTab,
-                'student_number' => $studentNumber,
-                'can_verify'     => $canVerify,
-            ],
-            'student'
-        );
-
-
-        $appProfileModel = new \App\Models\CompanyApplicationModel();
-        $appProfile = $appProfileModel->first();
 
         $data = [
             'title'         => 'Profil & Biodata Mahasiswa',
@@ -141,26 +130,27 @@ class ProfileData extends BaseController
             'studyPrograms' => $studyPrograms,
             'classGroups'   => $classGroups,
             'activeTab'     => $activeTab,
-            'canVerify'     => $canVerify,
-            'appProfile'        => $appProfile
+            'canVerify'     => $canVerify
         ];
 
         return view('student/profile/index', $data);
     }
 
-    public function getStudyProgramsByFaculty($facultyId)
+    public function getStudyProgramsByFaculty($facultyParams)
     {
         $programs = $this->db->table('study_programs')
-            ->where('faculty_id', $facultyId)
+            ->select('program_main, program_name, degree_level')
+            ->where('faculty_params', $facultyParams)
             ->get()->getResult();
 
         return $this->response->setJSON($programs);
     }
 
-    public function getClassGroupsByStudyProgram($studyProgramId)
+    public function getClassGroupsByStudyProgram($studyProgramParams)
     {
         $classes = $this->db->table('class_groups')
-            ->where('study_program_id', $studyProgramId)
+            ->select('class_main, class_name')
+            ->where('study_program_params', $studyProgramParams)
             ->where('is_active', 1)
             ->get()->getResult();
 
@@ -169,92 +159,95 @@ class ProfileData extends BaseController
 
     public function updateBiodata()
     {
-        $userId        = session()->get('user_id');
-        $studentNumber = session()->get('student_number');
-        $student = $this->userModel->getStudentProfile($userId);
+        $registrationMain = $this->getStudentSession('registration_main');
+        $studentNumber    = $this->getStudentSession('student_number');
+        $fullName         = $this->getStudentSession('full_name');
+        $email            = $this->getStudentSession('email');
+        $isStudentLogged  = $this->getStudentSession('is_student_logged_in');
 
-        if (!$userId || !$studentNumber) {
-            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        if (!$registrationMain || !$studentNumber || !$fullName || !$email || !$isStudentLogged) {
+            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir atau tidak valid.');
+        }
+
+        $student = $this->userModel->getStudentProfile($registrationMain);
+
+        if (!$student) {
+            return redirect()->to('/auth/login')->with('error', 'Data mahasiswa tidak ditemukan.');
         }
 
         if (isset($student->verification_status) && $student->verification_status === 'completed') {
             return redirect()->back()->with('error', 'Akses ditolak: Pendaftaran Anda telah terverifikasi dan data telah terkunci.');
         }
 
-        $currentUser = $this->userModel->find($userId);
-        if (!$currentUser) {
-            return redirect()->to('/auth/login')->with('error', 'Data mahasiswa tidak ditemukan.');
-        }
-
         $rules = [
-            'full_name'        => 'required|min_length[3]|max_length[255]',
-            'phone_number'     => 'required|min_length[10]|max_length[24]',
-            'place_of_birth'   => 'required|max_length[100]',
-            'date_of_birth'    => 'required|valid_date',
-            'gender'           => 'required|in_list[male,female]',
-            'faculty_id'       => 'required|numeric|is_not_unique[faculties.id]',
-            'study_program_id' => 'required|required_with[faculty_id]|numeric|is_not_unique[study_programs.id]',
-            'class_id'         => 'required|required_with[study_program_id]|numeric|is_not_unique[class_groups.id]',
-            'gpa'              => 'required|numeric|greater_than_equal_to[0]|less_than_equal_to[4]',
-            'address'          => 'required|max_length[500]',
-            'province'         => 'required|max_length[255]',
-            'regency'          => 'required|required_with[province]|max_length[255]',
-            'subdistrict'      => 'required|required_with[regency]|max_length[255]',
-            'village'          => 'required|required_with[subdistrict]|max_length[255]',
+            'full_name'            => 'required|min_length[3]|max_length[255]',
+            'phone_number'         => 'required|min_length[10]|max_length[24]',
+            'place_of_birth'       => 'required|max_length[100]',
+            'date_of_birth'        => 'required|valid_date',
+            'gender'               => 'required|in_list[male,female]',
+            'faculty_params'       => 'required|is_not_unique[faculties.faculty_main]',
+            'study_program_params' => 'required|required_with[faculty_params]|is_not_unique[study_programs.program_main]',
+            'class_params'         => 'required|required_with[study_program_params]|is_not_unique[class_groups.class_main]',
+            'gpa'                  => 'required|numeric|greater_than_equal_to[0]|less_than_equal_to[4]',
+            'address'              => 'required|max_length[500]',
+            'province'             => 'required|max_length[255]',
+            'regency'              => 'required|required_with[province]|max_length[255]',
+            'subdistrict'          => 'required|required_with[regency]|max_length[255]',
+            'village'              => 'required|required_with[subdistrict]|max_length[255]',
         ];
 
         $messages = [
-            'full_name'        => [
+            'full_name' => [
                 'required'   => 'Nama lengkap wajib diisi.',
                 'min_length' => 'Nama minimal 3 karakter.',
             ],
-            'phone_number'     => [
+            'phone_number' => [
                 'required'   => 'Nomor telepon wajib diisi.',
                 'min_length' => 'Nomor telepon minimal 10 angka.',
-                'max_length' => 'Nomor telepon maksimal 20 angka.',
+                'max_length' => 'Nomor telepon maksimal 24 angka.',
             ],
-            'place_of_birth'   => [
-                'required'   => 'Tempat lahir wajib diisi.',
+            'place_of_birth' => [
+                'required' => 'Tempat lahir wajib diisi.',
             ],
-            'date_of_birth'    => [
-                'required'   => 'Tanggal lahir wajib diisi.',
+            'date_of_birth' => [
+                'required' => 'Tanggal lahir wajib diisi.',
             ],
-            'gender'           => [
-                'required'   => 'Jenis kelamin wajib dipilih.',
+            'gender' => [
+                'required' => 'Jenis kelamin wajib dipilih.',
             ],
-            'faculty_id'       => [
+            'faculty_params' => [
                 'required'      => 'Fakultas wajib dipilih.',
                 'is_not_unique' => 'Fakultas tidak valid.',
             ],
-            'study_program_id' => [
+            'study_program_params' => [
                 'required'      => 'Program studi wajib dipilih.',
                 'required_with' => 'Program studi wajib dipilih jika Fakultas diisi.',
                 'is_not_unique' => 'Program studi tidak valid.',
             ],
-            'class_id'         => [
+            'class_params' => [
                 'required'      => 'Kelas wajib dipilih.',
                 'required_with' => 'Kelas wajib dipilih jika Program studi diisi.',
                 'is_not_unique' => 'Kelas tidak valid.',
             ],
-            'gpa'              => [
-                'required'   => 'IPK wajib diisi.',
-                'numeric'    => 'IPK harus berupa angka.',
+            'gpa' => [
+                'required' => 'IPK wajib diisi.',
+                'numeric'  => 'IPK harus berupa angka.',
             ],
-            'address'          => [
-                'required'   => 'Alamat lengkap wajib diisi.',
+            'address' => [
+                'required' => 'Alamat lengkap wajib diisi.',
             ],
-            'province'         => [
-                'required'   => 'Provinsi wajib diisi.',
+            'province' => [
+                'required' => 'Provinsi wajib diisi.',
             ],
-            'regency'          => [
+            'regency' => [
                 'required'      => 'Kabupaten/Kota wajib diisi.',
                 'required_with' => 'Kabupaten/Kota wajib dipilih jika Provinsi diisi.',
             ],
-            'subdistrict'      => [
+            'subdistrict' => [
                 'required'      => 'Kecamatan wajib diisi.',
                 'required_with' => 'Kecamatan wajib dipilih jika Kabupaten/Kota diisi.',
             ],
-            'village'          => [
+            'village' => [
                 'required'      => 'Kelurahan/Desa wajib diisi.',
                 'required_with' => 'Kelurahan/Desa wajib dipilih jika Kecamatan diisi.',
             ],
@@ -265,8 +258,9 @@ class ProfileData extends BaseController
                 'FAILED_UPDATE_BIODATA_VALIDATION',
                 'Gagal memperbarui biodata karena kesalahan input form',
                 [
-                    'student_number' => $studentNumber,
-                    'errors'         => $this->validator->getErrors(),
+                    'registration_main' => $registrationMain,
+                    'student_number'    => $studentNumber,
+                    'errors'            => $this->validator->getErrors(),
                 ],
                 'student'
             );
@@ -278,34 +272,22 @@ class ProfileData extends BaseController
                 ->with('errors', $this->validator->getErrors());
         }
 
-        $facultyId      = $this->request->getPost('faculty_id');
-        $studyProgramId = $this->request->getPost('study_program_id');
-        $classId        = $this->request->getPost('class_id');
+        $facultyParams      = $this->request->getPost('faculty_params');
+        $studyProgramParams = $this->request->getPost('study_program_params');
+        $classParams        = $this->request->getPost('class_params');
 
         $validProgram = $this->db->table('study_programs')
-            ->where('id', $studyProgramId)
-            ->where('faculty_id', $facultyId)
+            ->where('program_main', $studyProgramParams)
+            ->where('faculty_params', $facultyParams)
             ->countAllResults();
 
         $validClass = $this->db->table('class_groups')
-            ->where('id', $classId)
-            ->where('study_program_id', $studyProgramId)
+            ->where('class_main', $classParams)
+            ->where('study_program_params', $studyProgramParams)
             ->where('is_active', 1)
             ->countAllResults();
 
         if (!$validProgram || !$validClass) {
-            $this->logActivity(
-                'FAILED_UPDATE_BIODATA_INVALID_COMBINATION',
-                'Gagal memperbarui biodata karena kombinasi Fakultas, Prodi, atau Kelas tidak valid',
-                [
-                    'student_number'   => $studentNumber,
-                    'faculty_id'       => $facultyId,
-                    'study_program_id' => $studyProgramId,
-                    'class_id'         => $classId,
-                ],
-                'student'
-            );
-
             return redirect()
                 ->to(base_url('student/profile?tab=biodata'))
                 ->withInput()
@@ -313,30 +295,28 @@ class ProfileData extends BaseController
         }
 
         $newData = [
-            'full_name'        => trim((string)$this->request->getPost('full_name')),
-            'phone_number'     => trim((string)$this->request->getPost('phone_number')),
-            'place_of_birth'   => trim((string)$this->request->getPost('place_of_birth')),
-            'date_of_birth'    => (string)$this->request->getPost('date_of_birth'),
-            'gender'           => (string)$this->request->getPost('gender'),
-            'faculty_id'       => (int)$facultyId,
-            'study_program_id' => (int)$studyProgramId,
-            'class_id'         => (int)$classId,
-            'gpa'              => (float)$this->request->getPost('gpa'),
-            'province'         => trim((string)$this->request->getPost('province')),
-            'regency'          => trim((string)$this->request->getPost('regency')),
-            'subdistrict'      => trim((string)$this->request->getPost('subdistrict')),
-            'village'          => trim((string)$this->request->getPost('village')),
-            'address'          => trim((string)$this->request->getPost('address')),
+            'full_name'            => trim((string)$this->request->getPost('full_name')),
+            'phone_number'         => trim((string)$this->request->getPost('phone_number')),
+            'place_of_birth'       => trim((string)$this->request->getPost('place_of_birth')),
+            'date_of_birth'        => (string)$this->request->getPost('date_of_birth'),
+            'gender'               => (string)$this->request->getPost('gender'),
+            'faculty_params'       => $facultyParams,
+            'study_program_params' => $studyProgramParams,
+            'class_params'         => $classParams,
+            'gpa'                  => (float)$this->request->getPost('gpa'),
+            'province'             => trim((string)$this->request->getPost('province')),
+            'regency'              => trim((string)$this->request->getPost('regency')),
+            'subdistrict'          => trim((string)$this->request->getPost('subdistrict')),
+            'village'              => trim((string)$this->request->getPost('village')),
+            'address'              => trim((string)$this->request->getPost('address')),
         ];
 
         $isChanged     = false;
         $changedFields = [];
         foreach ($newData as $field => $value) {
-            $oldValue = is_object($currentUser) ? ($currentUser->$field ?? null) : ($currentUser[$field] ?? null);
+            $oldValue = $student->$field ?? null;
             if ($field === 'gpa') {
                 $oldValue = (float)$oldValue;
-            } elseif (in_array($field, ['faculty_id', 'study_program_id', 'class_id'])) {
-                $oldValue = (int)$oldValue;
             }
 
             if ($oldValue !== $value) {
@@ -352,7 +332,7 @@ class ProfileData extends BaseController
         }
 
         $newData['updated_at'] = date('Y-m-d H:i:s');
-        $this->userModel->update($userId, $newData);
+        $this->userModel->where('registration_main', $registrationMain)->set($newData)->update();
 
         session()->set([
             'full_name'      => $newData['full_name'],
@@ -363,8 +343,9 @@ class ProfileData extends BaseController
             'UPDATE_BIODATA_SUCCESS',
             'Mahasiswa berhasil memperbarui biodata profil (' . implode(', ', $changedFields) . ')',
             [
-                'student_number' => $studentNumber,
-                'updated_fields' => $changedFields,
+                'registration_main' => $registrationMain,
+                'student_number'    => $studentNumber,
+                'updated_fields'    => $changedFields,
             ],
             'student'
         );
@@ -374,26 +355,30 @@ class ProfileData extends BaseController
             ->with('success', 'Biodata profil berhasil diperbarui.');
     }
 
+
     public function updatePhoto()
     {
-        $userId        = session()->get('user_id');
-        $studentNumber = session()->get('student_number');
-        $student = $this->userModel->getStudentProfile($userId);
+        $registrationMain = $this->getStudentSession('registration_main');
+        $studentNumber    = $this->getStudentSession('student_number');
+        $fullName         = $this->getStudentSession('full_name');
+        $email            = $this->getStudentSession('email');
+        $isStudentLogged  = $this->getStudentSession('is_student_logged_in');
 
-        if (!$userId || !$studentNumber) {
-            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        if (!$registrationMain || !$studentNumber || !$fullName || !$email || !$isStudentLogged) {
+            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir atau tidak valid.');
+        }
+
+        $student = $this->userModel->getStudentProfile($registrationMain);
+
+        if (!$student) {
+            return redirect()->to('/auth/login')->with('error', 'Data mahasiswa tidak ditemukan.');
         }
 
         if (isset($student->verification_status) && $student->verification_status === 'completed') {
             return redirect()->back()->with('error', 'Akses ditolak: Pendaftaran Anda telah terverifikasi dan data telah terkunci.');
         }
 
-        $user = $this->userModel->find($userId);
-        if (!$user) {
-            return redirect()->to('/auth/login')->with('error', 'Data mahasiswa tidak ditemukan.');
-        }
-
-        $currentProfilePhoto = is_object($user) ? ($user->profile ?? null) : ($user['profile'] ?? null);
+        $currentProfilePhoto = is_object($student) ? ($student->profile ?? null) : ($student['profile'] ?? null);
 
         $isRemoved   = $this->request->getPost('remove_profile');
         $base64Image = $this->request->getPost('profile');
@@ -405,7 +390,7 @@ class ProfileData extends BaseController
         $maxSizeBytes = 1.5 * 1024 * 1024;
 
         if ($isRemoved == '1') {
-            if (!empty($currentProfilePhoto) && $currentProfilePhoto !== 'profile-default.png') {
+            if (!empty($currentProfilePhoto) && !in_array($currentProfilePhoto, ['profile-default.png', 'default.png'], true)) {
                 if (file_exists($baseUploadPath . $currentProfilePhoto)) {
                     unlink($baseUploadPath . $currentProfilePhoto);
                 }
@@ -415,18 +400,8 @@ class ProfileData extends BaseController
             }
 
             $defaultFileName = 'profile-default.png';
-            $this->userModel->update($userId, ['profile' => $defaultFileName]);
+            $this->userModel->where('registration_main', $registrationMain)->set(['profile' => $defaultFileName])->update();
             session()->set('profile', $defaultFileName);
-
-            $this->logActivity(
-                'DELETE_PROFILE_PHOTO_SUCCESS',
-                'Mahasiswa menghapus foto profil dan mengembalikan ke foto default',
-                [
-                    'student_number' => $studentNumber,
-                    'previous_file'  => $currentProfilePhoto,
-                ],
-                'student'
-            );
 
             return redirect()
                 ->to(base_url('student/profile?tab=photo'))
@@ -436,14 +411,6 @@ class ProfileData extends BaseController
         if (!empty($base64Image) && str_contains($base64Image, 'data:image')) {
 
             if (!preg_match('/^data:image\/(png|jpg|jpeg);base64,/', $base64Image)) {
-                $this->logActivity(
-                    'FAILED_PHOTO_UPLOAD_INVALID_FORMAT',
-                    'Gagal mengunggah foto profil: Format berkas tidak valid',
-                    [
-                        'student_number' => $studentNumber,
-                    ],
-                    'student'
-                );
 
                 return redirect()
                     ->to(base_url('student/profile?tab=photo'))
@@ -460,16 +427,6 @@ class ProfileData extends BaseController
             }
 
             if (strlen($decodedData) > $maxSizeBytes) {
-                $this->logActivity(
-                    'FAILED_PHOTO_UPLOAD_EXCEED_SIZE',
-                    'Gagal mengunggah foto profil: Ukuran berkas melebihi 1.5 MB',
-                    [
-                        'student_number' => $studentNumber,
-                        'file_size'      => strlen($decodedData),
-                    ],
-                    'student'
-                );
-
                 return redirect()
                     ->to(base_url('student/profile?tab=photo'))
                     ->with('error', 'Ukuran foto hasil potong melebihi batas maksimal 1,5 MB.');
@@ -493,9 +450,9 @@ class ProfileData extends BaseController
             $randomString = random_string('alnum', 32);
             $dateTimeNow  = date('Ymd_His');
 
-            $fileName = 'profile_' . $studentNumber . '_' . $randomString . '_' . $dateTimeNow . '-' . $userId . '.png';
+            $fileName = 'profile_' . $studentNumber . '_' . $randomString . '_' . $dateTimeNow . '.png';
 
-            if (!empty($currentProfilePhoto) && $currentProfilePhoto !== 'profile-default.png') {
+            if (!empty($currentProfilePhoto) && !in_array($currentProfilePhoto, ['profile-default.png', 'default.png'], true)) {
                 if (file_exists($baseUploadPath . $currentProfilePhoto)) {
                     unlink($baseUploadPath . $currentProfilePhoto);
                 }
@@ -513,15 +470,16 @@ class ProfileData extends BaseController
                     ->save($realUploadPath . $fileName, 75);
             }
 
-            $this->userModel->update($userId, ['profile' => $fileName]);
+            $this->userModel->where('registration_main', $registrationMain)->set(['profile' => $fileName])->update();
             session()->set('profile', $fileName);
 
             $this->logActivity(
                 'UPDATE_PROFILE_PHOTO_SUCCESS',
                 'Mahasiswa berhasil memperbarui pas foto profil',
                 [
-                    'student_number' => $studentNumber,
-                    'file_name'      => $fileName,
+                    'registration_main' => $registrationMain,
+                    'student_number'    => $studentNumber,
+                    'file_name'         => $fileName,
                 ],
                 'student'
             );

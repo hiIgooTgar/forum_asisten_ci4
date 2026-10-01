@@ -17,31 +17,38 @@ class ExperienceData extends BaseController
 
     public function __construct()
     {
-        $this->experienceModel = new UserExperienceModel();
-        $this->userModel        = new UserModel();
-        $this->takenCourseModel = new TakenCourseModel();
+        $this->experienceModel   = new UserExperienceModel();
+        $this->userModel         = new UserModel();
+        $this->takenCourseModel  = new TakenCourseModel();
         $this->userDocumentModel = new UserDocumentModel();
     }
 
     public function index()
     {
-        $userId        = session()->get('user_id');
-        $studentNumber = session()->get('student_number');
+        $registrationMain = $this->getStudentSession('registration_main');
+        $studentNumber    = $this->getStudentSession('student_number');
+        $fullName         = $this->getStudentSession('full_name');
+        $email            = $this->getStudentSession('email');
+        $isStudentLogged  = $this->getStudentSession('is_student_logged_in');
 
-        if (!$userId || !$studentNumber) {
-            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        if (!$registrationMain || !$studentNumber || !$fullName || !$email || !$isStudentLogged) {
+            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir atau tidak valid.');
         }
 
-        $student     = $this->userModel->getStudentProfile($userId);
-        $experiences = $this->experienceModel->getByUserId($userId);
+        $student     = $this->userModel->getStudentProfile($registrationMain);
+        $experiences = $this->experienceModel->getByUserParams($registrationMain);
+
+        if (!$student) {
+            return redirect()->to('/auth/login')->with('error', 'Data mahasiswa tidak ditemukan.');
+        }
 
         $requiredFields = [
             'student_number',
             'full_name',
             'email',
             'phone_number',
-            'faculty_id',
-            'study_program_id',
+            'faculty_params',
+            'study_program_params',
             'place_of_birth',
             'date_of_birth',
             'gender',
@@ -62,16 +69,16 @@ class ExperienceData extends BaseController
         }
 
         if (!$profileIncomplete) {
-            $profilePhoto = trim($student->profile ?? '');
-            if (empty($profilePhoto) || $profilePhoto === 'profile-default.png') {
+            $profilePhoto = basename(trim((string) ($student->profile ?? '')));
+            if (empty($profilePhoto) || in_array($profilePhoto, ['profile-default.png', 'default.png'], true)) {
                 $profileIncomplete = true;
             }
         }
 
-        $takenCoursesCount = $this->takenCourseModel->countUserTakenCourses($userId);
+        $takenCoursesCount = $this->takenCourseModel->countUserTakenCourses($registrationMain);
         $hasTakenCourses   = ($takenCoursesCount > 0);
 
-        $document = $this->userDocumentModel->getDocumentByUserId($userId);
+        $document = $this->userDocumentModel->getDocumentByUserParams($registrationMain);
         $allDocumentsUploaded = false;
 
         if ($document) {
@@ -95,21 +102,7 @@ class ExperienceData extends BaseController
         }
 
         $isAlreadyVerified = isset($student->verification_status) && $student->verification_status === 'completed';
-        $canVerify = (!$profileIncomplete && $hasTakenCourses && $allDocumentsUploaded && !$isAlreadyVerified);
-
-        $this->logActivity(
-            'VIEW_EXPERIENCES',
-            'Mahasiswa melihat daftar pengalaman',
-            [
-                'student_number'     => $studentNumber,
-                'profile_incomplete' => $profileIncomplete,
-                'can_verify'         => $canVerify,
-            ],
-            'student'
-        );
-
-        $appProfileModel = new \App\Models\CompanyApplicationModel();
-        $appProfile = $appProfileModel->first();
+        $canVerify         = (!$profileIncomplete && $hasTakenCourses && $allDocumentsUploaded && !$isAlreadyVerified);
 
         $data = [
             'title'             => 'Pengalaman & Portofolio',
@@ -118,8 +111,6 @@ class ExperienceData extends BaseController
             'profileIncomplete' => $profileIncomplete,
             'canVerify'         => $canVerify,
             'activeTab'         => 'experience',
-            'appProfile'            => $appProfile
-
         ];
 
         return view('student/experience/index', $data);
@@ -127,13 +118,17 @@ class ExperienceData extends BaseController
 
     public function store()
     {
-        $userId        = session()->get('user_id');
-        $studentNumber = session()->get('student_number');
-        $student = $this->userModel->getStudentProfile($userId);
+        $registrationMain = $this->getStudentSession('registration_main');
+        $studentNumber    = $this->getStudentSession('student_number');
+        $fullName         = $this->getStudentSession('full_name');
+        $email            = $this->getStudentSession('email');
+        $isStudentLogged  = $this->getStudentSession('is_student_logged_in');
 
-        if (!$userId || !$studentNumber) {
-            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        if (!$registrationMain || !$studentNumber || !$fullName || !$email || !$isStudentLogged) {
+            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir atau tidak valid.');
         }
+
+        $student = $this->userModel->getStudentProfile($registrationMain);
 
         if (isset($student->verification_status) && $student->verification_status === 'completed') {
             return redirect()->back()->with('error', 'Akses ditolak: Pendaftaran Anda telah terverifikasi dan data telah terkunci.');
@@ -166,7 +161,7 @@ class ExperienceData extends BaseController
             'year_occurred' => [
                 'rules'  => 'required|valid_date[Y]|greater_than[1990]|less_than_equal_to[' . date('Y') . ']',
                 'errors' => [
-                    'required'            => 'Tahun pelaksanaan wajib diisi.',
+                    'required'           => 'Tahun pelaksanaan wajib diisi.',
                     'valid_date'          => 'Format tahun pelaksanaan harus berupa 4 digit angka tahun (YYYY).',
                     'greater_than'        => 'Tahun pelaksanaan harus lebih besar dari tahun 1990.',
                     'less_than_equal_to'  => 'Tahun pelaksanaan tidak boleh melebihi tahun saat ini.',
@@ -187,31 +182,24 @@ class ExperienceData extends BaseController
         ];
 
         if (!$this->validate($validationRules)) {
-            $this->logActivity(
-                'FAILED_CREATE_EXPERIENCE_VALIDATION',
-                'Gagal menambahkan pengalaman baru karena kesalahan input form',
-                [
-                    'student_number' => $studentNumber,
-                    'errors'         => $this->validator->getErrors(),
-                ],
-                'student'
-            );
-
             return redirect()->back()->withInput()->with('error', 'Gagal memperbarui data pengalaman. Silakan periksa kembali form Anda.')->with('errors', $this->validator->getErrors());
         }
 
+        $dateTimeNow  = date('Ymd_His');
         $isCurrent      = $this->request->getPost('is_current') ? 1 : 0;
-        $experienceCode = mt_rand(1000000000, 9999999999) . '_' . $studentNumber;
+        $experienceMain = $studentNumber . '_' . mt_rand(1000000000000000, 9999999999999999) . '_' . $dateTimeNow;
 
         $saveData = [
-            'user_id'           => $userId,
-            'experience_code'   => $experienceCode,
+            'user_params'       => $registrationMain,
+            'experience_main'   => $experienceMain,
             'title'             => $this->request->getPost('title'),
             'organization_name' => $this->request->getPost('organization_name'),
             'experience_type'   => $this->request->getPost('experience_type'),
             'year_occurred'     => $this->request->getPost('year_occurred'),
             'is_current'        => $isCurrent,
             'description'       => $this->request->getPost('description'),
+            'created_at'        => date('Y-m-d H:i:s'),
+            'updated_at'        => date('Y-m-d H:i:s'),
         ];
 
         $this->experienceModel->insert($saveData);
@@ -221,10 +209,11 @@ class ExperienceData extends BaseController
             'CREATE_EXPERIENCE_SUCCESS',
             'Mahasiswa berhasil menambahkan pengalaman baru: ' . $saveData['title'],
             [
-                'student_number'  => $studentNumber,
-                'experience_id'   => $insertId,
-                'experience_code' => $experienceCode,
-                'data'            => $saveData,
+                'registration_main' => $registrationMain,
+                'student_number'    => $studentNumber,
+                'experience_id'     => $insertId,
+                'experience_main'   => $experienceMain,
+                'data'              => $saveData,
             ],
             'student'
         );
@@ -232,36 +221,30 @@ class ExperienceData extends BaseController
         return redirect()->to('/student/experiences')->with('success', 'Data pengalaman berhasil ditambahkan.');
     }
 
-    public function update($experienceCode)
+    public function update($experienceMain)
     {
-        $userId        = session()->get('user_id');
-        $studentNumber = session()->get('student_number');
-        $student = $this->userModel->getStudentProfile($userId);
+        $registrationMain = $this->getStudentSession('registration_main');
+        $studentNumber    = $this->getStudentSession('student_number');
+        $fullName         = $this->getStudentSession('full_name');
+        $email            = $this->getStudentSession('email');
+        $isStudentLogged  = $this->getStudentSession('is_student_logged_in');
 
-        if (!$userId || !$studentNumber) {
-            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        if (!$registrationMain || !$studentNumber || !$fullName || !$email || !$isStudentLogged) {
+            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir atau tidak valid.');
         }
+
+        $student = $this->userModel->getStudentProfile($registrationMain);
 
         if (isset($student->verification_status) && $student->verification_status === 'completed') {
             return redirect()->back()->with('error', 'Akses ditolak: Pendaftaran Anda telah terverifikasi dan data telah terkunci.');
         }
 
         $experience = $this->experienceModel
-            ->where('experience_code', $experienceCode)
-            ->where('user_id', $userId)
+            ->where('experience_main', $experienceMain)
+            ->where('user_params', $registrationMain)
             ->first();
 
         if (!$experience) {
-            $this->logActivity(
-                'FAILED_UPDATE_EXPERIENCE_NOT_FOUND',
-                'Gagal memperbarui pengalaman: Data tidak ditemukan atau akses ditolak (Code: ' . $experienceCode . ')',
-                [
-                    'student_number'  => $studentNumber,
-                    'experience_code' => $experienceCode,
-                ],
-                'student'
-            );
-
             return redirect()->to('/student/experiences')->with('error', 'Data tidak ditemukan atau akses ditolak.');
         }
 
@@ -313,17 +296,6 @@ class ExperienceData extends BaseController
         ];
 
         if (!$this->validate($validationRules)) {
-            $this->logActivity(
-                'FAILED_UPDATE_EXPERIENCE_VALIDATION',
-                'Gagal memperbarui pengalaman karena kesalahan input form (Code: ' . $experienceCode . ')',
-                [
-                    'student_number'  => $studentNumber,
-                    'experience_code' => $experienceCode,
-                    'errors'          => $this->validator->getErrors(),
-                ],
-                'student'
-            );
-
             return redirect()->back()->withInput()->with('error', 'Gagal memperbarui data pengalaman. Silakan periksa kembali form Anda.')->with('errors', $this->validator->getErrors());
         }
 
@@ -365,18 +337,20 @@ class ExperienceData extends BaseController
         $newData['updated_at'] = date('Y-m-d H:i:s');
 
         $this->experienceModel
-            ->where('experience_code', $experienceCode)
+            ->where('experience_main', $experienceMain)
+            ->where('user_params', $registrationMain)
             ->set($newData)
             ->update();
 
         $this->logActivity(
             'UPDATE_EXPERIENCE_SUCCESS',
-            'Mahasiswa berhasil memperbarui data pengalaman (' . implode(', ', $changedFields) . ') Code: ' . $experienceCode,
+            'Mahasiswa berhasil memperbarui data pengalaman (' . implode(', ', $changedFields) . ') Code: ' . $experienceMain,
             [
-                'student_number'  => $studentNumber,
-                'experience_code' => $experienceCode,
-                'updated_fields'  => $changedFields,
-                'updated_data'    => $newData,
+                'registration_main' => $registrationMain,
+                'student_number'    => $studentNumber,
+                'experience_main'   => $experienceMain,
+                'updated_fields'    => $changedFields,
+                'updated_data'      => $newData,
             ],
             'student'
         );
@@ -384,42 +358,47 @@ class ExperienceData extends BaseController
         return redirect()->to('/student/experiences')->with('success', 'Data pengalaman berhasil diperbarui.');
     }
 
-    public function delete($experienceCode)
+    public function delete($experienceMain)
     {
-        $userId        = session()->get('user_id');
-        $studentNumber = session()->get('student_number');
-        $student = $this->userModel->getStudentProfile($userId);
+        $registrationMain = $this->getStudentSession('registration_main');
+        $studentNumber    = $this->getStudentSession('student_number');
+        $fullName         = $this->getStudentSession('full_name');
+        $email            = $this->getStudentSession('email');
+        $isStudentLogged  = $this->getStudentSession('is_student_logged_in');
 
-        if (!$userId || !$studentNumber) {
-            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        if (!$registrationMain || !$studentNumber || !$fullName || !$email || !$isStudentLogged) {
+            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir atau tidak valid.');
         }
+
+        $student = $this->userModel->getStudentProfile($registrationMain);
 
         if (isset($student->verification_status) && $student->verification_status === 'completed') {
             return redirect()->back()->with('error', 'Akses ditolak: Pendaftaran Anda telah terverifikasi dan data telah terkunci.');
         }
 
-        $experience = $this->experienceModel->where('experience_code', $experienceCode)->where('user_id', $userId)->first();
-        if (!$experience) {
-            $this->logActivity(
-                'FAILED_DELETE_EXPERIENCE_NOT_FOUND',
-                'Gagal menghapus pengalaman: Data tidak ditemukan atau akses ditolak (Code: ' . $experienceCode . ')',
-                [
-                    'student_number'  => $studentNumber,
-                    'experience_code' => $experienceCode,
-                ],
-                'student'
-            );
+        $experience = $this->experienceModel
+            ->where('experience_main', $experienceMain)
+            ->where('user_params', $registrationMain)
+            ->first();
 
+        if (!$experience) {
             return redirect()->to('/student/experiences')->with('error', 'Data tidak ditemukan atau akses ditolak.');
         }
 
-        $this->experienceModel->where('experience_code', $experienceCode)->delete();
+        $this->experienceModel
+            ->where('experience_main', $experienceMain)
+            ->where('user_params', $registrationMain)
+            ->delete();
+
+        $experienceTitle = is_object($experience) ? $experience->title : ($experience['title'] ?? '');
+
         $this->logActivity(
             'DELETE_EXPERIENCE_SUCCESS',
-            'Mahasiswa menghapus pengalaman: ' . $experience->title,
+            'Mahasiswa menghapus pengalaman: ' . $experienceTitle,
             [
-                'student_number'  => $studentNumber,
-                'experience_code' => $experienceCode,
+                'registration_main' => $registrationMain,
+                'student_number'    => $studentNumber,
+                'experience_main'   => $experienceMain,
             ],
             'student'
         );

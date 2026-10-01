@@ -15,15 +15,14 @@ class CreateActivityLogsTable extends Migration
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
-            'activity_log_code' => [
+            'activity_log_main' => [
                 'type'       => 'VARCHAR',
                 'constraint' => '255',
                 'unique'     => true,
             ],
-            'user_id' => [
-                'type'       => 'INT',
-                'constraint' => 11,
-                'unsigned'   => true,
+            'user_params' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '255',
                 'null'       => true,
             ],
             'user_type' => [
@@ -60,7 +59,7 @@ class CreateActivityLogsTable extends Migration
         ]);
 
         $this->forge->addKey('id', true);
-        $this->forge->addKey('user_id');
+        $this->forge->addKey('user_params');
         $this->forge->createTable('activity_logs');
     }
 

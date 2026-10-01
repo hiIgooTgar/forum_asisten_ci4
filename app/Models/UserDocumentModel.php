@@ -13,8 +13,8 @@ class UserDocumentModel extends Model
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields    = [
-        'document_code',
-        'user_id',
+        'document_main',
+        'user_params',
         'student_card_file',
         'application_letter_file',
         'cv_file',
@@ -53,15 +53,15 @@ class UserDocumentModel extends Model
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
 
-    public function getDocumentByUserId($userId)
+    public function getDocumentByUserParams($registrationMain)
     {
-        return $this->where('user_id', $userId)->first();
+        return $this->where('user_params', $registrationMain)->first();
     }
 
-    public function getDocumentByCodeAndUser($documentCode, $userId)
+    public function getDocumentByCodeAndUser($documentMain, $registrationMain)
     {
-        return $this->where('document_code', $documentCode)
-            ->where('user_id', $userId)
+        return $this->where('document_main', $documentMain)
+            ->where('user_params', $registrationMain)
             ->first();
     }
 }

@@ -13,15 +13,15 @@ class UserModel extends Model
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields    = [
-        'registration_code',
+        'registration_main',
         'student_number',
         'full_name',
         'email',
         'phone_number',
         'password',
-        'faculty_id',
-        'study_program_id',
-        'class_id',
+        'faculty_params',
+        'study_program_params',
+        'class_params',
         'place_of_birth',
         'date_of_birth',
         'gender',
@@ -111,18 +111,18 @@ class UserModel extends Model
         ])->update();
     }
 
-    public function getStudentProfile(int $userId)
+    public function getStudentProfile(string $registrationMain)
     {
         return $this->db->table($this->table)
             ->select('users.*, 
-                      faculties.faculty_name, 
-                      study_programs.program_name, 
-                      study_programs.degree_level,
-                      class_groups.class_name')
-            ->join('faculties', 'faculties.id = users.faculty_id', 'left')
-            ->join('study_programs', 'study_programs.id = users.study_program_id', 'left')
-            ->join('class_groups', 'class_groups.id = users.class_id', 'left')
-            ->where('users.id', $userId)
+                 faculties.faculty_name, 
+                 study_programs.program_name, 
+                 study_programs.degree_level,
+                 class_groups.class_name')
+            ->join('faculties', 'faculties.faculty_main = users.faculty_params', 'left')
+            ->join('study_programs', 'study_programs.program_main = users.study_program_params', 'left')
+            ->join('class_groups', 'class_groups.class_main = users.class_params', 'left')
+            ->where('users.registration_main', $registrationMain)
             ->get()
             ->getRow();
     }

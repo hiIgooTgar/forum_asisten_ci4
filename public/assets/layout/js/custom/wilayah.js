@@ -14,7 +14,6 @@ $(document).ready(function () {
   const initialDist = $dist.data("initial") || "";
   const initialVill = $vill.data("initial") || "";
 
-  // Load Provinsi Awal
   $.getJSON(`${baseUrl}/api/wilayah/provinces`, function (res) {
     if (res && res.data) {
       populateDropdown($prov, res.data, initialProv, "-- Pilih Provinsi --");

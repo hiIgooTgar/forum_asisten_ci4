@@ -51,7 +51,7 @@ class AuthenticationStudent extends BaseController
         if ($user && password_verify($password, $user->password)) {
             if ($user->status_account === 'inactive') {
                 $this->logActivity('LOGIN_FAILED', 'Percobaan login dengan akun nonaktif: ' . $email, [
-                    'target_user_code' => $user->registration_code,
+                    'target_user_code' => $user->registration_main,
                     'email'            => $email
                 ]);
 
@@ -60,7 +60,7 @@ class AuthenticationStudent extends BaseController
 
             if (!$user->is_verified) {
                 if ($this->sendOtp($user)) {
-                    session()->set('pending_user_code', $user->registration_code);
+                    session()->set('pending_user_code', $user->registration_main);
                     return redirect()->to('auth/verify-otp')->with('info', 'Akun belum terverifikasi. Kode OTP baru telah dikirim ke email.');
                 }
 
@@ -69,8 +69,7 @@ class AuthenticationStudent extends BaseController
 
             session()->regenerate(true);
             session()->set([
-                'user_id'              => $user->id,
-                'registration_code'    => $user->registration_code,
+                'registration_main'    => $user->registration_main,
                 'student_number'       => $user->student_number,
                 'full_name'            => $user->full_name,
                 'email'                => $user->email,
@@ -141,7 +140,7 @@ class AuthenticationStudent extends BaseController
         $registrationCode = 'fa_registration-' . strtoupper(bin2hex(random_bytes(16))) . '-' . date('YmdHis');
 
         $data = [
-            'registration_code'   => $registrationCode,
+            'registration_main'   => $registrationCode,
             'student_number'      => trim((string)$this->request->getPost('student_number')),
             'full_name'           => trim((string)$this->request->getPost('full_name')),
             'email'               => strtolower(trim((string)$this->request->getPost('email'))),
@@ -162,7 +161,7 @@ class AuthenticationStudent extends BaseController
         ]);
 
         if ($this->sendOtp($user)) {
-            session()->set('pending_user_code', $user->registration_code);
+            session()->set('pending_user_code', $user->registration_main);
             return redirect()->to('auth/verify-otp')->with('success', 'Registrasi berhasil. Silakan cek OTP di email Anda.');
         }
 
@@ -190,7 +189,7 @@ class AuthenticationStudent extends BaseController
         $inputOtp = is_array($otpArray) ? implode('', $otpArray) : $otpArray;
         $inputOtp = trim((string) $inputOtp);
 
-        $user = $this->userModel->where('registration_code', $pendingCode)->first();
+        $user = $this->userModel->where('registration_main', $pendingCode)->first();
 
         if (!$user) {
             return redirect()->to('auth/login')->with('error', 'Pengguna tidak ditemukan.');
@@ -212,16 +211,16 @@ class AuthenticationStudent extends BaseController
                 'updated_at'        => $currentTime
             ]);
 
-            $this->logActivity('VERIFY_OTP_SUCCESS', 'Verifikasi akun via OTP berhasil untuk user code: ' . $user->registration_code, [
-                'target_user_code' => $user->registration_code
+            $this->logActivity('VERIFY_OTP_SUCCESS', 'Verifikasi akun via OTP berhasil untuk user code: ' . $user->registration_main, [
+                'target_user_code' => $user->registration_main
             ]);
 
             session()->remove('pending_user_code');
             return redirect()->to('auth/login')->with('success', 'Email berhasil diverifikasi! Silakan login.');
         }
 
-        $this->logActivity('VERIFY_OTP_FAILED', 'Gagal verifikasi OTP untuk user code: ' . $user->registration_code, [
-            'target_user_code' => $user->registration_code,
+        $this->logActivity('VERIFY_OTP_FAILED', 'Gagal verifikasi OTP untuk user code: ' . $user->registration_main, [
+            'target_user_code' => $user->registration_main,
             'reason'           => !$isNotExpired ? 'Expired' : 'Invalid OTP'
         ]);
 
@@ -263,7 +262,7 @@ class AuthenticationStudent extends BaseController
 
         if ($this->sendResetPasswordEmail($user, $resetLink)) {
             $this->logActivity('FORGET_PASSWORD_REQUEST', 'Tautan reset password dikirimkan ke email: ' . $email, [
-                'target_user_code' => $user->registration_code,
+                'target_user_code' => $user->registration_main,
                 'email'            => $email
             ]);
 
@@ -372,11 +371,11 @@ class AuthenticationStudent extends BaseController
 
         if ($this->sendOtp($user)) {
             $this->logActivity('RESEND_VERIFICATION', 'Kode OTP dikirim ulang ke: ' . $email, [
-                'target_user_code' => $user->registration_code,
+                'target_user_code' => $user->registration_main,
                 'email'            => $email
             ]);
 
-            session()->set('pending_user_code', $user->registration_code);
+            session()->set('pending_user_code', $user->registration_main);
             return redirect()->to('auth/verify-otp')->with('success', 'Kode OTP verifikasi baru berhasil dikirim ke email Anda.');
         }
 
@@ -398,7 +397,7 @@ class AuthenticationStudent extends BaseController
             return redirect()->to('auth/verify-otp')->with('error', "Harap tunggu {$remaining} detik lagi untuk mengirim ulang OTP.");
         }
 
-        $user = $this->userModel->where('registration_code', $pendingCode)->first();
+        $user = $this->userModel->where('registration_main', $pendingCode)->first();
 
         if ($user && $this->sendOtp($user)) {
             $this->logActivity('RESEND_OTP_ACTION', 'Permintaan ulang OTP untuk user code: ' . $pendingCode, [
@@ -414,7 +413,7 @@ class AuthenticationStudent extends BaseController
 
     public function logout()
     {
-        $userCode = session()->get('registration_code');
+        $userCode = session()->get('registration_main');
         if ($userCode) {
             $this->logActivity('LOGOUT', 'User Code ' . $userCode . ' telah logout.');
         }
@@ -433,7 +432,7 @@ class AuthenticationStudent extends BaseController
             'otp_code'       => (string) $otp,
             'otp_created_at' => $createdAt,
             'otp_expires_at' => $expiresAt,
-            'updated_at'      => $createdAt
+            'updated_at'     => $createdAt
         ]);
 
         session()->set('otp_last_sent', time());

@@ -318,7 +318,9 @@ $pagedTaken = array_slice($allTaken, $offset, $perPage);
                 <?php else: ?>
                     <div class="row pt-2">
                         <?php foreach ($pagedTaken as $item): ?>
-                            <?php $row = (object) $item; ?>
+                            <?php $row = (object) $item;
+                            $modalId = 'modalEditCourse_' . preg_replace('/[^a-zA-Z0-9]/', '', $row->taken_course_main);
+                            ?>
                             <div class="col-12 mb-4">
                                 <div class="card card-experience rounded-lg p-3 p-md-4">
                                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start">
@@ -349,7 +351,7 @@ $pagedTaken = array_slice($allTaken, $offset, $perPage);
                                             <button type="button"
                                                 class="btn btn-sm btn-warning text-dark font-weight-semibold rounded"
                                                 data-toggle="modal"
-                                                data-target="#modalEditCourse<?= $row->id ?>">
+                                                data-target="#<?= $modalId ?>">
                                                 <i class="fa fa-edit"></i>
                                             </button>
                                             <?php if ($profileIncomplete): ?>
@@ -361,7 +363,7 @@ $pagedTaken = array_slice($allTaken, $offset, $perPage);
                                             <?php else: ?>
                                                 <button type="button"
                                                     class="btn btn-sm btn-danger font-weight-semibold rounded"
-                                                    onclick="confirmDeleteCourse('<?= base_url('student/taken-courses/delete/' . $row->taken_course_code) ?>', '<?= esc($row->course_name, 'js') ?>', '<?= esc($row->program_name, 'js') ?>')">
+                                                    onclick="confirmDeleteCourse('<?= base_url('student/taken-courses/delete/' . $row->taken_course_main) ?>', '<?= esc($row->course_name, 'js') ?>', '<?= esc($row->program_name, 'js') ?>')">
                                                     <i class="fa fa-trash"></i>
                                                 </button>
                                             <?php endif; ?>
@@ -370,7 +372,7 @@ $pagedTaken = array_slice($allTaken, $offset, $perPage);
                                 </div>
                             </div>
 
-                            <div class="modal fade modal-main-content" id="modalEditCourse<?= $row->id ?>" tabindex="-1" role="dialog" aria-hidden="true">
+                            <div class="modal fade modal-main-content" id="<?= $modalId ?>" tabindex="-1" role="dialog" aria-hidden="true">
                                 <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
                                     <div class="modal-content border-0 shadow-lg rounded-lg overflow-hidden">
                                         <div class="modal-header bg-light border-bottom-0 pb-3 pt-4 px-3 px-md-4 d-flex align-items-center justify-content-between">
@@ -399,7 +401,7 @@ $pagedTaken = array_slice($allTaken, $offset, $perPage);
                                             <?php endif; ?>
                                         </div>
 
-                                        <form action="<?= base_url('student/taken-courses/update/' . $row->taken_course_code) ?>" method="POST">
+                                        <form action="<?= base_url('student/taken-courses/update/' . $row->taken_course_main) ?>" method="POST">
                                             <?= csrf_field() ?>
                                             <div class="modal-body p-3 p-md-4">
 
@@ -407,17 +409,17 @@ $pagedTaken = array_slice($allTaken, $offset, $perPage);
                                                     <label class="font-weight-bold text-small-c text-dark">Pilih Mata Kuliah <span class="text-danger">*</span></label>
 
                                                     <?php if (!$profileIncomplete): ?>
-                                                        <select name="course_id" class="form-control select2 select_courses <?= session('errors.course_id') ? 'is-invalid' : '' ?>" style="width: 100%;">
-                                                            <option value="" disabled <?= old('course_id', $row->course_id ?? '') ? '' : 'selected' ?>>-- Pilih Mata Kuliah --</option>
+                                                        <select name="course_params" class="form-control select2 select_courses <?= session('errors.course_params') ? 'is-invalid' : '' ?>" style="width: 100%;">
+                                                            <option value="" disabled <?= old('course_params', $row->course_params ?? '') ? '' : 'selected' ?>>-- Pilih Mata Kuliah --</option>
                                                             <?php foreach ($availableCourses as $course): ?>
                                                                 <?php
                                                                 $quotaNeeded = (int)($course->quota_needed ?? 0);
                                                                 $totalTaken  = (int)($course->total_taken ?? 0);
                                                                 $isFull      = ($quotaNeeded > 0 && $totalTaken >= $quotaNeeded);
-                                                                $isSelected  = old('course_id', $row->course_id ?? null) == $course->id;
+                                                                $isSelected  = old('course_params', $row->course_params ?? null) == $course->course_main;
                                                                 $isDisabled  = $isFull && !$isSelected;
                                                                 ?>
-                                                                <option value="<?= $course->id ?>"
+                                                                <option value="<?= $course->course_main ?>"
                                                                     <?= $isSelected ? 'selected' : '' ?>
                                                                     <?= $isDisabled ? 'disabled' : '' ?>
                                                                     data-is-full="<?= $isFull ? 'true' : 'false' ?>"
@@ -432,8 +434,8 @@ $pagedTaken = array_slice($allTaken, $offset, $perPage);
                                                             <?php endforeach; ?>
                                                         </select>
 
-                                                        <?php if (session('errors.course_id')): ?>
-                                                            <span class="invalid-feedback d-block"><?= session('errors.course_id') ?></span>
+                                                        <?php if (session('errors.course_params')): ?>
+                                                            <span class="invalid-feedback d-block"><?= session('errors.course_params') ?></span>
                                                         <?php endif; ?>
                                                     <?php else: ?>
                                                         <select class="form-control select2 bg-light" disabled style="width: 100%;">
@@ -607,17 +609,17 @@ $pagedTaken = array_slice($allTaken, $offset, $perPage);
                             <label class="font-weight-bold text-small-c text-dark">Pilih Mata Kuliah <span class="text-danger">*</span></label>
 
                             <?php if (!$profileIncomplete): ?>
-                                <select name="course_id" class="form-control select2 select_courses <?= session('errors.course_id') ? 'is-invalid' : '' ?>" style="width: 100%;">
-                                    <option value="" disabled <?= old('course_id') ? '' : 'selected' ?>>-- Pilih Mata Kuliah --</option>
+                                <select name="course_params" class="form-control select2 select_courses <?= session('errors.course_params') ? 'is-invalid' : '' ?>" style="width: 100%;">
+                                    <option value="" disabled <?= old('course_params') ? '' : 'selected' ?>>-- Pilih Mata Kuliah --</option>
                                     <?php foreach ($availableCourses as $course): ?>
                                         <?php
                                         $quotaNeeded = (int)($course->quota_needed ?? 0);
                                         $totalTaken  = (int)($course->total_taken ?? 0);
                                         $isFull      = ($quotaNeeded > 0 && $totalTaken >= $quotaNeeded);
-                                        $isSelected  = old('course_id') == $course->id;
+                                        $isSelected  = old('course_params') == $course->course_main;
                                         $isDisabled  = $isFull;
                                         ?>
-                                        <option value="<?= $course->id ?>"
+                                        <option value="<?= $course->course_main ?>"
                                             <?= $isSelected ? 'selected' : '' ?>
                                             <?= $isDisabled ? 'disabled' : '' ?>
                                             data-is-full="<?= $isFull ? 'true' : 'false' ?>">
@@ -631,8 +633,8 @@ $pagedTaken = array_slice($allTaken, $offset, $perPage);
                                     <?php endforeach; ?>
                                 </select>
 
-                                <?php if (session('errors.course_id')): ?>
-                                    <span class="invalid-feedback d-block"><?= session('errors.course_id') ?></span>
+                                <?php if (session('errors.course_params')): ?>
+                                    <span class="invalid-feedback d-block"><?= session('errors.course_params') ?></span>
                                 <?php endif; ?>
                             <?php else: ?>
                                 <select class="form-control select2 bg-light" disabled style="width: 100%;">

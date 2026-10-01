@@ -15,7 +15,7 @@ class CreateSystemEventSettingsTable extends Migration
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
-            'system_event_code' => [
+            'system_event_main' => [
                 'type'       => 'VARCHAR',
                 'constraint' => '255',
                 'unique'     => true,

@@ -35,6 +35,7 @@ abstract class BaseController extends Controller
     protected $helpers = ['security', 'form', 'url', 'date', 'text'];
 
     protected $appProfile;
+    protected ?array $studentSession = null;
 
     /**
      * @return void
@@ -51,14 +52,43 @@ abstract class BaseController extends Controller
         $appModel = new CompanyApplicationModel();
         $this->appProfile = $appModel->getAppProfile();
 
+        $this->initStudentSession();
+
         \Config\Services::renderer()->setData([
-            'appProfile' => $this->appProfile
+            'appProfile' => $this->appProfile,
+            'studentSession' => $this->studentSession
         ]);
 
         // Preload any models, libraries, etc, here.
         // $this->session = service('session');
+    }
 
+    protected function initStudentSession(): void
+    {
+        if (session()->get('is_student_logged_in')) {
+            $this->studentSession = [
+                'registration_main'    => session()->get('registration_main'),
+                'student_number'       => session()->get('student_number'),
+                'full_name'            => session()->get('full_name'),
+                'email'                => session()->get('email'),
+                'profile'              => session()->get('profile'),
+                'is_student_logged_in' => session()->get('is_student_logged_in'),
+                'membership_status'    => session()->get('membership_status'),
+            ];
+        }
+    }
 
+    protected function getStudentSession(?string $key = null)
+    {
+        if (!$this->studentSession) {
+            return null;
+        }
+
+        if ($key !== null) {
+            return $this->studentSession[$key] ?? null;
+        }
+
+        return $this->studentSession;
     }
 
     protected function logActivity(
@@ -68,19 +98,19 @@ abstract class BaseController extends Controller
         string $userType = 'student'
     ): void {
         $db     = \Config\Database::connect();
-        $userId = session()->get('user_id') ?: session()->get('admin_id');
+        $userMain = session()->get('registration_main') ?: session()->get('administrator_main');
 
         $timezone    = new DateTimeZone('Asia/Jakarta');
         $dateTime    = new DateTime('now', $timezone);
         $currentTime = $dateTime->format('Y-m-d H:i:s');
 
-        $randomHex       = strtoupper(bin2hex(random_bytes(16)));
-        $dateSuffix      = $dateTime->format('YmdHis');
-        $activityLogCode = "fa_activity_log-{$randomHex}-{$dateSuffix}";
+        $randomHex        = strtoupper(bin2hex(random_bytes(16)));
+        $dateSuffix       = $dateTime->format('YmdHis');
+        $activityLogMain  = "fa_activity_log-{$randomHex}-{$dateSuffix}";
 
         $logData = [
-            'activity_log_code' => $activityLogCode,
-            'user_id'           => $userId ?: null,
+            'activity_log_main' => $activityLogMain,
+            'user_params'       => $userMain ?: null,
             'user_type'         => $userType,
             'action'            => $action,
             'description'       => $description,

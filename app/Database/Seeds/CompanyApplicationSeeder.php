@@ -15,7 +15,7 @@ class CompanyApplicationSeeder extends Seeder
 
         $data = [
             'id'                       => 1,
-            'company_application_code' => $generateCode(),
+            'company_application_main' => $generateCode(),
             'application_name'         => 'Forum Asisten',
             'application_title'        => 'Portal Pendaftaran Calon Anggota Asisten Laboratorium & Akademik',
             'application_description'  => 'Sistem informasi resmi pendaftaran, seleksi, dan verifikasi berkas calon asisten laboratorium. Portal ini memfasilitasi proses pendaftaran transparan untuk pengembangan akademik dan kepemimpinan mahasiswa.',

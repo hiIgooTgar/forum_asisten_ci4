@@ -16,21 +16,28 @@ class DocumentData extends BaseController
     public function __construct()
     {
         $this->userDocumentModel = new UserDocumentModel();
-        $this->userModel        = new UserModel();
+        $this->userModel         = new UserModel();
         $this->takenCourseModel = new TakenCourseModel();
     }
 
-    private function checkEligibility($userId)
+    private function checkEligibility($registrationMain)
     {
-        $student = $this->userModel->getStudentProfile($userId);
+        $student = $this->userModel->getStudentProfile($registrationMain);
+
+        if (!$student) {
+            return [
+                'eligible' => false,
+                'message'  => 'Gagal memproses berkas. Data mahasiswa tidak ditemukan.'
+            ];
+        }
 
         $requiredFields = [
             'student_number',
             'full_name',
             'email',
             'phone_number',
-            'faculty_id',
-            'study_program_id',
+            'faculty_params',
+            'study_program_params',
             'place_of_birth',
             'date_of_birth',
             'gender',
@@ -40,7 +47,6 @@ class DocumentData extends BaseController
             'village',
             'address',
             'gpa',
-            'profile',
         ];
 
         $profileIncomplete = false;
@@ -52,8 +58,8 @@ class DocumentData extends BaseController
         }
 
         if (!$profileIncomplete) {
-            $profilePhoto = trim($student->profile ?? '');
-            if (empty($profilePhoto) || $profilePhoto === 'profile-default.png') {
+            $profilePhoto = basename(trim((string) ($student->profile ?? '')));
+            if (empty($profilePhoto) || in_array($profilePhoto, ['profile-default.png', 'default.png'], true)) {
                 $profileIncomplete = true;
             }
         }
@@ -65,7 +71,7 @@ class DocumentData extends BaseController
             ];
         }
 
-        $takenCoursesCount = $this->takenCourseModel->countUserTakenCourses($userId);
+        $takenCoursesCount = $this->takenCourseModel->countUserTakenCourses($registrationMain);
         if ($takenCoursesCount === 0) {
             return [
                 'eligible' => false,
@@ -78,22 +84,29 @@ class DocumentData extends BaseController
 
     public function index()
     {
-        $userId        = session()->get('user_id');
-        $studentNumber = session()->get('student_number');
+        $registrationMain = $this->getStudentSession('registration_main');
+        $studentNumber    = $this->getStudentSession('student_number');
+        $fullName         = $this->getStudentSession('full_name');
+        $email            = $this->getStudentSession('email');
+        $isStudentLogged  = $this->getStudentSession('is_student_logged_in');
 
-        if (!$userId || !$studentNumber) {
-            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        if (!$registrationMain || !$studentNumber || !$fullName || !$email || !$isStudentLogged) {
+            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir atau tidak valid.');
         }
 
-        $student = $this->userModel->getStudentProfile($userId);
+        $student = $this->userModel->getStudentProfile($registrationMain);
+
+        if (!$student) {
+            return redirect()->to('/auth/login')->with('error', 'Data mahasiswa tidak ditemukan.');
+        }
 
         $requiredFields = [
             'student_number',
             'full_name',
             'email',
             'phone_number',
-            'faculty_id',
-            'study_program_id',
+            'faculty_params',
+            'study_program_params',
             'place_of_birth',
             'date_of_birth',
             'gender',
@@ -103,7 +116,6 @@ class DocumentData extends BaseController
             'village',
             'address',
             'gpa',
-            'profile',
         ];
 
         $profileIncomplete = false;
@@ -115,17 +127,16 @@ class DocumentData extends BaseController
         }
 
         if (!$profileIncomplete) {
-            $profilePhoto = trim($student->profile ?? '');
-            if (empty($profilePhoto) || $profilePhoto === 'profile-default.png') {
+            $profilePhoto = basename(trim((string) ($student->profile ?? '')));
+            if (empty($profilePhoto) || in_array($profilePhoto, ['profile-default.png', 'default.png'], true)) {
                 $profileIncomplete = true;
             }
         }
 
+        $takenCoursesCount = $this->takenCourseModel->countUserTakenCourses($registrationMain);
+        $hasTakenCourses   = ($takenCoursesCount > 0);
 
-        $takenCoursesCount = $this->takenCourseModel->countUserTakenCourses($userId);
-        $hasNoTakenCourses = ($takenCoursesCount === 0);
-
-        $document = $this->userDocumentModel->getDocumentByUserId($userId);
+        $document = $this->userDocumentModel->getDocumentByUserParams($registrationMain);
         $allDocumentsUploaded = false;
 
         if ($document) {
@@ -149,33 +160,16 @@ class DocumentData extends BaseController
         }
 
         $isAlreadyVerified = isset($student->verification_status) && $student->verification_status === 'completed';
-        $canVerify = (!$profileIncomplete && $hasNoTakenCourses && $allDocumentsUploaded && !$isAlreadyVerified);
-
-        $this->logActivity(
-            'VIEW_USER_DOCUMENTS',
-            'Mahasiswa melihat halaman kelengkapan berkas pendaftaran',
-            [
-                'student_number'     => $studentNumber,
-                'profile_incomplete' => $profileIncomplete,
-                'has_taken_courses'  => !$hasNoTakenCourses,
-                'can_verify'         => $canVerify,
-            ],
-            'student'
-        );
-
-        $appProfileModel = new \App\Models\CompanyApplicationModel();
-        $appProfile = $appProfileModel->first();
+        $canVerify         = (!$profileIncomplete && $hasTakenCourses && $allDocumentsUploaded && !$isAlreadyVerified);
 
         $data = [
             'title'             => 'Upload Berkas Pendaftaran',
             'student'           => $student,
             'document'          => $document,
             'profileIncomplete' => $profileIncomplete,
-            'hasNoTakenCourses' => $hasNoTakenCourses,
+            'hasTakenCourses'   => $hasTakenCourses,
             'canVerify'         => $canVerify,
             'activeTab'         => 'user_documents',
-            'appProfile'        => $appProfile
-
         ];
 
         return view('student/documents/index', $data);
@@ -183,19 +177,23 @@ class DocumentData extends BaseController
 
     public function store()
     {
-        $userId        = session()->get('user_id');
-        $studentNumber = session()->get('student_number');
-        $student = $this->userModel->getStudentProfile($userId);
+        $registrationMain = $this->getStudentSession('registration_main');
+        $studentNumber    = $this->getStudentSession('student_number');
+        $fullName         = $this->getStudentSession('full_name');
+        $email            = $this->getStudentSession('email');
+        $isStudentLogged  = $this->getStudentSession('is_student_logged_in');
 
-        if (!$userId || !$studentNumber) {
-            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        if (!$registrationMain || !$studentNumber || !$fullName || !$email || !$isStudentLogged) {
+            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir atau tidak valid.');
         }
+
+        $student = $this->userModel->getStudentProfile($registrationMain);
 
         if (isset($student->verification_status) && $student->verification_status === 'completed') {
             return redirect()->back()->with('error', 'Akses ditolak: Pendaftaran Anda telah terverifikasi dan data telah terkunci.');
         }
 
-        $check = $this->checkEligibility($userId);
+        $check = $this->checkEligibility($registrationMain);
         if (!$check['eligible']) {
             return redirect()->to('/student/documents')->with('error', $check['message']);
         }
@@ -264,11 +262,11 @@ class DocumentData extends BaseController
         }
 
         $folderDate = date('Y-m-d');
-        $uploadDir  = WRITEPATH . "uploads/document_file/{$studentNumber}_{$folderDate}/";
+        $uploadDir  = WRITEPATH . "uploads/document_file/{$studentNumber}_{$folderDate}_{$registrationMain}/";
 
         ensure_secure_directory($uploadDir);
-        $random10Digits = str_pad(random_int(0, 9999999999), 10, '0', STR_PAD_LEFT);
-        $documentCode   = "{$random10Digits}_{$studentNumber}_" . date('YmdHis');
+        $random16Digits = str_pad(random_int(0, 9999999999999999), 16, '0', STR_PAD_LEFT);
+        $documentMain   = "{$studentNumber}_{$random16Digits}_" . date('YmdHis');
 
         $files = [
             'student_card_file'       => ['file' => $this->request->getFile('student_card_file'),       'prefix' => 'KTM'],
@@ -280,8 +278,8 @@ class DocumentData extends BaseController
         ];
 
         $saveData = [
-            'document_code' => $documentCode,
-            'user_id'       => $userId,
+            'document_main' => $documentMain,
+            'user_params'   => $registrationMain,
         ];
 
         foreach ($files as $field => $item) {
@@ -291,7 +289,7 @@ class DocumentData extends BaseController
             if ($file && $file->isValid() && !$file->hasMoved()) {
                 $newName = $this->generateSecureFileName($prefix, $studentNumber);
                 $file->move($uploadDir, $newName);
-                $saveData[$field] = "{$studentNumber}_{$folderDate}/" . $newName;
+                $saveData[$field] = "{$studentNumber}_{$folderDate}_{$registrationMain}/" . $newName;
             }
         }
 
@@ -302,7 +300,7 @@ class DocumentData extends BaseController
             'Mahasiswa berhasil mengunggah seluruh berkas pendaftaran',
             [
                 'student_number' => $studentNumber,
-                'document_code'  => $documentCode,
+                'document_main'  => $documentMain,
             ],
             'student'
         );
@@ -310,33 +308,37 @@ class DocumentData extends BaseController
         return redirect()->to('/student/documents')->with('success', 'Seluruh berkas pendaftaran berhasil diunggah.');
     }
 
-    public function update($documentCode)
+    public function update($documentMain)
     {
-        $userId        = session()->get('user_id');
-        $studentNumber = session()->get('student_number');
-        $student = $this->userModel->getStudentProfile($userId);
+        $registrationMain = $this->getStudentSession('registration_main');
+        $studentNumber    = $this->getStudentSession('student_number');
+        $fullName         = $this->getStudentSession('full_name');
+        $email            = $this->getStudentSession('email');
+        $isStudentLogged  = $this->getStudentSession('is_student_logged_in');
 
-        if (!$userId || !$studentNumber) {
-            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        if (!$registrationMain || !$studentNumber || !$fullName || !$email || !$isStudentLogged) {
+            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir atau tidak valid.');
         }
+
+        $student = $this->userModel->getStudentProfile($registrationMain);
 
         if (isset($student->verification_status) && $student->verification_status === 'completed') {
             return redirect()->back()->with('error', 'Akses ditolak: Pendaftaran Anda telah terverifikasi dan data telah terkunci.');
         }
 
-        $check = $this->checkEligibility($userId);
+        $check = $this->checkEligibility($registrationMain);
         if (!$check['eligible']) {
             return redirect()->to('/student/documents')->with('error', $check['message']);
         }
 
-        $document = $this->userDocumentModel->getDocumentByCodeAndUser($documentCode, $userId);
+        $document = $this->userDocumentModel->getDocumentByCodeAndUser($documentMain, $registrationMain);
 
         if (!$document) {
             return redirect()->to('/student/documents')->with('error', 'Dokumen tidak ditemukan atau akses ditolak.');
         }
 
         $folderDate = date('Y-m-d');
-        $uploadDir  = WRITEPATH . "uploads/document_file/{$studentNumber}_{$folderDate}/";
+        $uploadDir  = WRITEPATH . "uploads/document_file/{$studentNumber}_{$folderDate}_{$registrationMain}";
         ensure_secure_directory($uploadDir);
 
         $fileConfigs = [
@@ -379,7 +381,7 @@ class DocumentData extends BaseController
 
                 $newName = $this->generateSecureFileName($prefix, $studentNumber);
                 $file->move($uploadDir, $newName);
-                $updateData[$field] = "{$studentNumber}_{$folderDate}/" . $newName;
+                $updateData[$field] = "{$studentNumber}_{$folderDate}_{$registrationMain}/" . $newName;
                 $hasChanged = true;
             }
         }
@@ -389,14 +391,14 @@ class DocumentData extends BaseController
         }
 
         $updateData['updated_at'] = date('Y-m-d H:i:s');
-        $this->userDocumentModel->update($document->id, $updateData);
+        $this->userDocumentModel->where('document_main', $documentMain)->set($updateData)->update();
 
         $this->logActivity(
             'UPDATE_DOCUMENTS_SUCCESS',
             'Mahasiswa memperbarui berkas pendaftaran',
             [
                 'student_number' => $studentNumber,
-                'document_code'  => $documentCode,
+                'document_main'  => $documentMain,
             ],
             'student'
         );
@@ -404,26 +406,30 @@ class DocumentData extends BaseController
         return redirect()->to('/student/documents')->with('success', 'Berkas pendaftaran berhasil diperbarui.');
     }
 
-    public function reset($documentCode)
+    public function reset($documentMain)
     {
-        $userId        = session()->get('user_id');
-        $studentNumber = session()->get('student_number');
-        $student = $this->userModel->getStudentProfile($userId);
+        $registrationMain = $this->getStudentSession('registration_main');
+        $studentNumber    = $this->getStudentSession('student_number');
+        $fullName         = $this->getStudentSession('full_name');
+        $email            = $this->getStudentSession('email');
+        $isStudentLogged  = $this->getStudentSession('is_student_logged_in');
 
-        if (!$userId || !$studentNumber) {
-            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        if (!$registrationMain || !$studentNumber || !$fullName || !$email || !$isStudentLogged) {
+            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir atau tidak valid.');
         }
+
+        $student = $this->userModel->getStudentProfile($registrationMain);
 
         if (isset($student->verification_status) && $student->verification_status === 'completed') {
             return redirect()->back()->with('error', 'Akses ditolak: Pendaftaran Anda telah terverifikasi dan data telah terkunci.');
         }
 
-        $check = $this->checkEligibility($userId);
+        $check = $this->checkEligibility($registrationMain);
         if (!$check['eligible']) {
             return redirect()->to('/student/documents')->with('error', $check['message']);
         }
 
-        $document = $this->userDocumentModel->getDocumentByCodeAndUser($documentCode, $userId);
+        $document = $this->userDocumentModel->getDocumentByCodeAndUser($documentMain, $registrationMain);
 
         if (!$document) {
             return redirect()->to('/student/documents')->with('error', 'Dokumen tidak ditemukan atau akses ditolak.');
@@ -462,14 +468,14 @@ class DocumentData extends BaseController
             }
         }
 
-        $this->userDocumentModel->delete($document->id);
+        $this->userDocumentModel->where('document_main', $documentMain)->delete();
 
         $this->logActivity(
             'RESET_DOCUMENTS_SUCCESS',
             'Mahasiswa berhasil mereset seluruh berkas pendaftaran',
             [
                 'student_number' => $studentNumber,
-                'document_code'  => $documentCode,
+                'document_main'  => $documentMain,
             ],
             'student'
         );

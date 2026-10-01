@@ -3,7 +3,7 @@
 namespace App\Controllers\Student;
 
 use App\Controllers\BaseController;
-use App\Models\student\StudentDashboardModel;
+use App\Models\Student\StudentDashboardModel;
 use App\Models\TakenCourseModel;
 use App\Models\UserDocumentModel;
 
@@ -15,22 +15,25 @@ class Dashboard extends BaseController
 
     public function __construct()
     {
-        $this->dashboardModel = new StudentDashboardModel();
-        $this->takenCourseModel = new TakenCourseModel();
+        $this->dashboardModel    = new StudentDashboardModel();
+        $this->takenCourseModel  = new TakenCourseModel();
         $this->userDocumentModel = new UserDocumentModel();
     }
 
     public function index()
     {
-        $userId        = session()->get('user_id');
-        $studentNumber = session()->get('student_number');
+        $registrationMain = $this->getStudentSession('registration_main');
+        $studentNumber    = $this->getStudentSession('student_number');
+        $fullName         = $this->getStudentSession('full_name');
+        $email            = $this->getStudentSession('email');
+        $isStudentLogged  = $this->getStudentSession('is_student_logged_in');
 
-        if (!$userId || !$studentNumber) {
-            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        if (!$registrationMain || !$studentNumber || !$fullName || !$email || !$isStudentLogged) {
+            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir atau tidak valid.');
         }
 
-        $student   = $this->dashboardModel->getStudentProfile((int)$userId);
-        $documents = $this->dashboardModel->getDocumentStatus((int)$userId);
+        $student   = $this->dashboardModel->getStudentProfile($registrationMain);
+        $documents = $this->dashboardModel->getDocumentStatus($registrationMain);
 
         if (!$student) {
             return redirect()->to('/auth/login')->with('error', 'Data mahasiswa tidak ditemukan.');
@@ -41,8 +44,8 @@ class Dashboard extends BaseController
             'full_name',
             'email',
             'phone_number',
-            'faculty_id',
-            'study_program_id',
+            'faculty_params',
+            'study_program_params',
             'place_of_birth',
             'date_of_birth',
             'gender',
@@ -63,13 +66,13 @@ class Dashboard extends BaseController
         }
 
         if (!$profileIncomplete) {
-            $profilePhoto = trim($student->profile ?? '');
-            if (empty($profilePhoto) || $profilePhoto === 'profile-default.png') {
+            $profilePhoto = basename(trim((string) ($student->profile ?? '')));
+            if (empty($profilePhoto) || in_array($profilePhoto, ['profile-default.png', 'default.png'], true)) {
                 $profileIncomplete = true;
             }
         }
 
-        $takenCoursesCount = $this->takenCourseModel->countUserTakenCourses((int)$userId);
+        $takenCoursesCount = $this->takenCourseModel->countUserTakenCourses($registrationMain);
         $hasTakenCourses   = ($takenCoursesCount > 0);
 
         $allDocumentsUploaded = false;
@@ -94,7 +97,7 @@ class Dashboard extends BaseController
         }
 
         $isAlreadyVerified = isset($student->verification_status) && $student->verification_status === 'completed';
-        $canVerify = (!$profileIncomplete && $hasTakenCourses && $allDocumentsUploaded && !$isAlreadyVerified);
+        $canVerify          = (!$profileIncomplete && $hasTakenCourses && $allDocumentsUploaded && !$isAlreadyVerified);
 
         $completionPercentage = $this->calculateProfileCompletion($student, $documents);
 
@@ -102,15 +105,13 @@ class Dashboard extends BaseController
             'VIEW_DASHBOARD',
             'Mahasiswa melihat halaman dashboard utama',
             [
+                'registration_main'     => $registrationMain,
                 'student_number'        => $studentNumber,
                 'completion_percentage' => $completionPercentage,
                 'can_verify'            => $canVerify,
             ],
             'student'
         );
-
-        $appProfileModel = new \App\Models\CompanyApplicationModel();
-        $appProfile = $appProfileModel->first();
 
         $data = [
             'title'                 => 'Dashboard Student',
@@ -119,8 +120,6 @@ class Dashboard extends BaseController
             'active_event'          => $this->dashboardModel->getActiveEvent(),
             'completion_percentage' => $completionPercentage,
             'canVerify'             => $canVerify,
-            'appProfile'            => $appProfile
-
         ];
 
         return view('student/dashboard', $data);
@@ -136,8 +135,8 @@ class Dashboard extends BaseController
             'full_name',
             'email',
             'phone_number',
-            'faculty_id',
-            'study_program_id',
+            'faculty_params',
+            'study_program_params',
             'place_of_birth',
             'date_of_birth',
             'gender',
@@ -154,10 +153,9 @@ class Dashboard extends BaseController
             $filledUserFields = 0;
             foreach ($userFields as $field) {
                 if (isset($student->$field) && $student->$field !== '' && $student->$field !== null) {
-
                     if ($field === 'profile') {
                         $defaultProfiles = ['profile-default.png', 'default.png'];
-                        $profileValue    = trim((string)$student->$field);
+                        $profileValue    = basename(trim((string) $student->$field));
                         if (in_array($profileValue, $defaultProfiles, true) || empty($profileValue)) {
                             continue;
                         }

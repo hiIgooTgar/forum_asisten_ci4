@@ -373,7 +373,7 @@ $pagedExperiences = array_slice($allExperiences, $offset, $perPage);
                             <?php
                             $expData = (object) $exp;
                             $expType = $expData->experience_type ?? 'other';
-                            $expCode = $expData->experience_code ?? '';
+                            $expMain = $expData->experience_main ?? '';
                             $expId   = $expData->id ?? mt_rand(100, 999);
                             $badge   = $typeBadges[$expType] ?? $typeBadges['other'];
                             ?>
@@ -423,7 +423,7 @@ $pagedExperiences = array_slice($allExperiences, $offset, $perPage);
                                                 </button>
                                             <?php else: ?>
                                                 <button class="btn btn-sm btn-danger font-weight-semibold rounded"
-                                                    onclick="confirmDeleteExperience('<?= base_url('student/experiences/delete/' . $expCode) ?>', '<?= esc($expData->title, 'js') ?>', '<?= esc($expData->organization_name, 'js') ?>')">
+                                                    onclick="confirmDeleteExperience('<?= base_url('student/experiences/delete/' . $expMain) ?>', '<?= esc($expData->title, 'js') ?>', '<?= esc($expData->organization_name, 'js') ?>')">
                                                     <i class="fa fa-trash"></i>
                                                 </button>
                                             <?php endif; ?>
@@ -462,7 +462,7 @@ $pagedExperiences = array_slice($allExperiences, $offset, $perPage);
                                             <?php endif; ?>
                                         </div>
 
-                                        <form action="<?= base_url('student/experiences/update/' . $expCode) ?>" method="POST" class="needs-validation">
+                                        <form action="<?= base_url('student/experiences/update/' . $expMain) ?>" method="POST" class="needs-validation">
                                             <?= csrf_field() ?>
 
                                             <div class="modal-body p-3 p-md-4">

@@ -9,17 +9,68 @@ class UserDocumentsSeeder extends Seeder
     public function run()
     {
         $now = date('Y-m-d H:i:s');
-        $generateCode = function () {
-            return 'fa_document_' . strtoupper(bin2hex(random_bytes(16)));
-        };
-
 
         $data = [
-            ['document_code' => $generateCode(), 'user_id' => 1, 'student_card_file' => 'ktm_1.pdf', 'application_letter_file' => 'lamaran_1.pdf', 'cv_file' => 'cv_1.pdf', 'latest_transcript_file' => 'transkrip_1.pdf', 'statement_letter_file' => 'pernyataan_1.pdf', 'registration_form_file' => 'form_1.pdf', 'created_at' => $now, 'updated_at' => $now],
-            ['document_code' => $generateCode(), 'user_id' => 2, 'student_card_file' => 'ktm_2.pdf', 'application_letter_file' => 'lamaran_2.pdf', 'cv_file' => 'cv_2.pdf', 'latest_transcript_file' => 'transkrip_2.pdf', 'statement_letter_file' => 'pernyataan_2.pdf', 'registration_form_file' => 'form_2.pdf', 'created_at' => $now, 'updated_at' => $now],
-            ['document_code' => $generateCode(), 'user_id' => 3, 'student_card_file' => 'ktm_3.pdf', 'application_letter_file' => 'lamaran_3.pdf', 'cv_file' => 'cv_3.pdf', 'latest_transcript_file' => 'transkrip_3.pdf', 'statement_letter_file' => 'pernyataan_3.pdf', 'registration_form_file' => 'form_3.pdf', 'created_at' => $now, 'updated_at' => $now],
-            ['document_code' => $generateCode(), 'user_id' => 4, 'student_card_file' => 'ktm_4.pdf', 'application_letter_file' => 'lamaran_4.pdf', 'cv_file' => 'cv_4.pdf', 'latest_transcript_file' => 'transkrip_4.pdf', 'statement_letter_file' => 'pernyataan_4.pdf', 'registration_form_file' => 'form_4.pdf', 'created_at' => $now, 'updated_at' => $now],
-            ['document_code' => $generateCode(), 'user_id' => 5, 'student_card_file' => 'ktm_5.pdf', 'application_letter_file' => 'lamaran_5.pdf', 'cv_file' => 'cv_5.pdf', 'latest_transcript_file' => 'transkrip_5.pdf', 'statement_letter_file' => 'pernyataan_5.pdf', 'registration_form_file' => 'form_5.pdf', 'created_at' => $now, 'updated_at' => $now],
+            [
+                'document_main'            => 'doc_main_001',
+                'user_params'              => 'user_reg_001',
+                'student_card_file'        => 'ktm_22110001.pdf',
+                'application_letter_file'  => 'surat_lamaran_22110001.pdf',
+                'cv_file'                  => 'cv_22110001.pdf',
+                'latest_transcript_file'   => 'transkrip_22110001.pdf',
+                'statement_letter_file'    => 'surat_pernyataan_22110001.pdf',
+                'registration_form_file'   => 'form_22110001.pdf',
+                'created_at'               => $now,
+                'updated_at'               => $now,
+            ],
+            [
+                'document_main'            => 'doc_main_002',
+                'user_params'              => 'user_reg_002',
+                'student_card_file'        => 'ktm_22110002.pdf',
+                'application_letter_file'  => 'surat_lamaran_22110002.pdf',
+                'cv_file'                  => 'cv_22110002.pdf',
+                'latest_transcript_file'   => 'transkrip_22110002.pdf',
+                'statement_letter_file'    => 'surat_pernyataan_22110002.pdf',
+                'registration_form_file'   => 'form_22110002.pdf',
+                'created_at'               => $now,
+                'updated_at'               => $now,
+            ],
+            [
+                'document_main'            => 'doc_main_003',
+                'user_params'              => 'user_reg_003',
+                'student_card_file'        => 'ktm_22120015.pdf',
+                'application_letter_file'  => 'surat_lamaran_22120015.pdf',
+                'cv_file'                  => 'cv_22120015.pdf',
+                'latest_transcript_file'   => 'transkrip_22120015.pdf',
+                'statement_letter_file'    => 'surat_pernyataan_22120015.pdf',
+                'registration_form_file'   => 'form_22120015.pdf',
+                'created_at'               => $now,
+                'updated_at'               => $now,
+            ],
+            [
+                'document_main'            => 'doc_main_004',
+                'user_params'              => 'user_reg_004',
+                'student_card_file'        => 'ktm_23010008.pdf',
+                'application_letter_file'  => 'surat_lamaran_23010008.pdf',
+                'cv_file'                  => 'cv_23010008.pdf',
+                'latest_transcript_file'   => 'transkrip_23010008.pdf',
+                'statement_letter_file'    => 'surat_pernyataan_23010008.pdf',
+                'registration_form_file'   => 'form_23010008.pdf',
+                'created_at'               => $now,
+                'updated_at'               => $now,
+            ],
+            [
+                'document_main'            => 'doc_main_005',
+                'user_params'              => 'user_reg_005',
+                'student_card_file'        => 'ktm_22310003.pdf',
+                'application_letter_file'  => null,
+                'cv_file'                  => null,
+                'latest_transcript_file'   => null,
+                'statement_letter_file'    => null,
+                'registration_form_file'   => null,
+                'created_at'               => $now,
+                'updated_at'               => $now,
+            ],
         ];
 
         $this->db->table('user_documents')->insertBatch($data);

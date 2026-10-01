@@ -21,9 +21,9 @@ if (!isset($student) || empty($student)) {
         'full_name'        => '',
         'email'            => '',
         'phone_number'     => '',
-        'faculty_id'       => '',
-        'study_program_id' => '',
-        'class_id'         => '',
+        'faculty_params'       => '',
+        'study_program_params' => '',
+        'class_params'         => '',
         'place_of_birth'   => '',
         'date_of_birth'    => '',
         'gender'           => '',
@@ -247,30 +247,36 @@ $profileImg = (!empty($student->profile) && file_exists(FCPATH . 'uploads/profil
                             <div class="row">
                                 <div class="col-12 col-lg-6 mb-3">
                                     <label class="control-label font-weight-bold">Fakultas <span class="text-danger">*</span></label>
-                                    <select class="form-control select2 <?= session('errors.faculty_id') ? 'is-invalid' : '' ?>" id="faculty_id" name="faculty_id" style="width: 100%;">
-                                        <option value="" disabled <?= old('faculty_id', $student->faculty_id) ? '' : 'selected' ?>>-- Pilih Fakultas --</option>
+                                    <select class="form-control select2 <?= session('errors.faculty_params') ? 'is-invalid' : '' ?>" id="faculty_params" name="faculty_params" style="width: 100%;">
+                                        <option value="" disabled <?= old('faculty_params', $student->faculty_params) ? '' : 'selected' ?>>-- Pilih Fakultas --</option>
                                         <?php foreach ($faculties as $faculty): ?>
-                                            <option value="<?= $faculty->id ?>" <?= old('faculty_id', $student->faculty_id) == $faculty->id ? 'selected' : '' ?>>
+                                            <option value="<?= $faculty->faculty_main ?>" <?= old('faculty_params', $student->faculty_params) == $faculty->faculty_main ? 'selected' : '' ?>>
                                                 <?= esc($faculty->faculty_name) ?>
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
-                                    <?php if (session('errors.faculty_id')): ?>
-                                        <span class="invalid-feedback d-block"><?= session('errors.faculty_id') ?></span>
+                                    <?php if (session('errors.faculty_params')): ?>
+                                        <span class="invalid-feedback d-block"><?= session('errors.faculty_params') ?></span>
                                     <?php endif; ?>
                                 </div>
+
                                 <div class="col-12 col-lg-6 mb-3">
                                     <label class="control-label font-weight-bold">Program Studi <span class="text-danger">*</span></label>
-                                    <select class="form-control select2 <?= session('errors.study_program_id') ? 'is-invalid' : '' ?>" id="study_program_id" name="study_program_id" style="width: 100%;" <?= empty($studyPrograms) ? 'disabled' : '' ?>>
-                                        <option value="" disabled <?= old('study_program_id', $student->study_program_id) ? '' : 'selected' ?>>-- Pilih Program Studi --</option>
+                                    <select class="form-control select2 <?= session('errors.study_program_params') ? 'is-invalid' : '' ?>"
+                                        id="study_program_params"
+                                        name="study_program_params"
+                                        data-selected="<?= esc(old('study_program_params', $student->study_program_params)) ?>"
+                                        style="width: 100%;"
+                                        <?= empty($studyPrograms) ? 'disabled' : '' ?>>
+                                        <option value="" disabled <?= old('study_program_params', $student->study_program_params) ? '' : 'selected' ?>>-- Pilih Program Studi --</option>
                                         <?php foreach ($studyPrograms as $program): ?>
-                                            <option value="<?= $program->id ?>" <?= old('study_program_id', $student->study_program_id) == $program->id ? 'selected' : '' ?>>
+                                            <option value="<?= $program->program_main ?>" <?= old('study_program_params', $student->study_program_params) == $program->program_main ? 'selected' : '' ?>>
                                                 <?= esc($program->program_name) ?> (<?= esc($program->degree_level ?? 'S1') ?>)
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
-                                    <?php if (session('errors.study_program_id')): ?>
-                                        <span class="invalid-feedback d-block"><?= session('errors.study_program_id') ?></span>
+                                    <?php if (session('errors.study_program_params')): ?>
+                                        <span class="invalid-feedback d-block"><?= session('errors.study_program_params') ?></span>
                                     <?php endif; ?>
                                 </div>
                             </div>
@@ -278,18 +284,24 @@ $profileImg = (!empty($student->profile) && file_exists(FCPATH . 'uploads/profil
                             <div class="row">
                                 <div class="col-12 col-lg-6 mb-3">
                                     <label class="control-label font-weight-bold">Kelas Group <span class="text-danger">*</span></label>
-                                    <select class="form-control select2 <?= session('errors.class_id') ? 'is-invalid' : '' ?>" id="class_id" name="class_id" style="width: 100%;" <?= empty($classGroups) ? 'disabled' : '' ?>>
-                                        <option value="" disabled <?= old('class_id', $student->class_id) ? '' : 'selected' ?>>-- Pilih Kelas --</option>
+                                    <select class="form-control select2 <?= session('errors.class_params') ? 'is-invalid' : '' ?>"
+                                        id="class_params"
+                                        name="class_params"
+                                        data-selected="<?= esc(old('class_params', $student->class_params)) ?>"
+                                        style="width: 100%;"
+                                        <?= empty($classGroups) ? 'disabled' : '' ?>>
+                                        <option value="" disabled <?= old('class_params', $student->class_params) ? '' : 'selected' ?>>-- Pilih Kelas --</option>
                                         <?php foreach ($classGroups as $class): ?>
-                                            <option value="<?= $class->id ?>" <?= old('class_id', $student->class_id) == $class->id ? 'selected' : '' ?>>
+                                            <option value="<?= $class->class_main ?>" <?= old('class_params', $student->class_params) == $class->class_main ? 'selected' : '' ?>>
                                                 <?= esc($class->class_name) ?>
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
-                                    <?php if (session('errors.class_id')): ?>
-                                        <span class="invalid-feedback d-block"><?= session('errors.class_id') ?></span>
+                                    <?php if (session('errors.class_params')): ?>
+                                        <span class="invalid-feedback d-block"><?= session('errors.class_params') ?></span>
                                     <?php endif; ?>
                                 </div>
+
                                 <div class="col-12 col-lg-6 mb-3">
                                     <label class="control-label font-weight-bold">IPK Terakhir <span class="text-danger">*</span></label>
                                     <input class="form-control <?= session('errors.gpa') ? 'is-invalid' : '' ?>"

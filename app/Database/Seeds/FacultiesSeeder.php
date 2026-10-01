@@ -9,16 +9,48 @@ class FacultiesSeeder extends Seeder
     public function run()
     {
         $now = date('Y-m-d H:i:s');
-        $generateCode = function () {
-            return 'fa_faculties_' . strtoupper(bin2hex(random_bytes(16)));
-        };
 
         $data = [
-            ['faculty_params' => $generateCode(), 'faculty_code' => 'FIK', 'faculty_name' => 'Fakultas Ilmu Komputer', 'faculty_description' => 'Fakultas Teknologi dan Informasi', 'created_at' => $now, 'updated_at' => $now],
-            ['faculty_params' => $generateCode(), 'faculty_code' => 'FEB', 'faculty_name' => 'Fakultas Ekonomi dan Bisnis', 'faculty_description' => 'Fakultas Bisnis dan Manajemen', 'created_at' => $now, 'updated_at' => $now],
-            ['faculty_params' => $generateCode(), 'faculty_code' => 'FHS', 'faculty_name' => 'Fakultas Ilmu Sosial dan Humaniora', 'faculty_description' => 'Fakultas Komunikasi dan Humaniora', 'created_at' => $now, 'updated_at' => $now],
-            ['faculty_params' => $generateCode(), 'faculty_code' => 'FTS', 'faculty_name' => 'Fakultas Teknik dan Sains', 'faculty_description' => 'Fakultas Rekayasa Sains', 'created_at' => $now, 'updated_at' => $now],
-            ['faculty_params' => $generateCode(), 'faculty_code' => 'FDK', 'faculty_name' => 'Fakultas Desain dan Kreatif', 'faculty_description' => 'Fakultas Seni dan Media Kreatif', 'created_at' => $now, 'updated_at' => $now],
+            [
+                'faculty_main'        => 'fiki_main_001',
+                'faculty_code'        => 'FIKI',
+                'faculty_name'        => 'Fakultas Ilmu Komputer',
+                'faculty_description' => 'Fakultas yang berfokus pada teknologi, jaringan, dan pengembangan perangkat lunak.',
+                'created_at'          => $now,
+                'updated_at'          => $now,
+            ],
+            [
+                'faculty_main'        => 'fbs_main_002',
+                'faculty_code'        => 'FBS',
+                'faculty_name'        => 'Fakultas Bisnis dan Sosial',
+                'faculty_description' => 'Fakultas bidang manajemen, ilmu komunikasi, dan akuntansi.',
+                'created_at'          => $now,
+                'updated_at'          => $now,
+            ],
+            [
+                'faculty_main'        => 'fkes_main_003',
+                'faculty_code'        => 'FIKES',
+                'faculty_name'        => 'Fakultas Ilmu Kesehatan',
+                'faculty_description' => 'Fakultas bidang teknologi laboratorium medik dan kesehatan.',
+                'created_at'          => $now,
+                'updated_at'          => $now,
+            ],
+            [
+                'faculty_main'        => 'fse_main_004',
+                'faculty_code'        => 'FSE',
+                'faculty_name'        => 'Fakultas Sains dan Rekayasa',
+                'faculty_description' => 'Fakultas rekayasa sistem terapan dan sains data.',
+                'created_at'          => $now,
+                'updated_at'          => $now,
+            ],
+            [
+                'faculty_main'        => 'pasca_main_005',
+                'faculty_code'        => 'PASCA',
+                'faculty_name'        => 'Program Pascasarjana',
+                'faculty_description' => 'Program pendidikan Magister Magister Komputer.',
+                'created_at'          => $now,
+                'updated_at'          => $now,
+            ],
         ];
 
         $this->db->table('faculties')->insertBatch($data);

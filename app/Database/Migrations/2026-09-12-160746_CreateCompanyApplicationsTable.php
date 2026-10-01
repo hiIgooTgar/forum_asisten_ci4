@@ -15,7 +15,7 @@ class CreateCompanyApplicationsTable extends Migration
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
-            'company_application_code' => [
+            'company_application_main' => [
                 'type'       => 'VARCHAR',
                 'constraint' => '255',
                 'unique'     => true,

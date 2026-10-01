@@ -6,82 +6,94 @@ use CodeIgniter\Database\Seeder;
 
 class SystemEventSettingsSeeder extends Seeder
 {
-    private function generateCode(): string
-    {
-        return 'fa_event_setting_' . strtoupper(bin2hex(random_bytes(16)));
-    }
 
     public function run()
     {
         $now = date('Y-m-d H:i:s');
 
-        $this->db->table('system_event_settings')->insert([
-            'system_event_code' => $this->generateCode(),
-            'event_key'         => 'REGISTRATION_CLOSED_DEFAULT',
-            'event_name'        => 'Pendaftaran Ditutup',
-            'category'          => 'general_announcement',
-            'is_active'         => 0,
-            'is_default'        => 1,
-            'status_override'   => 'closed',
-            'description'       => 'Saat ini tidak ada pendaftaran asisten yang sedang dibuka.',
-            'action_url'        => null,
-            'created_at'        => $now,
-            'updated_at'        => $now,
-        ]);
-
-        $this->db->table('system_event_settings')->insert([
-            'system_event_code' => $this->generateCode(),
-            'event_key'         => 'RECRUITMENT_GEN_2024_ODD',
-            'event_name'        => 'Seleksi Asisten Praktikum Ganjil 2024/2025',
-            'category'          => 'recruitment_period',
-            'is_active'         => 1,
-            'is_default'        => 0,
-            'status_override'   => 'auto',
-            'start_at'          => '2024-08-01 08:00:00',
-            'end_at'            => '2024-09-30 23:59:59',
-            'description'       => 'Pendaftaran Asisten Praktikum Periode Semester Ganjil 2024/2025',
-            'action_url'        => '/auth/register',
-            'created_at'        => $now,
-            'updated_at'        => $now,
-        ]);
-
-        $parentId = $this->db->insertID();
-
-        $stages = [
+        $data  = [
             [
-                'parent_id'         => $parentId,
-                'system_event_code' => $this->generateCode(),
-                'event_key'         => 'MICROTEACHING_PHASE_2024_ODD',
-                'event_name'        => 'Jadwal Tes Microteaching & Wawancara',
+                'system_event_main' => 'evt_rec_2026_genap',
+                'parent_id'         => null,
+                'event_key'         => 'recruitment_2026_even',
+                'event_name'        => 'Pendaftaran Calon Asisten Semester Genap 2025/2026',
+                'category'          => 'recruitment_period',
+                'is_active'         => 1,
+                'is_default'        => 1,
+                'status_override'   => 'open',
+                'start_at'          => '2026-02-01 00:00:00',
+                'end_at'            => '2026-03-30 23:59:59',
+                'description'       => 'Periode rekrutmen terbuka untuk mahasiswa aktif.',
+                'action_url'        => '/auth/register',
+                'created_at'        => $now,
+                'updated_at'        => $now,
+            ],
+            [
+                'system_event_main' => 'evt_stage_adm',
+                'parent_id'         => 1,
+                'event_key'         => 'stage_administrative',
+                'event_name'        => 'Seleksi Berkas Administrasi',
                 'category'          => 'recruitment_stage',
-                'is_active'         => 0,
+                'is_active'         => 1,
                 'is_default'        => 0,
                 'status_override'   => 'auto',
-                'start_at'          => '2024-10-05 08:00:00',
-                'end_at'            => '2024-10-15 17:00:00',
-                'description'       => 'Pelaksanaan Ujian Mengajar dan Wawancara Calon Asisten',
+                'start_at'          => '2026-02-01 00:00:00',
+                'end_at'            => '2026-03-05 23:59:59',
+                'description'       => 'Verifikasi dokumen dan syarat administrasi pendaftar.',
                 'action_url'        => null,
                 'created_at'        => $now,
                 'updated_at'        => $now,
             ],
             [
-                'parent_id'         => $parentId,
-                'system_event_code' => $this->generateCode(),
-                'event_key'         => 'FINAL_ANNOUNCEMENT_2024_ODD',
-                'event_name'        => 'Pengumuman Kelulusan Akhir Asisten',
+                'system_event_main' => 'evt_stage_test',
+                'parent_id'         => 1,
+                'event_key'         => 'stage_microteaching',
+                'event_name'        => 'Tes Microteaching & Wawancara',
                 'category'          => 'recruitment_stage',
-                'is_active'         => 0,
+                'is_active'         => 1,
                 'is_default'        => 0,
-                'status_override'   => 'auto',
-                'start_at'          => '2024-10-20 10:00:00',
-                'end_at'            => '2024-10-25 23:59:59',
-                'description'       => 'Pengumuman Hasil Akhir Asisten Praktikum Diterima',
-                'action_url'        => '/announcements',
+                'status_override'   => 'coming_soon',
+                'start_at'          => '2026-03-10 08:00:00',
+                'end_at'            => '2026-03-15 17:00:00',
+                'description'       => 'Ujian praktek mengajar dan sesi wawancara dengan penguji FA.',
+                'action_url'        => null,
                 'created_at'        => $now,
                 'updated_at'        => $now,
-            ]
+            ],
+            [
+                'system_event_main' => 'evt_announcement',
+                'parent_id'         => 1,
+                'event_key'         => 'stage_final_announcement',
+                'event_name'        => 'Pengumuman Kelulusan Akhir',
+                'category'          => 'general_announcement',
+                'is_active'         => 0,
+                'is_default'        => 0,
+                'status_override'   => 'closed',
+                'start_at'          => '2026-03-20 10:00:00',
+                'end_at'            => '2026-03-25 23:59:59',
+                'description'       => 'Pengumuman peserta yang diterima sebagai Asisten Praktikum.',
+                'action_url'        => '/student/announcement',
+                'created_at'        => $now,
+                'updated_at'        => $now,
+            ],
+            [
+                'system_event_main' => 'evt_briefing',
+                'parent_id'         => 1,
+                'event_key'         => 'stage_briefing',
+                'event_name'        => 'First Gathering & Briefing Asisten Baru',
+                'category'          => 'general_announcement',
+                'is_active'         => 0,
+                'is_default'        => 0,
+                'status_override'   => 'coming_soon',
+                'start_at'          => '2026-03-28 09:00:00',
+                'end_at'            => '2026-03-28 12:00:00',
+                'description'       => 'Pertemuan perdana dan pembekalan untuk asisten terdaftar.',
+                'action_url'        => null,
+                'created_at'        => $now,
+                'updated_at'        => $now,
+            ],
         ];
 
-        $this->db->table('system_event_settings')->insertBatch($stages);
+        $this->db->table('system_event_settings')->insertBatch($data);
     }
 }

@@ -268,7 +268,7 @@ $warningReason  = $profileIncomplete ? 'profile' : ($hasNoTakenCourses ? 'course
                         <h6 class="font-weight-bold mb-0 text-dark">Petunjuk & Persyaratan Unggah Berkas</h6>
                     </div>
                     <ul class="mb-0 pl-4 text-secondary" style="font-size: 0.85rem; line-height: 1.6;">
-                        <li><small class="text-xs-c d-block">Seluruh dokumen <strong>wajib berformat PDF</strong> dengan ukuran maksimum <strong>3MB</strong> per file.</small></li>
+                        <li><small class="text-xs-c d-block">Seluruh dokumen <strong class="text-primary">wajib berformat PDF</strong> dengan ukuran maksimum <strong class="text-primary">3MB</strong> per file.</small></li>
                         <li><small class="text-xs-c d-block">Harap perhatikan petunjuk penamaan berkas pada masing-masing formulir sebelum melakukan unggah.</small></li>
                         <li><small class="text-xs-c d-block">Pastikan berkas dokumen yang diunggah dapat terbaca dengan jelas.</small></li>
                         <li><small class="text-xs-c d-block">Anda dapat mengunduh format template berkas pendaftaran yang disediakan di bagian bawah setiap formulir.</small></li>
@@ -277,7 +277,7 @@ $warningReason  = $profileIncomplete ? 'profile' : ($hasNoTakenCourses ? 'course
 
                 <?php
                 $formAction = $document
-                    ? base_url('student/documents/update/' . $document->document_code)
+                    ? base_url('student/documents/update/' . $document->document_main)
                     : base_url('student/documents/store');
                 ?>
 
@@ -345,7 +345,7 @@ $warningReason  = $profileIncomplete ? 'profile' : ($hasNoTakenCourses ? 'course
                             <div>
                                 <button type="button"
                                     class="btn btn-outline-danger font-weight-bold px-3 py shadow-sm"
-                                    onclick="<?= $isFormDisabled ? "handleIncompleteWarning('$warningReason')" : "confirmResetDocuments('" . base_url('student/documents/reset/' . $document->document_code) . "')" ?>">
+                                    onclick="<?= $isFormDisabled ? "handleIncompleteWarning('$warningReason')" : "confirmResetDocuments('" . base_url('student/documents/reset/' . $document->document_main) . "')" ?>">
                                     <i class="fa fa-undo mr-1"></i> Reset Berkas
                                 </button>
                             </div>

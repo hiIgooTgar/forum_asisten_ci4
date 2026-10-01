@@ -14,7 +14,7 @@ class CompanyApplicationModel extends Model
     protected $protectFields    = true;
 
     protected $allowedFields    = [
-        'company_application_code',
+        'company_application_main',
         'application_name',
         'application_title',
         'application_description',

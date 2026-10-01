@@ -15,15 +15,14 @@ class CreateStudyProgramsTable extends Migration
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
-            'program_params' => [
+            'program_main' => [
                 'type'       => 'VARCHAR',
                 'constraint' => '255',
                 'unique'     => true,
             ],
-            'faculty_id' => [
-                'type'       => 'BIGINT',
-                'constraint' => 20,
-                'unsigned'   => true,
+            'faculty_params' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '255',
             ],
             'program_code' => [
                 'type'       => 'VARCHAR',
@@ -55,7 +54,7 @@ class CreateStudyProgramsTable extends Migration
         ]);
 
         $this->forge->addKey('id', true);
-        $this->forge->addForeignKey('faculty_id', 'faculties', 'id', 'CASCADE', 'CASCADE');
+        $this->forge->addForeignKey('faculty_params', 'faculties', 'faculty_main', 'CASCADE', 'CASCADE');
         $this->forge->createTable('study_programs');
     }
 

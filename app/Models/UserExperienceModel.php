@@ -13,8 +13,8 @@ class UserExperienceModel extends Model
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields    = [
-        'user_id',
-        'experience_code',
+        'experience_main',
+        'user_params',
         'title',
         'organization_name',
         'experience_type',
@@ -55,9 +55,9 @@ class UserExperienceModel extends Model
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
 
-    public function getByUserId(int $userId)
+    public function getByUserParams(string $userParams)
     {
-        return $this->where('user_id', $userId)
+        return $this->where('user_params', $userParams)
             ->orderBy('is_current', 'DESC')
             ->orderBy('year_occurred', 'DESC')
             ->findAll();

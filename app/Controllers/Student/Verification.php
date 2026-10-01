@@ -16,24 +16,30 @@ class Verification extends BaseController
 
     public function index()
     {
-        $userId        = session()->get('user_id');
-        $studentNumber = session()->get('student_number');
+        $registrationMain = $this->getStudentSession('registration_main');
+        $studentNumber    = $this->getStudentSession('student_number');
+        $fullName         = $this->getStudentSession('full_name');
+        $email            = $this->getStudentSession('email');
+        $isStudentLogged  = $this->getStudentSession('is_student_logged_in');
 
-        if (!$userId || !$studentNumber) {
-            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        if (!$registrationMain || !$studentNumber || !$fullName || !$email || !$isStudentLogged) {
+            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir atau tidak valid.');
         }
 
-        $student      = $this->verificationModel->getStudentVerificationData($userId);
-        $takenCourses = $this->verificationModel->getTakenCoursesByUserId($userId);
+        $student      = $this->verificationModel->getStudentVerificationData($registrationMain);
+        $takenCourses = $this->verificationModel->getTakenCoursesByRegistrationMain($registrationMain);
+
+        if (!$student) {
+            return redirect()->to('/auth/login')->with('error', 'Data mahasiswa tidak ditemukan.');
+        }
 
         $requiredUserFields = [
             'student_number',
             'full_name',
             'email',
             'phone_number',
-            'faculty_id',
-            'study_program_id',
-            'class_id',
+            'faculty_params',
+            'study_program_params',
             'place_of_birth',
             'date_of_birth',
             'gender',
@@ -46,20 +52,18 @@ class Verification extends BaseController
         ];
 
         $profileIncomplete = false;
-        if ($student) {
-            foreach ($requiredUserFields as $field) {
-                if (empty($student->$field)) {
-                    $profileIncomplete = true;
-                    break;
-                }
+        foreach ($requiredUserFields as $field) {
+            if (empty($student->$field)) {
+                $profileIncomplete = true;
+                break;
             }
+        }
 
-            $profilePhoto = trim($student->profile ?? '');
-            if (empty($profilePhoto) || $profilePhoto === 'profile-default.png') {
+        if (!$profileIncomplete) {
+            $profilePhoto = basename(trim((string) ($student->profile ?? '')));
+            if (empty($profilePhoto) || in_array($profilePhoto, ['profile-default.png', 'default.png'], true)) {
                 $profileIncomplete = true;
             }
-        } else {
-            $profileIncomplete = true;
         }
 
         $hasNoTakenCourses = empty($takenCourses);
@@ -87,9 +91,6 @@ class Verification extends BaseController
         $isCompleted           = ($student->verification_status ?? 'unsubmitted') === 'completed';
         $canSubmitVerification = (!$profileIncomplete && !$hasNoTakenCourses && !$documentsIncomplete && !$isCompleted);
 
-        $appProfileModel = new \App\Models\CompanyApplicationModel();
-        $appProfile = $appProfileModel->first();
-
         $data = [
             'title'                 => 'Verifikasi Pendaftaran Asisten',
             'student'               => $student,
@@ -101,7 +102,6 @@ class Verification extends BaseController
             'totalDocsCount'        => count($docFields),
             'canSubmitVerification' => $canSubmitVerification,
             'isCompleted'           => $isCompleted,
-            'appProfile'            => $appProfile
         ];
 
         return view('student/verification/index', $data);
@@ -109,27 +109,48 @@ class Verification extends BaseController
 
     public function submit()
     {
-        $userId        = session()->get('user_id');
-        $studentNumber = session()->get('student_number');
+        $registrationMain = $this->getStudentSession('registration_main');
+        $studentNumber    = $this->getStudentSession('student_number');
+        $fullName         = $this->getStudentSession('full_name');
+        $email            = $this->getStudentSession('email');
+        $isStudentLogged  = $this->getStudentSession('is_student_logged_in');
 
-        if (!$userId || !$studentNumber) {
-            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        if (!$registrationMain || !$studentNumber || !$fullName || !$email || !$isStudentLogged) {
+            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir atau tidak valid.');
         }
 
-        $student = $this->verificationModel->getStudentVerificationData($userId);
+        $student = $this->verificationModel->getStudentVerificationData($registrationMain);
 
-        if ($student->verification_status === 'completed') {
+        if (!$student) {
+            return redirect()->back()->with('error', 'Data mahasiswa tidak ditemukan.');
+        }
+
+        if (($student->verification_status ?? 'unsubmitted') === 'completed') {
             return redirect()->back()->with('error', 'Pendaftaran Anda sudah dikirim sebelumnya dan tidak dapat diubah lagi.');
         }
 
-        $takenCourses = $this->verificationModel->getTakenCoursesByUserId($userId);
-
-        if (!$student || empty($takenCourses)) {
-            return redirect()->back()->with('error', 'Gagal memproses. Persyaratan pendaftaran belum lengkap.');
+        $takenCourses = $this->verificationModel->getTakenCoursesByRegistrationMain($registrationMain);
+        if (empty($takenCourses)) {
+            return redirect()->back()->with('error', 'Gagal memproses. Anda belum memasukkan mata kuliah yang diambil.');
         }
 
-        $this->verificationModel->completeVerification($userId);
+        $updated = $this->verificationModel->completeVerification($registrationMain);
+        if ($updated) {
+            if (method_exists($this, 'logActivity')) {
+                $this->logActivity(
+                    'SUBMIT_VERIFICATION',
+                    'Mahasiswa berhasil mengirim verifikasi pendaftaran',
+                    [
+                        'registration_main' => $registrationMain,
+                        'student_number'    => $studentNumber,
+                    ],
+                    'student'
+                );
+            }
 
-        return redirect()->to('/student/verification')->with('success', 'Pendaftaran berhasil dikirim. Seluruh data Anda telah dikunci.');
+            return redirect()->to('/student/verification')->with('success', 'Pendaftaran berhasil dikirim. Seluruh data Anda telah dikunci.');
+        }
+
+        return redirect()->back()->with('error', 'Gagal memperbarui status verifikasi. Silakan coba lagi.');
     }
 }

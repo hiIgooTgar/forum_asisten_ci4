@@ -48,8 +48,8 @@ $routes->group('student', ['filter' => 'student_auth'], static function ($routes
     $routes->get('profile', 'Student\ProfileData::index');
     $routes->post('profile/update-biodata', 'Student\ProfileData::updateBiodata');
     $routes->post('profile/update-photo', 'Student\ProfileData::updatePhoto');
-    $routes->get('profile/get-study-programs/(:num)', 'Student\ProfileData::getStudyProgramsByFaculty/$1');
-    $routes->get('profile/get-class-groups/(:num)', 'Student\ProfileData::getClassGroupsByStudyProgram/$1');
+    $routes->get('profile/get-study-programs/(:segment)', 'Student\ProfileData::getStudyProgramsByFaculty/$1');
+    $routes->get('profile/get-class-groups/(:segment)', 'Student\ProfileData::getClassGroupsByStudyProgram/$1');
 
     $routes->get('experiences', 'Student\ExperienceData::index');
     $routes->post('experiences/store', 'Student\ExperienceData::store');

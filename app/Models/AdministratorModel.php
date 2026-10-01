@@ -13,7 +13,7 @@ class AdministratorModel extends Model
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields    = [
-        'administrator_code',
+        'administrator_main',
         'username',
         'full_name',
         'email',

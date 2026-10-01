@@ -13,9 +13,9 @@ class TakenCourseModel extends Model
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields    = [
-        'taken_course_code',
-        'user_id',
-        'course_id',
+        'taken_course_main',
+        'user_params',
+        'course_params',
         'grade',
     ];
 
@@ -49,17 +49,17 @@ class TakenCourseModel extends Model
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
 
-    public function getTakenCoursesByUser($userId)
+    public function getTakenCoursesByUser($registrationMain)
     {
         return $this->select('taken_courses.*, courses.course_name, courses.course_code, courses.semester, courses.credits, study_programs.program_name')
-            ->join('courses', 'courses.id = taken_courses.course_id')
-            ->join('study_programs', 'study_programs.id = courses.study_program_id', 'left')
-            ->where('taken_courses.user_id', $userId)
+            ->join('courses', 'courses.course_main = taken_courses.course_params')
+            ->join('study_programs', 'study_programs.program_main = courses.study_program_params', 'left')
+            ->where('taken_courses.user_params', $registrationMain)
             ->findAll();
     }
 
-    public function countUserTakenCourses(int $userId): int
+    public function countUserTakenCourses(string $registrationMain): string
     {
-        return $this->where('user_id', $userId)->countAllResults();
+        return $this->where('user_params', $registrationMain)->countAllResults();
     }
 }

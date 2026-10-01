@@ -15,7 +15,7 @@ class CreateUsersTable extends Migration
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
-            'registration_code' => [
+            'registration_main' => [
                 'type'       => 'VARCHAR',
                 'constraint' => '255',
                 'unique'     => true,
@@ -45,22 +45,19 @@ class CreateUsersTable extends Migration
                 'type'       => 'VARCHAR',
                 'constraint' => '255',
             ],
-            'faculty_id' => [
-                'type'       => 'BIGINT',
-                'constraint' => 20,
-                'unsigned'   => true,
+            'faculty_params' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '255',
                 'null'       => true,
             ],
-            'study_program_id' => [
-                'type'       => 'BIGINT',
-                'constraint' => 20,
-                'unsigned'   => true,
+            'study_program_params' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '255',
                 'null'       => true,
             ],
-            'class_id' => [
-                'type'       => 'BIGINT',
-                'constraint' => 20,
-                'unsigned'   => true,
+            'class_params' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '255',
                 'null'       => true,
             ],
             'place_of_birth' => [
@@ -162,9 +159,9 @@ class CreateUsersTable extends Migration
         ]);
 
         $this->forge->addKey('id', true);
-        $this->forge->addForeignKey('faculty_id', 'faculties', 'id', 'CASCADE', 'SET NULL');
-        $this->forge->addForeignKey('study_program_id', 'study_programs', 'id', 'CASCADE', 'SET NULL');
-        $this->forge->addForeignKey('class_id', 'class_groups', 'id', 'CASCADE', 'SET NULL');
+        $this->forge->addForeignKey('faculty_params', 'faculties', 'faculty_main', 'CASCADE', 'SET NULL');
+        $this->forge->addForeignKey('study_program_params', 'study_programs', 'program_main', 'CASCADE', 'SET NULL');
+        $this->forge->addForeignKey('class_params', 'class_groups', 'class_main', 'CASCADE', 'SET NULL');
         $this->forge->createTable('users');
     }
 

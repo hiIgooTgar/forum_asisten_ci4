@@ -4,49 +4,36 @@ namespace App\Controllers\Student;
 
 use App\Controllers\BaseController;
 use App\Models\UserModel;
-use App\Models\CompanyApplicationModel;
 
 class AccountSettings extends BaseController
 {
     protected $userModel;
-    protected $appProfileModel;
 
     public function __construct()
     {
-        $this->userModel       = new UserModel();
-        $this->appProfileModel = new CompanyApplicationModel();
+        $this->userModel = new UserModel();
     }
 
     public function index()
     {
-        $userId        = session()->get('user_id');
-        $studentNumber = session()->get('student_number');
+        $registrationMain = session()->get('registration_main');
+        $studentNumber    = session()->get('student_number');
+        $fullName         = session()->get('full_name');
+        $email            = session()->get('email');
+        $isStudentLogged  = session()->get('is_student_logged_in');
 
-        if (!$userId || !$studentNumber) {
-            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        if (!$registrationMain || !$studentNumber || !$fullName || !$email || !$isStudentLogged) {
+            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir atau tidak valid.');
         }
 
-        $student = $this->userModel->find($userId);
+        $student = $this->userModel->getStudentProfile($registrationMain);
         if (!$student) {
             return redirect()->to('/auth/login')->with('error', 'Data pengguna tidak ditemukan.');
         }
 
-        $appProfile = $this->appProfileModel->getAppProfile();
-
-        $this->logActivity(
-            'VIEW_ACCOUNT_SETTINGS',
-            'Mahasiswa membuka halaman Pengaturan Akun (Keamanan & Hapus Akun)',
-            ['student_number' => $student->student_number],
-            'student'
-        );
-
-        $appProfileModel = new \App\Models\CompanyApplicationModel();
-        $appProfile = $appProfileModel->first();
-
         $data = [
-            'title'      => 'Pengaturan Akun & Keamanan',
-            'student'    => $student,
-            'appProfile' => $appProfile,
+            'title'   => 'Pengaturan Akun & Keamanan',
+            'student' => $student,
         ];
 
         return view('student/account_settings/index', $data);
@@ -54,12 +41,19 @@ class AccountSettings extends BaseController
 
     public function changePassword()
     {
-        $userId        = session()->get('user_id');
-        $studentNumber = session()->get('student_number');
-        $student       = $this->userModel->getStudentProfile($userId);
+        $registrationMain = session()->get('registration_main');
+        $studentNumber    = session()->get('student_number');
+        $fullName         = session()->get('full_name');
+        $email            = session()->get('email');
+        $isStudentLogged  = session()->get('is_student_logged_in');
 
-        if (!$userId || !$studentNumber) {
-            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        if (!$registrationMain || !$studentNumber || !$fullName || !$email || !$isStudentLogged) {
+            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir atau tidak valid.');
+        }
+
+        $student = $this->userModel->getStudentProfile($registrationMain);
+        if (!$student) {
+            return redirect()->to('/auth/login')->with('error', 'Data pengguna tidak ditemukan.');
         }
 
         if (isset($student->verification_status) && $student->verification_status === 'completed') {
@@ -98,7 +92,7 @@ class AccountSettings extends BaseController
         }
 
         $currentPassword = (string)$this->request->getPost('current_password');
-        $newPassword     = (string)$this->request->getPost('new_password');
+        $newPassword      = (string)$this->request->getPost('new_password');
 
         if (!password_verify($currentPassword, $student->password)) {
             return redirect()->back()->withInput()->with('errors', [
@@ -113,7 +107,7 @@ class AccountSettings extends BaseController
         }
 
         $hashedPassword = password_hash($newPassword, PASSWORD_BCRYPT);
-        $this->userModel->update($userId, [
+        $this->userModel->update($student->id, [
             'password'   => $hashedPassword,
             'updated_at' => date('Y-m-d H:i:s'),
         ]);
@@ -130,14 +124,17 @@ class AccountSettings extends BaseController
 
     public function deleteAccount()
     {
-        $userId        = session()->get('user_id');
-        $studentNumber = session()->get('student_number');
+        $registrationMain = session()->get('registration_main');
+        $studentNumber    = session()->get('student_number');
+        $fullName         = session()->get('full_name');
+        $email            = session()->get('email');
+        $isStudentLogged  = session()->get('is_student_logged_in');
 
-        if (!$userId || !$studentNumber) {
-            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        if (!$registrationMain || !$studentNumber || !$fullName || !$email || !$isStudentLogged) {
+            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir atau tidak valid.');
         }
 
-        $student = $this->userModel->find($userId);
+        $student = $this->userModel->getStudentProfile($registrationMain);
         if (!$student) {
             return redirect()->to('/auth/login')->with('error', 'Data pengguna tidak ditemukan.');
         }
@@ -183,15 +180,17 @@ class AccountSettings extends BaseController
             'DELETE_ACCOUNT_SUCCESS',
             'Mahasiswa secara mandiri menghapus akun miliknya secara permanen',
             [
-                'student_number' => $studentNumber,
-                'email'          => $student->email ?? null,
+                'registration_main' => $registrationMain,
+                'student_number'    => $studentNumber,
+                'email'             => $student->email ?? null,
             ],
             'student'
         );
 
-        $this->userModel->delete($userId);
+        $this->userModel->delete($student->id);
 
         session()->remove([
+            'registration_main',
             'user_id',
             'student_number',
             'full_name',

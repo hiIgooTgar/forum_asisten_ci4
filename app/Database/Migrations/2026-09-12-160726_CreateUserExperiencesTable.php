@@ -15,15 +15,14 @@ class CreateUserExperiencesTable extends Migration
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
-            'experience_code' => [
+            'experience_main' => [
                 'type'       => 'VARCHAR',
                 'constraint' => '255',
                 'unique'     => true,
             ],
-            'user_id' => [
-                'type'       => 'BIGINT',
-                'constraint' => 20,
-                'unsigned'   => true,
+            'user_params' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '255',
             ],
             'title' => [
                 'type'       => 'VARCHAR',
@@ -60,7 +59,7 @@ class CreateUserExperiencesTable extends Migration
         ]);
 
         $this->forge->addKey('id', true);
-        $this->forge->addForeignKey('user_id', 'users', 'id', 'CASCADE', 'CASCADE');
+        $this->forge->addForeignKey('user_params', 'users', 'registration_main', 'CASCADE', 'CASCADE');
         $this->forge->createTable('user_experiences');
     }
 
