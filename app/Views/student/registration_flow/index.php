@@ -1,4 +1,23 @@
 <?php
+$appProfile    = $appProfile ?? (object)[];
+$eventSettings = $eventSettings ?? $event ?? [];
+
+$appName       = $appProfile->application_name ?? 'Sistem Asisten Praktikum';
+$appTitle      = $appProfile->company_application_main ?? 'Lab Center';
+$rawPhone      = $appProfile->phone_number ?? '-';
+$waNumber      = preg_replace('/[^0-9]/', '', $rawPhone);
+$waSdmUrl      = !empty($waNumber) ? "https://wa.me/" . $waNumber : '#';
+$appEmail      = $appProfile->email ?? '';
+$appInstagram      = $appProfile->instagram_url ?? '';
+
+$logoImg = (!empty($appProfile->logo) && file_exists(FCPATH . 'uploads/logo/' . $appProfile->logo))
+    ? base_url('uploads/logo/' . $appProfile->logo)
+    : base_url('assets/images/logo/' . ($appProfile->logo ?? 'logo-fa.png'));
+
+$logoImgWhite = (!empty($appProfile->logo_white) && file_exists(FCPATH . 'uploads/logo/' . $appProfile->logo_white))
+    ? base_url('uploads/logo/' . $appProfile->logo_white)
+    : base_url('assets/images/logo/' . ($appProfile->logo_white ?? 'logo-fa.png'));
+
 $activeTab = $activeTab ?? 'requirements';
 ?>
 
@@ -141,7 +160,7 @@ $activeTab = $activeTab ?? 'requirements';
                         </div>
                     </div>
 
-                    <div class="alert alert-primary border shadow-md p-3 p-md-4 mb-4 rounded mt-3 d-flex align-items-md-center align-items-start flex-column  flex-md-row" style="background-color: rgba(10, 36, 129, 0.1); border-left: 4px solid #0a2481 !important;">
+                    <div class="alert alert-primary border shadow-md p-3 p-md-4 rounded mt-2 d-flex align-items-md-center align-items-start flex-column flex-md-row" style="margin-bottom: 2.1rem; background-color: rgba(10, 36, 129, 0.1); border-left: 4px solid #0a2481 !important;">
                         <i class="fa fa-envelope-open-text fa-2x text-primary mr-md-3 mr-0 mb-md-0 mb-3"></i>
                         <div class="mb-md-0 mb-3">
                             <h6 class="d-block text-dark mb-1">Template Berkas Pendaftaran</h6>
@@ -150,6 +169,54 @@ $activeTab = $activeTab ?? 'requirements';
                         <a href="#" class="btn btn-primary font-weight-bold ml-auto flex-shrink-0">
                             <i class="fa fa-download mr-1"></i> Download Template
                         </a>
+                    </div>
+
+                    <div class="sdm-contact-card mb-1">
+                        <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-2">
+                            <div class="d-flex flex-column flex-md-row align-items-center gap-2 text-center text-md-left">
+                                <div class="d-flex align-items-center justify-content-center rounded-circle bg-white shadow mb-2 mb-md-0 p-3 flex-shrink-0" style="width: 50px; height: 50px;">
+                                    <i class="fa fa-headset fa-xl" style="color: var(--primary);"></i>
+                                </div>
+                                <div>
+                                    <h6 class="font-weight-bold text-dark mb-1">Layanan Bantuan & Pusat Informasi SDM</h6>
+                                    <p class="text-muted small mb-0">
+                                        Jika terdapat pertanyaan seputar hasil penetapan atau kendala teknis, silakan hubungi SDM <strong><?= esc($appName); ?></strong> via WhatsApp <strong>+<?= esc($rawPhone); ?></strong>.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="flex-shrink-0 my-2 my-md-0">
+                                <a href="<?= esc($waSdmUrl); ?>" target="_blank" class="btn-sdm-contact">
+                                    <i class="fa-brands fa-whatsapp fa-lg"></i>
+                                    <span>Hubungi SDM</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <?php
+                        $hasSocials = !empty($appProfile->instagram_url) || !empty($appProfile->linkedin_url) || !empty($appProfile->youtube_url) || !empty($appProfile->tiktok_url) || !empty($appProfile->website_url);
+                        if ($hasSocials):
+                        ?>
+                            <div class="mt-3 pt-3 border-top d-flex align-items-center justify-content-center justify-content-md-end">
+                                <div class="d-flex align-items-center gap-2">
+                                    <?php if (!empty($appProfile->instagram_url)): ?>
+                                        <a href="<?= esc($appProfile->instagram_url); ?>" target="_blank" class="social-link-circle" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                                    <?php endif; ?>
+                                    <?php if (!empty($appProfile->linkedin_url)): ?>
+                                        <a href="<?= esc($appProfile->linkedin_url); ?>" target="_blank" class="social-link-circle" title="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+                                    <?php endif; ?>
+                                    <?php if (!empty($appProfile->youtube_url)): ?>
+                                        <a href="<?= esc($appProfile->youtube_url); ?>" target="_blank" class="social-link-circle" title="YouTube"><i class="fa-brands fa-youtube"></i></a>
+                                    <?php endif; ?>
+                                    <?php if (!empty($appProfile->tiktok_url)): ?>
+                                        <a href="<?= esc($appProfile->tiktok_url); ?>" target="_blank" class="social-link-circle" title="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+                                    <?php endif; ?>
+                                    <?php if (!empty($appProfile->website_url)): ?>
+                                        <a href="<?= esc($appProfile->website_url); ?>" target="_blank" class="social-link-circle" title="Website Resmi"><i class="fa fa-globe"></i></a>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -296,7 +363,7 @@ $activeTab = $activeTab ?? 'requirements';
                                                             <tr>
                                                                 <td class="text-center font-weight-bold text-muted small"><?= $index + 1 ?></td>
                                                                 <td style="font-size: 0.85rem;" class="text-center"><span class="badge badge-light border font-weight-bold"><?= esc($course->course_code) ?></span></td>
-                                                                <td style="font-size: 0.85rem;" class="font-weight-semibold text-dark"><?= esc($course->course_name) ?></td>
+                                                                <td style="font-size: 0.85rem;" class="font-weight-semibold col-course-name text-dark"><?= esc($course->course_name) ?></td>
                                                                 <td style="font-size: 0.88rem;" class="text-center"><span class="badge badge-warning py-1 px-2">Semester <?= esc($course->semester) ?></span></td>
                                                                 <td style="font-size: 0.8rem;" class="text-center"><?= esc($course->credits) ?> SKS</td>
                                                                 <td style="font-size: 0.88rem;" class="text-center">

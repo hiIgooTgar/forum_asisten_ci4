@@ -69,6 +69,8 @@ $routes->group('student', ['filter' => 'student_auth'], static function ($routes
     $routes->get('verification', 'Student\Verification::index');
     $routes->post('verification/submit', 'Student\Verification::submit');
 
+    $routes->get('announcements', 'Student\Announcement::index');
+
     $routes->get('account-settings', 'Student\AccountSettings::index');
     $routes->post('account-settings/change-password', 'Student\AccountSettings::changePassword');
     $routes->post('account-settings/delete-account', 'Student\AccountSettings::deleteAccount');

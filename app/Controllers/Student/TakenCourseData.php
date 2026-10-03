@@ -125,9 +125,12 @@ class TakenCourseData extends BaseController
     {
         $registrationMain = $this->getStudentSession('registration_main');
         $studentNumber    = $this->getStudentSession('student_number');
+        $fullName         = $this->getStudentSession('full_name');
+        $email            = $this->getStudentSession('email');
+        $isStudentLogged  = $this->getStudentSession('is_student_logged_in');
 
-        if (!$registrationMain || !$studentNumber) {
-            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        if (!$registrationMain || !$studentNumber || !$fullName || !$email || !$isStudentLogged) {
+            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir atau tidak valid.');
         }
 
         $student = $this->userModel->getStudentProfile($registrationMain);
@@ -192,8 +195,9 @@ class TakenCourseData extends BaseController
         }
 
         $courseCode      = $courseData->course_code ?? $courseParams;
-        $randomNumber    = str_pad(random_int(0, 99999999), 10, '0', STR_PAD_LEFT);
-        $takenCourseMain = "{$randomNumber}_{$studentNumber}_{$courseCode}";
+        $randomCharacter = strtoupper(bin2hex(random_bytes(16)));
+        $dateNow         = date('YmdHis');
+        $takenCourseMain = "fa-taken-courses_{$studentNumber}_{$randomCharacter}_{$courseCode}_{$dateNow}";
 
         $saveData = [
             'taken_course_main' => $takenCourseMain,
@@ -224,9 +228,12 @@ class TakenCourseData extends BaseController
     {
         $registrationMain = $this->getStudentSession('registration_main');
         $studentNumber    = $this->getStudentSession('student_number');
+        $fullName         = $this->getStudentSession('full_name');
+        $email            = $this->getStudentSession('email');
+        $isStudentLogged  = $this->getStudentSession('is_student_logged_in');
 
-        if (!$registrationMain || !$studentNumber) {
-            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        if (!$registrationMain || !$studentNumber || !$fullName || !$email || !$isStudentLogged) {
+            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir atau tidak valid.');
         }
 
         $student = $this->userModel->getStudentProfile($registrationMain);
@@ -335,9 +342,12 @@ class TakenCourseData extends BaseController
     {
         $registrationMain = $this->getStudentSession('registration_main');
         $studentNumber    = $this->getStudentSession('student_number');
+        $fullName         = $this->getStudentSession('full_name');
+        $email            = $this->getStudentSession('email');
+        $isStudentLogged  = $this->getStudentSession('is_student_logged_in');
 
-        if (!$registrationMain || !$studentNumber) {
-            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir.');
+        if (!$registrationMain || !$studentNumber || !$fullName || !$email || !$isStudentLogged) {
+            return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir atau tidak valid.');
         }
 
         $student = $this->userModel->getStudentProfile($registrationMain);

@@ -185,9 +185,11 @@ class ExperienceData extends BaseController
             return redirect()->back()->withInput()->with('error', 'Gagal memperbarui data pengalaman. Silakan periksa kembali form Anda.')->with('errors', $this->validator->getErrors());
         }
 
-        $dateTimeNow  = date('Ymd_His');
-        $isCurrent      = $this->request->getPost('is_current') ? 1 : 0;
-        $experienceMain = $studentNumber . '_' . mt_rand(1000000000000000, 9999999999999999) . '_' . $dateTimeNow;
+
+        $dateTimeNow     = date('Ymd_His');
+        $isCurrent       = $this->request->getPost('is_current') ? 1 : 0;
+        $randomCharacter = strtoupper(bin2hex(random_bytes(16)));
+        $experienceMain  = "fa-experience_{$studentNumber}_{$randomCharacter}_{$dateTimeNow}";
 
         $saveData = [
             'user_params'       => $registrationMain,

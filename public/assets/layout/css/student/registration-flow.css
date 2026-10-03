@@ -193,3 +193,47 @@
   white-space: normal !important;
   min-width: 250px;
 }
+
+.sdm-contact-card {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 1.5rem;
+}
+
+.btn-sdm-contact {
+  background-color: var(--primary);
+  color: #ffffff !important;
+  font-weight: 600;
+  padding: 10px 22px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none !important;
+  transition: all 0.2s ease;
+}
+
+.btn-sdm-contact:hover {
+  background-color: var(--color-hover-primary);
+}
+
+.social-link-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  transition: all 0.2s ease;
+  text-decoration: none !important;
+}
+
+.social-link-circle:hover {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+}

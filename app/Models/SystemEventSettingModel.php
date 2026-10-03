@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use CodeIgniter\Model;
+use DateTime;
+use DateTimeZone;
 
 class SystemEventSettingModel extends Model
 {
@@ -25,39 +27,21 @@ class SystemEventSettingModel extends Model
         'end_at',
         'description',
         'action_url',
-        'created_at',
-        'updated_at',
+        'url_supporting'
     ];
 
-    protected bool $allowEmptyInserts = false;
-    protected bool $updateOnlyChanged = true;
-
-    protected array $casts = [];
-    protected array $castHandlers = [];
-
-    // Dates
     protected $useTimestamps = true;
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
     protected $deletedField  = 'deleted_at';
 
-    // Validation
-    protected $validationRules      = [];
-    protected $validationMessages   = [];
-    protected $skipValidation       = false;
-    protected $cleanValidationRules = true;
-
-    // Callbacks
-    protected $allowCallbacks = true;
-    protected $beforeInsert   = [];
-    protected $afterInsert    = [];
-    protected $beforeUpdate   = [];
-    protected $afterUpdate    = [];
-    protected $beforeFind     = [];
-    protected $afterFind      = [];
-    protected $beforeDelete   = [];
-    protected $afterDelete    = [];
+    private function getWibNowString(): string
+    {
+        $timezone = new DateTimeZone('Asia/Jakarta');
+        $now      = new DateTime('now', $timezone);
+        return $now->format('Y-m-d H:i:s');
+    }
 
     public function getActiveEventWithStatus()
     {
@@ -69,16 +53,16 @@ class SystemEventSettingModel extends Model
             return null;
         }
 
-        $now   = time();
-        $start = !empty($event['start_at']) ? strtotime($event['start_at']) : null;
-        $end   = !empty($event['end_at']) ? strtotime($event['end_at']) : null;
+        $nowStr = $this->getWibNowString();
+        $start  = $event['start_at'] ?? null;
+        $end    = $event['end_at'] ?? null;
 
         $status = $event['status_override'] ?? 'auto';
 
         if ($status === 'auto') {
-            if ($start && $now < $start) {
+            if ($start && $nowStr < $start) {
                 $status = 'coming_soon';
-            } elseif ($end && $now > $end) {
+            } elseif ($end && $nowStr > $end) {
                 $status = 'closed';
             } else {
                 $status = 'open';
@@ -128,19 +112,29 @@ class SystemEventSettingModel extends Model
             return false;
         }
 
-        $now   = date('Y-m-d H:i:s');
-        $start = $event['start_at'] ?? null;
-        $end   = $event['end_at'] ?? null;
+        $override = $event['status_override'] ?? 'auto';
+
+        if ($override === 'closed' || $override === 'coming_soon') {
+            return false;
+        }
+
+        if ($override === 'open') {
+            return true;
+        }
+
+        $nowStr = $this->getWibNowString();
+        $start  = $event['start_at'] ?? null;
+        $end    = $event['end_at'] ?? null;
 
         if (!$start && !$end) {
             return true;
         }
 
-        if ($start && $now < $start) {
+        if ($start && $nowStr < $start) {
             return false;
         }
 
-        if ($end && $now > $end) {
+        if ($end && $nowStr > $end) {
             return false;
         }
 

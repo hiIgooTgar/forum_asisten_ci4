@@ -265,8 +265,9 @@ class DocumentData extends BaseController
         $uploadDir  = WRITEPATH . "uploads/document_file/{$studentNumber}_{$folderDate}_{$registrationMain}/";
 
         ensure_secure_directory($uploadDir);
-        $random16Digits = str_pad(random_int(0, 9999999999999999), 16, '0', STR_PAD_LEFT);
-        $documentMain   = "{$studentNumber}_{$random16Digits}_" . date('YmdHis');
+        $randomCharacter = strtoupper(bin2hex(random_bytes(16)));
+        $dateTimeNow     = date('YmdHis');
+        $documentMain = "fa-user-document_{$studentNumber}_{$randomCharacter}_{$dateTimeNow}";
 
         $files = [
             'student_card_file'       => ['file' => $this->request->getFile('student_card_file'),       'prefix' => 'KTM'],

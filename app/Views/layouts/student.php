@@ -54,6 +54,7 @@ $logoSidebar = (!empty($appProfile->logo_sidebar) && file_exists(FCPATH . 'uploa
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/student/document.css'); ?>">
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/student/verification.css'); ?>">
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/student/registration-flow.css'); ?>">
+    <link rel="stylesheet" href="<?= base_url('assets/layout/css/student/announcement.css'); ?>">
 
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/custom/template_student.css'); ?>">
     <link rel="stylesheet" href="<?= base_url('assets/layout/css/custom/layout.css'); ?>">
@@ -280,6 +281,7 @@ $logoSidebar = (!empty($appProfile->logo_sidebar) && file_exists(FCPATH . 'uploa
     <script src="<?= base_url('assets/layout/js/student/taken-courses.js'); ?>"></script>
     <script src="<?= base_url('assets/layout/js/student/document.js'); ?>"></script>
     <script src="<?= base_url('assets/layout/js/student/verification.js'); ?>"></script>
+    <script src="<?= base_url('assets/layout/js/student/announcement.js'); ?>"></script>
 
     <?= $this->include('components/confirm_modal') ?>
 

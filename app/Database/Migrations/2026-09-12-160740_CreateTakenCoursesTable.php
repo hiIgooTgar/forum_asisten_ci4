@@ -33,6 +33,11 @@ class CreateTakenCoursesTable extends Migration
                 'constraint' => ['A', 'A-', 'B+', 'B'],
                 'default'    => 'B',
             ],
+            'status_selection' => [
+                'type'       => 'ENUM',
+                'constraint' => ['pending', 'passed', 'failed'],
+                'default'    => 'pending',
+            ],
             'created_at' => [
                 'type' => 'DATETIME',
                 'null' => true,

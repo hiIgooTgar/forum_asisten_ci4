@@ -29,7 +29,6 @@ class CreateSystemEventSettingsTable extends Migration
             'event_key' => [
                 'type'       => 'VARCHAR',
                 'constraint' => '255',
-                'unique'     => true,
             ],
             'event_name' => [
                 'type'       => 'VARCHAR',
@@ -81,6 +80,7 @@ class CreateSystemEventSettingsTable extends Migration
         ]);
 
         $this->forge->addKey('id', true);
+        $this->forge->addKey('event_key');
         $this->forge->addForeignKey('parent_id', 'system_event_settings', 'id', 'CASCADE', 'SET NULL');
         $this->forge->createTable('system_event_settings');
     }

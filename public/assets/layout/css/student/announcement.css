@@ -1,0 +1,227 @@
+:root {
+  --primary: #0a2481;
+  --color-primary-combine: #0c2996;
+  --color-primary-combine-v2: #0c1d61;
+  --color-hover-primary: #081750;
+  --color-transparent-primary: rgba(10, 36, 129, 0.5);
+  --color-transparent-primary-v2: rgba(10, 36, 129, 0.25);
+
+  --gradient-primary: linear-gradient(
+    135deg,
+    #0a2481 0%,
+    #0c2996 50%,
+    #0c1d61 100%
+  );
+  --gradient-success: linear-gradient(135deg, #28a745 0%, #1c9931 100%);
+  --gradient-danger: linear-gradient(135deg, #ef4444 0%, #dc3545 100%);
+  --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  --card-border-radius: 4px;
+}
+
+.card-modern-v2 {
+  background: #ffffff;
+  border-radius: var(--card-border-radius);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 30px -5px rgba(10, 36, 129, 0.05);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.countdown-hero-card {
+  background: var(--gradient-primary);
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--card-border-radius);
+  box-shadow: 0 15px 35px rgba(10, 36, 129, 0.25);
+}
+
+.countdown-hero-card::before {
+  content: "";
+  position: absolute;
+  top: -40%;
+  right: -10%;
+  width: 380px;
+  height: 380px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.countdown-grid {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.countdown-box-item {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  padding: 20px;
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 75px;
+  height: 75px;
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.countdown-val-num {
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.countdown-lbl-txt {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-top: 5px;
+  font-weight: 600;
+}
+
+.brand-hero-pill-transparent img {
+  height: 50px;
+  width: auto;
+}
+
+.status-alert-banner {
+  border-radius: var(--card-border-radius);
+  padding: 1.5rem;
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.1);
+}
+
+.status-alert-banner.pass-banner {
+  background: var(--gradient-success);
+}
+
+.status-alert-banner.fail-banner {
+  background: var(--gradient-danger);
+}
+
+.status-alert-banner.wait-banner {
+  background: var(--gradient-warning);
+}
+
+.status-badge-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.status-badge-icon i {
+  font-size: 1.2rem;
+}
+
+.btn-wa-group {
+  background-color: #ffffff;
+  color: #059669 !important;
+  font-weight: 700;
+  padding: 0.7rem 1rem;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  font-size: 0.85rem;
+}
+
+.btn-wa-group:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+  background-color: #f8fafc;
+}
+
+.table-custom-responsive-announcement {
+  min-width: 760px;
+  margin-bottom: 0;
+}
+
+.table-custom-responsive-announcement th,
+.table-custom-responsive-announcement td {
+  vertical-align: middle !important;
+  white-space: nowrap;
+}
+
+.table-custom-responsive-announcement td.col-course-name {
+  white-space: normal !important;
+  min-width: 250px;
+}
+
+.tag-content-c {
+  display: inline-block;
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 4px;
+  background-color: var(--color-transparent-primary-v2);
+  color: var(--primary);
+  margin-bottom: 0.3rem;
+}
+
+.status-pill-v2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.73rem;
+  font-weight: 600;
+}
+
+.status-pill-v2.pill-pass {
+  background: rgba(40, 167, 69, 0.25);
+  color: #28a745;
+}
+
+.status-pill-v2.pill-fail {
+  background: rgba(220, 53, 69, 0.25);
+  color: #dc3545;
+}
+
+.status-pill-v2.pill-wait {
+  background: rgba(245, 158, 11, 0.25);
+  color: #f59e0b;
+}
+
+@media (max-width: 576px) {
+  .countdown-box-item {
+    padding: 14px;
+    width: 60px;
+    height: 60px;
+  }
+
+  .countdown-val-num {
+    font-size: 1.2rem;
+  }
+
+  .countdown-lbl-txt {
+    font-size: 0.6rem;
+  }
+
+  .status-badge-icon {
+    width: 52px;
+    height: 52px;
+  }
+}

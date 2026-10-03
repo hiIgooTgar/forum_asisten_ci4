@@ -36,6 +36,7 @@ abstract class BaseController extends Controller
 
     protected $appProfile;
     protected ?array $studentSession = null;
+    protected DateTimeZone $wibTimeZone;
 
     /**
      * @return void
@@ -49,6 +50,9 @@ abstract class BaseController extends Controller
         // Caution: Do not edit this line.
         parent::initController($request, $response, $logger);
 
+        date_default_timezone_set('Asia/Jakarta');
+        $this->wibTimeZone = new DateTimeZone('Asia/Jakarta');
+
         $appModel = new CompanyApplicationModel();
         $this->appProfile = $appModel->getAppProfile();
 
@@ -61,6 +65,16 @@ abstract class BaseController extends Controller
 
         // Preload any models, libraries, etc, here.
         // $this->session = service('session');
+    }
+
+    protected function getWibDateTime(string $datetime = 'now'): DateTime
+    {
+        return new DateTime($datetime, $this->wibTimeZone);
+    }
+
+    protected function getCurrentWibString(string $format = 'Y-m-d H:i:s'): string
+    {
+        return $this->getWibDateTime()->format($format);
     }
 
     protected function initStudentSession(): void
@@ -97,16 +111,15 @@ abstract class BaseController extends Controller
         array $details = [],
         string $userType = 'student'
     ): void {
-        $db     = \Config\Database::connect();
+        $db       = \Config\Database::connect();
         $userMain = session()->get('registration_main') ?: session()->get('administrator_main');
 
-        $timezone    = new DateTimeZone('Asia/Jakarta');
-        $dateTime    = new DateTime('now', $timezone);
+        $dateTime    = $this->getWibDateTime();
         $currentTime = $dateTime->format('Y-m-d H:i:s');
 
-        $randomHex        = strtoupper(bin2hex(random_bytes(16)));
-        $dateSuffix       = $dateTime->format('YmdHis');
-        $activityLogMain  = "fa_activity_log-{$randomHex}-{$dateSuffix}";
+        $randomHex       = strtoupper(bin2hex(random_bytes(16)));
+        $dateSuffix      = $dateTime->format('YmdHis');
+        $activityLogMain = "fa_activity_log-{$randomHex}-{$dateSuffix}";
 
         $logData = [
             'activity_log_main' => $activityLogMain,

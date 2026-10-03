@@ -17,6 +17,7 @@ class TakenCourseModel extends Model
         'user_params',
         'course_params',
         'grade',
+        'status_selection'
     ];
 
     protected bool $allowEmptyInserts = false;
