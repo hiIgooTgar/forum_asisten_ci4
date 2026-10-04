@@ -36,26 +36,37 @@ class SystemEventSettingModel extends Model
     protected $updatedField  = 'updated_at';
     protected $deletedField  = 'deleted_at';
 
-    private function getWibNowString(): string
+    private function getWibNow(): DateTime
     {
-        $timezone = new DateTimeZone('Asia/Jakarta');
-        $now      = new DateTime('now', $timezone);
-        return $now->format('Y-m-d H:i:s');
+        return new DateTime('now', new DateTimeZone('Asia/Jakarta'));
     }
 
-    public function getActiveEventWithStatus()
+    private function getWibNowString(): string
+    {
+        return $this->getWibNow()->format('Y-m-d H:i:s');
+    }
+
+    public function getActiveRecruitmentEvent()
     {
         $event = $this->where('is_active', 1)
-            ->orderBy('start_at', 'ASC')
+            ->where('category', 'recruitment_period')
+            ->orderBy('id', 'DESC')
             ->first();
+
+        if (!$event) {
+            $event = $this->where('event_key', 'system_default_closed')->first();
+        }
 
         if (!$event) {
             return null;
         }
 
-        $nowStr = $this->getWibNowString();
-        $start  = $event['start_at'] ?? null;
-        $end    = $event['end_at'] ?? null;
+        $now          = $this->getWibNow();
+        $nowStr       = $now->format('Y-m-d H:i:s');
+        $serverTimeMs = $now->getTimestamp() * 1000;
+
+        $start = $event['start_at'] ?? null;
+        $end   = $event['end_at'] ?? null;
 
         $status = $event['status_override'] ?? 'auto';
 
@@ -73,6 +84,7 @@ class SystemEventSettingModel extends Model
             case 'coming_soon':
                 $event['computed_status'] = 'COMING_SOON';
                 $event['target_time']     = $event['start_at'];
+                $event['target_time_ms']  = $event['start_at'] ? (new DateTime($event['start_at'], new DateTimeZone('Asia/Jakarta')))->getTimestamp() * 1000 : null;
                 $event['status_label']    = 'Pendaftaran Dibuka Dalam';
                 $event['badge_color']     = 'bg-warning text-dark';
                 $event['badge_text']      = 'Segera Dibuka';
@@ -81,6 +93,7 @@ class SystemEventSettingModel extends Model
             case 'open':
                 $event['computed_status'] = 'OPEN';
                 $event['target_time']     = $event['end_at'];
+                $event['target_time_ms']  = $event['end_at'] ? (new DateTime($event['end_at'], new DateTimeZone('Asia/Jakarta')))->getTimestamp() * 1000 : null;
                 $event['status_label']    = 'Sisa Waktu Pendaftaran';
                 $event['badge_color']     = 'bg-success text-white';
                 $event['badge_text']      = 'Pendaftaran Dibuka';
@@ -90,14 +103,18 @@ class SystemEventSettingModel extends Model
             default:
                 $event['computed_status'] = 'CLOSED';
                 $event['target_time']     = null;
+                $event['target_time_ms']  = null;
                 $event['status_label']    = 'Pendaftaran Telah Ditutup';
                 $event['badge_color']     = 'bg-danger text-white';
                 $event['badge_text']      = 'Tutup';
                 break;
         }
 
+        $event['server_time_ms'] = $serverTimeMs;
+
         return $event;
     }
+
 
     public function getEventByKey(string $key)
     {
@@ -106,7 +123,7 @@ class SystemEventSettingModel extends Model
 
     public function isEventCurrentlyOpen(string $key): bool
     {
-        $event = $this->getEventByKey($key);
+        $event = $this->where('event_key', $key)->first();
 
         if (!$event || (int) $event['is_active'] !== 1) {
             return false;

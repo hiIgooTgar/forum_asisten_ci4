@@ -192,11 +192,6 @@ $logoSidebar = (!empty($appProfile->logo_sidebar) && file_exists(FCPATH . 'uploa
                             <i class="icon fa fa-circle-o"></i> Dokumen Berkas
                         </a>
                     </li>
-                    <!-- <li>
-                        <a class="treeview-item <?= ($uri->getSegment(2) == 'history') ? 'active' : ''; ?>" href="<?= base_url('student/history'); ?>">
-                            <i class="icon fa fa-circle-o"></i> Riwayat Pendaftaran
-                        </a>
-                    </li> -->
                 </ul>
             </li>
 
@@ -221,6 +216,14 @@ $logoSidebar = (!empty($appProfile->logo_sidebar) && file_exists(FCPATH . 'uploa
         <?= $this->include('components/confirm_modal') ?>
         <?= $this->include('components/warning_modal') ?>
         <?= $this->renderSection('content') ?>
+
+        <footer class="app-footer">
+            <div class="app-footer__content">
+                <p class="app-footer__text mb-0">
+                    &copy; <?= date('Y'); ?> <span class="font-weight-bold text-primary">Progamming Division</span> - Forum Asisten Universitas Amikom Purwokerto
+                </p>
+            </div>
+        </footer>
     </main>
 
     <div class="modal fade" id="globalCropModal" tabindex="-1" role="dialog" aria-labelledby="globalCropModalLabel" aria-hidden="true">

@@ -4,14 +4,28 @@ namespace App\Controllers\Student;
 
 use App\Controllers\BaseController;
 use App\Models\Student\UserVerificationModel;
+use App\Models\SystemEventSettingModel;
 
 class Verification extends BaseController
 {
     protected $verificationModel;
+    protected $systemEventModel;
 
     public function __construct()
     {
         $this->verificationModel = new UserVerificationModel();
+        $this->systemEventModel  = new SystemEventSettingModel();
+    }
+
+    private function isRegistrationOpen(): bool
+    {
+        $activeEvent = $this->systemEventModel->getActiveRecruitmentEvent();
+
+        if (!$activeEvent || empty($activeEvent['event_key'])) {
+            return false;
+        }
+
+        return $this->systemEventModel->isEventCurrentlyOpen($activeEvent['event_key']);
     }
 
     public function index()
@@ -88,8 +102,10 @@ class Verification extends BaseController
             }
         }
 
+        $isEventOpen = $this->isRegistrationOpen();
         $isCompleted           = ($student->verification_status ?? 'unsubmitted') === 'completed';
         $canSubmitVerification = (!$profileIncomplete && !$hasNoTakenCourses && !$documentsIncomplete && !$isCompleted);
+        $activeEvent = $this->systemEventModel->getActiveRecruitmentEvent();
 
         $data = [
             'title'                 => 'Verifikasi Pendaftaran Asisten',
@@ -101,6 +117,8 @@ class Verification extends BaseController
             'uploadedDocsCount'     => $uploadedDocsCount,
             'totalDocsCount'        => count($docFields),
             'canSubmitVerification' => $canSubmitVerification,
+            'isEventOpen'           => $isEventOpen,
+            'active_event'          => $activeEvent,
             'isCompleted'           => $isCompleted,
         ];
 
@@ -123,6 +141,10 @@ class Verification extends BaseController
 
         if (!$student) {
             return redirect()->back()->with('error', 'Data mahasiswa tidak ditemukan.');
+        }
+
+        if (!$this->isRegistrationOpen()) {
+            return redirect()->back()->withInput()->with('error', 'Akses ditolak: Periode pendaftaran calon anggota asisten praktikum ditutup.');
         }
 
         if (($student->verification_status ?? 'unsubmitted') === 'completed') {

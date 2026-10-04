@@ -38,6 +38,15 @@ $totalDocsCount    = count($docItems);
 $percentage        = ($totalDocsCount > 0) ? round(($uploadedDocsCount / $totalDocsCount) * 100) : 0;
 
 $verificationStatus = $student->verification_status ?? '';
+
+
+$eventData    = (isset($active_event) && is_array($active_event)) ? $active_event : null;
+$computedStatus = $eventData['computed_status'] ?? 'CLOSED';
+$targetTime     = $eventData['target_time'] ?? null;
+$eventName      = $eventData['event_name'] ?? 'Pendaftaran Asisten Praktikum';
+$badgeText      = $eventData['badge_text'] ?? 'Tutup';
+$badgeColor     = $eventData['badge_color'] ?? 'bg-danger text-white';
+$statusLabel    = $eventData['status_label'] ?? 'Pendaftaran Ditutup';
 ?>
 
 <div class="app-title shadow-sm bg-white rounded p-4 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center">
@@ -51,6 +60,61 @@ $verificationStatus = $student->verification_status ?? '';
         <li class="breadcrumb-item"><a href="<?= base_url('student/dashboard'); ?>"><i class="fa fa-home text-muted"></i></a></li>
         <li class="breadcrumb-item active text-primary font-weight-semibold">Verifikasi Pendaftaran</li>
     </ul>
+</div>
+
+
+<div class="row">
+    <div class="col-12">
+        <div class="tile tile-brand shadow-sm p-4 text-white rounded position-relative overflow-hidden mb-4" style="background: linear-gradient(135deg, var(--primary) 0%, var(--color-primary-combine) 100%);">
+            <div class="row align-items-center z-index-1">
+                <div class="col-lg-7 col-md-12 mb-3 mb-lg-0">
+                    <div class="d-flex align-items-start justify-content-start mb-1 flex-column" style="gap: 8px;">
+                        <span class="badge <?= $badgeColor ?> font-weight-bold px-2 py-1 text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                            <?= esc($badgeText) ?>
+                        </span>
+                        <h3 class="mb-0 text-white font-weight-bold h4"><?= esc($eventName) ?></h3>
+                    </div>
+                    <p class="mb-0 text-white-50 text-small-c" style="line-height: 1.6;">
+                        <?php if ($eventData): ?>
+                            <?= esc($eventData['description'] ?? 'Periode pendaftaran calon asisten praktikum.') ?>
+                        <?php else: ?>
+                            Saat ini belum ada periode pendaftaran aktif yang dibuka.
+                        <?php endif; ?>
+                    </p>
+                </div>
+
+                <div class="col-lg-5 col-md-12 text-lg-right d-flex align-items-center justify-content-center align-items-sm-end justify-content-sm-end">
+                    <?php if ($targetTime && $computedStatus !== 'CLOSED'): ?>
+                        <div class="d-inline-block text-lg-right text-center">
+                            <span class="d-block small text-white-50 mb-1 font-weight-semibold"><?= esc($statusLabel) ?></span>
+                            <div class="d-flex align-items-center justify-content-center justify-content-lg-end" style="gap: 6px;" id="countdown-board">
+                                <div class="timer-card">
+                                    <div class="timer-num" id="cd-days">00</div>
+                                    <div class="timer-unit">Hari</div>
+                                </div>
+                                <div class="timer-card">
+                                    <div class="timer-num" id="cd-hours">00</div>
+                                    <div class="timer-unit">Jam</div>
+                                </div>
+                                <div class="timer-card">
+                                    <div class="timer-num" id="cd-minutes">00</div>
+                                    <div class="timer-unit">Menit</div>
+                                </div>
+                                <div class="timer-card">
+                                    <div class="timer-num" id="cd-seconds">00</div>
+                                    <div class="timer-unit">Detik</div>
+                                </div>
+                            </div>
+                        </div>
+                    <?php else: ?>
+                        <button class="btn btn-light btn-block btn-sm-inline px-4 py-2 font-weight-semibold text-muted" disabled>
+                            <i class="fa fa-lock mr-1"></i> Pendaftaran Ditutup
+                        </button>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <?php if ($verificationStatus === 'completed' || $isCompleted): ?>
@@ -488,5 +552,38 @@ $verificationStatus = $student->verification_status ?? '';
     </div>
 </div>
 
+<?= $this->endSection() ?>
 
+
+<?= $this->section('scripts') ?>
+<script>
+    $(document.body).ready(function() {
+        const targetTimeMs = <?= !empty($active_event['target_time_ms']) ? $active_event['target_time_ms'] : 'null' ?>;
+        let serverTimeMs = <?= !empty($active_event['server_time_ms']) ? $active_event['server_time_ms'] : 'null' ?>;
+
+        if (targetTimeMs && serverTimeMs !== 'CLOSED') {
+            const timerInterval = setInterval(function() {
+                serverTimeMs += 1000;
+                const distance = targetTimeMs - serverTimeMs;
+
+                if (distance <= 0) {
+                    clearInterval(timerInterval);
+                    $('#modalClosedNotice').modal('show');
+                    $('#countdown-board').html('<span class="badge badge-danger p-2">Waktu Telah Habis</span>');
+                    return;
+                }
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                $('#cd-days').text(String(days).padStart(2, '0'));
+                $('#cd-hours').text(String(hours).padStart(2, '0'));
+                $('#cd-minutes').text(String(minutes).padStart(2, '0'));
+                $('#cd-seconds').text(String(seconds).padStart(2, '0'));
+            }, 1000);
+        }
+    });
+</script>
 <?= $this->endSection() ?>

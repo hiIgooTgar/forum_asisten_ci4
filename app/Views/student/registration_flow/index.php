@@ -120,42 +120,42 @@ $activeTab = $activeTab ?? 'requirements';
                             <div class="p-3 border rounded h-100 bg-white">
                                 <span class="badge badge-primary px-2 py-1 mb-2">Dokumen 1</span>
                                 <h6 class="font-weight-bold text-dark mb-1">Kartu Tanda Mahasiswa (KTM)</h6>
-                                <p class="text-muted text-xs-c mb-0">Scan KTM aktif / Screenshot dashboard student.</p>
+                                <p class="text-muted text-xs-c mb-0">Hasil pemindaian Kartu Tanda Mahasiswa (KTM) aktif atau tangkapan layar dasbor profil mahasiswa resmi.</p>
                             </div>
                         </div>
                         <div class="col-lg-4 col-sm-6 col-12 mb-3">
                             <div class="p-3 border rounded h-100 bg-white">
                                 <span class="badge badge-primary px-2 py-1 mb-2">Dokumen 2</span>
                                 <h6 class="font-weight-bold text-dark mb-1">Surat Lamaran</h6>
-                                <p class="text-muted text-xs-c mb-0">Ditujukan kepada Pengelola Forum Asisten.</p>
+                                <p class="text-muted text-xs-c mb-0">Surat lamaran resmi yang ditujukan kepada Pengelola Forum Asisten Universitas Amikom Purwokerto.</p>
                             </div>
                         </div>
                         <div class="col-lg-4 col-sm-6 col-12 mb-3">
                             <div class="p-3 border rounded h-100 bg-white">
                                 <span class="badge badge-primary px-2 py-1 mb-2">Dokumen 3</span>
                                 <h6 class="font-weight-bold text-dark mb-1">Curriculum Vitae (CV)</h6>
-                                <p class="text-muted text-xs-c mb-0">Daftar riwayat hidup terbaru.</p>
+                                <p class="text-muted text-xs-c mb-0">Daftar riwayat hidup terbaru yang memuat informasi akademis, pengalaman, serta kualifikasi diri.</p>
                             </div>
                         </div>
                         <div class="col-lg-4 col-sm-6 col-12 mb-3">
                             <div class="p-3 border rounded h-100 bg-white">
                                 <span class="badge badge-primary px-2 py-1 mb-2">Dokumen 4</span>
                                 <h6 class="font-weight-bold text-dark mb-1">Transkrip Nilai Terakhir</h6>
-                                <p class="text-muted text-xs-c mb-0">Highlight mata kuliah yang dilamar + TTD mahasiswa.</p>
+                                <p class="text-muted text-xs-c mb-0">Transkrip nilai terbaru dengan penandaan (highlight) pada mata kuliah yang dilamar serta ditandatangani mahasiswa.</p>
                             </div>
                         </div>
                         <div class="col-lg-4 col-sm-6 col-12 mb-3">
                             <div class="p-3 border rounded h-100 bg-white">
                                 <span class="badge badge-primary px-2 py-1 mb-2">Dokumen 5</span>
                                 <h6 class="font-weight-bold text-dark mb-1">Surat Pernyataan</h6>
-                                <p class="text-muted text-xs-c mb-0">Bermaterai 10.000 resmi.</p>
+                                <p class="text-muted text-xs-c mb-0">Surat pernyataan resmi yang dibubuhi materai Rp10.000 (diperbolehkan menggunakan materai fisik maupun e-Materai / materai digital).</p>
                             </div>
                         </div>
                         <div class="col-lg-4 col-sm-6 col-12 mb-3">
                             <div class="p-3 border rounded h-100 bg-white">
                                 <span class="badge badge-primary px-2 py-1 mb-2">Dokumen 6</span>
                                 <h6 class="font-weight-bold text-dark mb-1">Formulir Pendaftaran</h6>
-                                <p class="text-muted text-xs-c mb-0">Formulir pendaftaran asisten praktikum.</p>
+                                <p class="text-muted text-xs-c mb-0">Formulir pendaftaran seleksi calon asisten praktikum yang telah diisi secara lengkap dan benar.</p>
                             </div>
                         </div>
                     </div>
@@ -173,13 +173,13 @@ $activeTab = $activeTab ?? 'requirements';
 
                     <div class="sdm-contact-card mb-1">
                         <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-2">
-                            <div class="d-flex flex-column flex-md-row align-items-center gap-2 text-center text-md-left">
+                            <div class="d-flex flex-column flex-md-row align-items-center text-center text-md-left" style="gap: 0.8rem;">
                                 <div class="d-flex align-items-center justify-content-center rounded-circle bg-white shadow mb-2 mb-md-0 p-3 flex-shrink-0" style="width: 50px; height: 50px;">
                                     <i class="fa fa-headset fa-xl" style="color: var(--primary);"></i>
                                 </div>
                                 <div>
                                     <h6 class="font-weight-bold text-dark mb-1">Layanan Bantuan & Pusat Informasi SDM</h6>
-                                    <p class="text-muted small mb-0">
+                                    <p class="text-muted text-xs-c2 mb-0" style="line-height: 1.6;">
                                         Jika terdapat pertanyaan seputar hasil penetapan atau kendala teknis, silakan hubungi SDM <strong><?= esc($appName); ?></strong> via WhatsApp <strong>+<?= esc($rawPhone); ?></strong>.
                                     </p>
                                 </div>
@@ -305,7 +305,7 @@ $activeTab = $activeTab ?? 'requirements';
                                 </div>
                                 <h6 class="font-weight-bold text-dark mb-2">Pengumuman Kelulusan Seleksi Anggota Forum Asisten</h6>
                                 <p class="text-muted text-xs-c mb-0" style="line-height: 1.6;">
-                                    Pengumuman resmi daftar calon asisten yang dinyatakan lulus seleksi akan dipublikasikan melalui akun Instagram Resmi Forum Asisten (<strong class="text-primary">@forum_asisten</strong>).
+                                    Pengumuman resmi daftar calon asisten yang dinyatakan lulus seleksi akan dipublikasikan melalui akun Instagram resmi Forum Asisten (<strong class="text-primary">@forum_asisten</strong>) serta situs web resmi Forum Asisten pada halaman <strong class="text-primary">Pengumuman</strong>.
                                 </p>
                             </div>
                         </div>

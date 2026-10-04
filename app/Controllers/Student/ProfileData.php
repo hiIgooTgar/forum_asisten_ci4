@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\UserModel;
 use App\Models\TakenCourseModel;
 use App\Models\UserDocumentModel;
+use App\Models\SystemEventSettingModel;
 
 class ProfileData extends BaseController
 {
@@ -13,13 +14,26 @@ class ProfileData extends BaseController
     protected $db;
     protected $takenCourseModel;
     protected $userDocumentModel;
+    protected $systemEventModel;
 
     public function __construct()
     {
         $this->userModel         = new UserModel();
         $this->takenCourseModel  = new TakenCourseModel();
         $this->userDocumentModel = new UserDocumentModel();
+        $this->systemEventModel  = new SystemEventSettingModel();
         $this->db                = \Config\Database::connect();
+    }
+
+    private function isRegistrationOpen(): bool
+    {
+        $activeEvent = $this->systemEventModel->getActiveRecruitmentEvent();
+
+        if (!$activeEvent || empty($activeEvent['event_key'])) {
+            return false;
+        }
+
+        return $this->systemEventModel->isEventCurrentlyOpen($activeEvent['event_key']);
     }
 
     public function index()
@@ -121,7 +135,9 @@ class ProfileData extends BaseController
                 ->get()->getResult();
         }
 
+        $isEventOpen = $this->isRegistrationOpen();
         $activeTab = filter_var($this->request->getGet('tab'), FILTER_SANITIZE_SPECIAL_CHARS) ?: 'biodata';
+        $activeEvent = $this->systemEventModel->getActiveRecruitmentEvent();
 
         $data = [
             'title'         => 'Profil & Biodata Mahasiswa',
@@ -130,6 +146,8 @@ class ProfileData extends BaseController
             'studyPrograms' => $studyPrograms,
             'classGroups'   => $classGroups,
             'activeTab'     => $activeTab,
+            'isEventOpen'   => $isEventOpen,
+            'active_event'  => $activeEvent,
             'canVerify'     => $canVerify
         ];
 
@@ -173,6 +191,10 @@ class ProfileData extends BaseController
 
         if (!$student) {
             return redirect()->to('/auth/login')->with('error', 'Data mahasiswa tidak ditemukan.');
+        }
+
+        if (!$this->isRegistrationOpen()) {
+            return redirect()->back()->withInput()->with('error', 'Akses ditolak: Periode pendaftaran calon anggota asisten praktikum ditutup.');
         }
 
         if (isset($student->verification_status) && $student->verification_status === 'completed') {
@@ -372,6 +394,10 @@ class ProfileData extends BaseController
 
         if (!$student) {
             return redirect()->to('/auth/login')->with('error', 'Data mahasiswa tidak ditemukan.');
+        }
+
+        if (!$this->isRegistrationOpen()) {
+            return redirect()->back()->withInput()->with('error', 'Akses ditolak: Periode pendaftaran calon anggota asisten praktikum ditutup.');
         }
 
         if (isset($student->verification_status) && $student->verification_status === 'completed') {

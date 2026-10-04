@@ -7,6 +7,7 @@ use App\Models\UserExperienceModel;
 use App\Models\UserModel;
 use App\Models\TakenCourseModel;
 use App\Models\UserDocumentModel;
+use App\Models\SystemEventSettingModel;
 
 class ExperienceData extends BaseController
 {
@@ -14,6 +15,7 @@ class ExperienceData extends BaseController
     protected $userModel;
     protected $takenCourseModel;
     protected $userDocumentModel;
+    protected $systemEventModel;
 
     public function __construct()
     {
@@ -21,6 +23,19 @@ class ExperienceData extends BaseController
         $this->userModel         = new UserModel();
         $this->takenCourseModel  = new TakenCourseModel();
         $this->userDocumentModel = new UserDocumentModel();
+        $this->systemEventModel  = new SystemEventSettingModel();
+    }
+
+
+    private function isRegistrationOpen(): bool
+    {
+        $activeEvent = $this->systemEventModel->getActiveRecruitmentEvent();
+
+        if (!$activeEvent || empty($activeEvent['event_key'])) {
+            return false;
+        }
+
+        return $this->systemEventModel->isEventCurrentlyOpen($activeEvent['event_key']);
     }
 
     public function index()
@@ -101,8 +116,10 @@ class ExperienceData extends BaseController
             $allDocumentsUploaded = ($uploadedCount === count($docFields));
         }
 
+        $isEventOpen = $this->isRegistrationOpen();
         $isAlreadyVerified = isset($student->verification_status) && $student->verification_status === 'completed';
-        $canVerify         = (!$profileIncomplete && $hasTakenCourses && $allDocumentsUploaded && !$isAlreadyVerified);
+        $canVerify = (!$profileIncomplete && $hasTakenCourses && $allDocumentsUploaded && !$isAlreadyVerified && $isEventOpen);
+        $activeEvent = $this->systemEventModel->getActiveRecruitmentEvent();
 
         $data = [
             'title'             => 'Pengalaman & Portofolio',
@@ -110,6 +127,8 @@ class ExperienceData extends BaseController
             'experiences'       => $experiences,
             'profileIncomplete' => $profileIncomplete,
             'canVerify'         => $canVerify,
+            'isEventOpen'       => $isEventOpen,
+            'active_event'      => $activeEvent,
             'activeTab'         => 'experience',
         ];
 
@@ -126,6 +145,10 @@ class ExperienceData extends BaseController
 
         if (!$registrationMain || !$studentNumber || !$fullName || !$email || !$isStudentLogged) {
             return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir atau tidak valid.');
+        }
+
+        if (!$this->isRegistrationOpen()) {
+            return redirect()->back()->withInput()->with('error', 'Akses ditolak: Periode pendaftaran calon anggota asisten praktikum ditutup.');
         }
 
         $student = $this->userModel->getStudentProfile($registrationMain);
@@ -185,7 +208,6 @@ class ExperienceData extends BaseController
             return redirect()->back()->withInput()->with('error', 'Gagal memperbarui data pengalaman. Silakan periksa kembali form Anda.')->with('errors', $this->validator->getErrors());
         }
 
-
         $dateTimeNow     = date('Ymd_His');
         $isCurrent       = $this->request->getPost('is_current') ? 1 : 0;
         $randomCharacter = strtoupper(bin2hex(random_bytes(16)));
@@ -233,6 +255,10 @@ class ExperienceData extends BaseController
 
         if (!$registrationMain || !$studentNumber || !$fullName || !$email || !$isStudentLogged) {
             return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir atau tidak valid.');
+        }
+
+        if (!$this->isRegistrationOpen()) {
+            return redirect()->back()->withInput()->with('error', 'Akses ditolak: Periode pendaftaran calon anggota asisten praktikum ditutup.');
         }
 
         $student = $this->userModel->getStudentProfile($registrationMain);
@@ -370,6 +396,10 @@ class ExperienceData extends BaseController
 
         if (!$registrationMain || !$studentNumber || !$fullName || !$email || !$isStudentLogged) {
             return redirect()->to('/auth/login')->with('error', 'Sesi Anda telah berakhir atau tidak valid.');
+        }
+
+        if (!$this->isRegistrationOpen()) {
+            return redirect()->back()->with('error', 'Akses ditolak: Periode pendaftaran calon anggota asisten praktikum ditutup.');
         }
 
         $student = $this->userModel->getStudentProfile($registrationMain);

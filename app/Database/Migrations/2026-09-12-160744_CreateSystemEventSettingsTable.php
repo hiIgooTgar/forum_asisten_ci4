@@ -69,6 +69,11 @@ class CreateSystemEventSettingsTable extends Migration
                 'constraint' => '255',
                 'null'       => true,
             ],
+            'url_supporting' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '255',
+                'null'       => true,
+            ],
             'created_at' => [
                 'type' => 'DATETIME',
                 'null' => true,

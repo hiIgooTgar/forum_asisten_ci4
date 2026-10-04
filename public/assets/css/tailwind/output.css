@@ -726,6 +726,11 @@ video {
   margin-bottom: auto;
 }
 
+.mx-1 {
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
+}
+
 .\!mt-5 {
   margin-top: 1.25rem !important;
 }
@@ -1486,6 +1491,10 @@ video {
   padding-top: 1.5rem;
 }
 
+.pr-0 {
+  padding-right: 0px;
+}
+
 .text-left {
   text-align: left;
 }
@@ -1557,6 +1566,10 @@ video {
 
 .font-semibold {
   font-weight: 600;
+}
+
+.uppercase {
+  text-transform: uppercase;
 }
 
 .ordinal {

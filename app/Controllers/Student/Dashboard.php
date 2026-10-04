@@ -4,6 +4,7 @@ namespace App\Controllers\Student;
 
 use App\Controllers\BaseController;
 use App\Models\Student\StudentDashboardModel;
+use App\Models\SystemEventSettingModel;
 use App\Models\TakenCourseModel;
 use App\Models\UserDocumentModel;
 
@@ -12,12 +13,14 @@ class Dashboard extends BaseController
     protected $dashboardModel;
     protected $takenCourseModel;
     protected $userDocumentModel;
+    protected $systemEventModel;
 
     public function __construct()
     {
         $this->dashboardModel    = new StudentDashboardModel();
         $this->takenCourseModel  = new TakenCourseModel();
         $this->userDocumentModel = new UserDocumentModel();
+        $this->systemEventModel  = new SystemEventSettingModel();
     }
 
     public function index()
@@ -100,6 +103,7 @@ class Dashboard extends BaseController
         $canVerify          = (!$profileIncomplete && $hasTakenCourses && $allDocumentsUploaded && !$isAlreadyVerified);
 
         $completionPercentage = $this->calculateProfileCompletion($student, $documents);
+        $activeEvent = $this->systemEventModel->getActiveRecruitmentEvent();
 
         $this->logActivity(
             'VIEW_DASHBOARD',
@@ -117,7 +121,7 @@ class Dashboard extends BaseController
             'title'                 => 'Dashboard Student',
             'student'               => $student,
             'documents'             => $documents,
-            'active_event'          => $this->dashboardModel->getActiveEvent(),
+            'active_event'          => $activeEvent,
             'completion_percentage' => $completionPercentage,
             'canVerify'             => $canVerify,
         ];

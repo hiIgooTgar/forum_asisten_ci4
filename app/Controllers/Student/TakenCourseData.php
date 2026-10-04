@@ -7,6 +7,7 @@ use App\Models\TakenCourseModel;
 use App\Models\CourseModel;
 use App\Models\UserModel;
 use App\Models\userDocumentModel;
+use App\Models\SystemEventSettingModel;
 
 class TakenCourseData extends BaseController
 {
@@ -14,6 +15,7 @@ class TakenCourseData extends BaseController
     protected $courseModel;
     protected $userModel;
     protected $userDocumentModel;
+    protected $systemEventModel;
 
     public function __construct()
     {
@@ -21,6 +23,18 @@ class TakenCourseData extends BaseController
         $this->courseModel       = new CourseModel();
         $this->userModel         = new UserModel();
         $this->userDocumentModel = new userDocumentModel();
+        $this->systemEventModel  = new SystemEventSettingModel();
+    }
+
+    private function isRegistrationOpen(): bool
+    {
+        $activeEvent = $this->systemEventModel->getActiveRecruitmentEvent();
+
+        if (!$activeEvent || empty($activeEvent['event_key'])) {
+            return false;
+        }
+
+        return $this->systemEventModel->isEventCurrentlyOpen($activeEvent['event_key']);
     }
 
     public function index()
@@ -105,8 +119,11 @@ class TakenCourseData extends BaseController
             $allDocumentsUploaded = ($uploadedCount === count($docFields));
         }
 
+
+        $isEventOpen = $this->isRegistrationOpen();
         $isAlreadyVerified = isset($student->verification_status) && $student->verification_status === 'completed';
         $canVerify         = (!$profileIncomplete && $hasTakenCourses && $allDocumentsUploaded && !$isAlreadyVerified);
+        $activeEvent = $this->systemEventModel->getActiveRecruitmentEvent();
 
         $data = [
             'title'             => 'Pendaftaran Mata Kuliah',
@@ -115,6 +132,8 @@ class TakenCourseData extends BaseController
             'availableCourses'  => $availableCourses,
             'profileIncomplete' => $profileIncomplete,
             'canVerify'         => $canVerify,
+            'isEventOpen'       => $isEventOpen,
+            'active_event'      => $activeEvent,
             'activeTab'         => 'taken_courses',
         ];
 
@@ -134,6 +153,10 @@ class TakenCourseData extends BaseController
         }
 
         $student = $this->userModel->getStudentProfile($registrationMain);
+
+        if (!$this->isRegistrationOpen()) {
+            return redirect()->back()->withInput()->with('error', 'Akses ditolak: Periode pendaftaran calon anggota asisten praktikum ditutup.');
+        }
 
         if (isset($student->verification_status) && $student->verification_status === 'completed') {
             return redirect()->back()->with('error', 'Akses ditolak: Pendaftaran Anda telah terverifikasi dan data telah terkunci.');
@@ -237,6 +260,10 @@ class TakenCourseData extends BaseController
         }
 
         $student = $this->userModel->getStudentProfile($registrationMain);
+
+        if (!$this->isRegistrationOpen()) {
+            return redirect()->back()->withInput()->with('error', 'Akses ditolak: Periode pendaftaran calon anggota asisten praktikum ditutup.');
+        }
 
         if (isset($student->verification_status) && $student->verification_status === 'completed') {
             return redirect()->back()->with('error', 'Akses ditolak: Pendaftaran Anda telah terverifikasi dan data telah terkunci.');
@@ -351,6 +378,10 @@ class TakenCourseData extends BaseController
         }
 
         $student = $this->userModel->getStudentProfile($registrationMain);
+
+        if (!$this->isRegistrationOpen()) {
+            return redirect()->back()->withInput()->with('error', 'Akses ditolak: Periode pendaftaran calon anggota asisten praktikum ditutup.');
+        }
 
         if (isset($student->verification_status) && $student->verification_status === 'completed') {
             return redirect()->back()->with('error', 'Akses ditolak: Pendaftaran Anda telah terverifikasi dan data telah terkunci.');
