@@ -40,13 +40,14 @@ $percentage        = ($totalDocsCount > 0) ? round(($uploadedDocsCount / $totalD
 $verificationStatus = $student->verification_status ?? '';
 
 
-$eventData    = (isset($active_event) && is_array($active_event)) ? $active_event : null;
+$eventData      = (isset($active_event) && is_array($active_event)) ? $active_event : null;
 $computedStatus = $eventData['computed_status'] ?? 'CLOSED';
 $targetTime     = $eventData['target_time'] ?? null;
 $eventName      = $eventData['event_name'] ?? 'Pendaftaran Asisten Praktikum';
 $badgeText      = $eventData['badge_text'] ?? 'Tutup';
 $badgeColor     = $eventData['badge_color'] ?? 'bg-danger text-white';
 $statusLabel    = $eventData['status_label'] ?? 'Pendaftaran Ditutup';
+$isExtraTime    = (int)($eventData['is_extra_time'] ?? 0) === 1;
 ?>
 
 <div class="app-title shadow-sm bg-white rounded p-4 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center">
@@ -72,7 +73,9 @@ $statusLabel    = $eventData['status_label'] ?? 'Pendaftaran Ditutup';
                         <span class="badge <?= $badgeColor ?> font-weight-bold px-2 py-1 text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">
                             <?= esc($badgeText) ?>
                         </span>
-                        <h3 class="mb-0 text-white font-weight-bold h4"><?= esc($eventName) ?></h3>
+                        <h4 class="mb-0 text-white font-weight-bold">
+                            <?= esc($eventName) ?>
+                        </h4>
                     </div>
                     <p class="mb-0 text-white-50 text-small-c" style="line-height: 1.6;">
                         <?php if ($eventData): ?>
@@ -81,6 +84,9 @@ $statusLabel    = $eventData['status_label'] ?? 'Pendaftaran Ditutup';
                             Saat ini belum ada periode pendaftaran aktif yang dibuka.
                         <?php endif; ?>
                     </p>
+                    <?php if ($isExtraTime): ?>
+                        <small class="badge badge-light text-dark font-weight-bold py-1 px-2" style="font-size: 0.65rem; margin-top: 0.5rem;">Perpanjangan</small>
+                    <?php endif; ?>
                 </div>
 
                 <div class="col-lg-5 col-md-12 text-lg-right d-flex align-items-center justify-content-center align-items-sm-end justify-content-sm-end">
@@ -116,6 +122,7 @@ $statusLabel    = $eventData['status_label'] ?? 'Pendaftaran Ditutup';
         </div>
     </div>
 </div>
+
 
 <?php if ($verificationStatus === 'completed' || $isCompleted): ?>
     <div class="alert alert-primary border-0 shadow-sm p-3 p-md-4 mb-4 rounded-lg" style="background-color: #ffffff; border-left: 4px solid #0a2481 !important;">
@@ -568,8 +575,7 @@ $statusLabel    = $eventData['status_label'] ?? 'Pendaftaran Ditutup';
 
                 if (distance <= 0) {
                     clearInterval(timerInterval);
-                    $('#modalClosedNotice').modal('show');
-                    $('#countdown-board').html('<span class="badge badge-danger p-2">Waktu Telah Habis</span>');
+                    window.location.reload();
                     return;
                 }
 

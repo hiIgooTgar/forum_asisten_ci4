@@ -44,13 +44,14 @@ $profileImg = (!empty($student->profile) && file_exists(FCPATH . 'uploads/profil
     : base_url('assets/images/profile/profile-default.png');
 
 
-$eventData    = (isset($active_event) && is_array($active_event)) ? $active_event : null;
+$eventData      = (isset($active_event) && is_array($active_event)) ? $active_event : null;
 $computedStatus = $eventData['computed_status'] ?? 'CLOSED';
 $targetTime     = $eventData['target_time'] ?? null;
 $eventName      = $eventData['event_name'] ?? 'Pendaftaran Asisten Praktikum';
 $badgeText      = $eventData['badge_text'] ?? 'Tutup';
 $badgeColor     = $eventData['badge_color'] ?? 'bg-danger text-white';
 $statusLabel    = $eventData['status_label'] ?? 'Pendaftaran Ditutup';
+$isExtraTime    = (int)($eventData['is_extra_time'] ?? 0) === 1;
 ?>
 <div class="app-title shadow-sm bg-white rounded p-4 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center">
     <div>
@@ -66,7 +67,6 @@ $statusLabel    = $eventData['status_label'] ?? 'Pendaftaran Ditutup';
 </div>
 
 
-
 <div class="row">
     <div class="col-12">
         <div class="tile tile-brand shadow-sm p-4 text-white rounded position-relative overflow-hidden mb-4" style="background: linear-gradient(135deg, var(--primary) 0%, var(--color-primary-combine) 100%);">
@@ -76,7 +76,9 @@ $statusLabel    = $eventData['status_label'] ?? 'Pendaftaran Ditutup';
                         <span class="badge <?= $badgeColor ?> font-weight-bold px-2 py-1 text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">
                             <?= esc($badgeText) ?>
                         </span>
-                        <h3 class="mb-0 text-white font-weight-bold h4"><?= esc($eventName) ?></h3>
+                        <h4 class="mb-0 text-white font-weight-bold">
+                            <?= esc($eventName) ?>
+                        </h4>
                     </div>
                     <p class="mb-0 text-white-50 text-small-c" style="line-height: 1.6;">
                         <?php if ($eventData): ?>
@@ -85,6 +87,9 @@ $statusLabel    = $eventData['status_label'] ?? 'Pendaftaran Ditutup';
                             Saat ini belum ada periode pendaftaran aktif yang dibuka.
                         <?php endif; ?>
                     </p>
+                    <?php if ($isExtraTime): ?>
+                        <small class="badge badge-light text-dark font-weight-bold py-1 px-2" style="font-size: 0.65rem; margin-top: 0.5rem;">Perpanjangan</small>
+                    <?php endif; ?>
                 </div>
 
                 <div class="col-lg-5 col-md-12 text-lg-right d-flex align-items-center justify-content-center align-items-sm-end justify-content-sm-end">
@@ -127,7 +132,45 @@ $statusLabel    = $eventData['status_label'] ?? 'Pendaftaran Ditutup';
             <div class="container my-auto" style="max-width: 680px;">
                 <div class="mb-4">
                     <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-white-10 mb-3" style="width: 80px; height: 80px; background: rgba(255,255,255, 1);">
-                        <img style="width: 60px; 60px" src="<?= $logoImg; ?>"
+                        <img style="width: 60px; height: 60px;" src="<?= $logoImg; ?>"
+                            alt="<?= esc($appProfile->application_name ?? 'Logo FA'); ?>"
+                            class="verified-logo"
+                            onerror="this.onerror=null; this.src='<?= base_url('assets/images/profile/profile-default.png'); ?>';">
+                    </div>
+                    <h3 class="font-weight-bold text-white mb-2">Pendaftaran Telah Ditutup</h3>
+                    <p class="text-white-50 lead" style="font-size: 0.95rem;">
+                        Mohon maaf, periode <strong><?= esc($eventName) ?></strong> saat ini telah resmi ditutup atau belum dibuka.
+                    </p>
+                </div>
+
+                <div class="card bg-white text-dark shadow-lg border-0 rounded-lg p-4 mb-4">
+                    <h6 class="font-weight-bold text-primary mb-2">Informasi Penting</h6>
+                    <p class="text-muted text-small-c2 mb-0" style="line-height: 1.6;">
+                        Proses pendaftaran dan unggah berkas tidak lagi menerima inputan baru. Bagi Anda yang telah menyelesaikan verifikasi, silakan pantau secara berkala halaman pengumuman hasil seleksi.
+                    </p>
+                </div>
+
+                <div class="d-flex flex-column flex-sm-row justify-content-center" style="gap: 1rem;">
+                    <a href="<?= base_url('student/announcement'); ?>" class="btn btn-warning font-weight-bold px-4 py-2.5 shadow rounded">
+                        <i class="fa fa-bullhorn mr-1"></i> Cek Pengumuman Hasil
+                    </a>
+                    <a href="<?= base_url('student/dashboard'); ?>" class="btn btn-outline-light font-weight-bold px-4 py-2.5 shadow rounded">
+                        <i class="fa fa-dashboard mr-1"></i> Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade modal-fullscreen-closed p-0" id="modalClosedNotice" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content d-flex align-items-center justify-content-center text-center p-4">
+            <div class="container my-auto" style="max-width: 680px;">
+                <div class="mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-white-10 mb-3" style="width: 80px; height: 80px; background: rgba(255,255,255, 1);">
+                        <img style="width: 60px; height: 60px;" src="<?= $logoImg; ?>"
                             alt="<?= esc($appProfile->application_name ?? 'Logo FA'); ?>"
                             class="verified-logo"
                             onerror="this.onerror=null; this.src='<?= base_url('assets/images/profile/profile-default.png'); ?>';">
@@ -660,8 +703,7 @@ $statusLabel    = $eventData['status_label'] ?? 'Pendaftaran Ditutup';
 
                 if (distance <= 0) {
                     clearInterval(timerInterval);
-                    $('#modalClosedNotice').modal('show');
-                    $('#countdown-board').html('<span class="badge badge-danger p-2">Waktu Telah Habis</span>');
+                    window.location.reload();
                     return;
                 }
 

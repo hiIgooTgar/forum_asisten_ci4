@@ -47,6 +47,12 @@ class CreateSystemEventSettingsTable extends Migration
                 'type'    => 'BOOLEAN',
                 'default' => false,
             ],
+            'is_extra_time' => [
+                'type'       => 'TINYINT',
+                'constraint' => 1,
+                'default'    => 0,
+                'null'       => true,
+            ],
             'status_override' => [
                 'type'       => 'ENUM',
                 'constraint' => ['auto', 'coming_soon', 'open', 'closed'],

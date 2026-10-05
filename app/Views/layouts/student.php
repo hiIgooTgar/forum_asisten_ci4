@@ -71,7 +71,7 @@ $logoSidebar = (!empty($appProfile->logo_sidebar) && file_exists(FCPATH . 'uploa
         <a class="app-sidebar__toggle" href="#" data-toggle="sidebar" aria-label="Hide Sidebar"></a>
 
         <ul class="app-nav">
-            <li class="dropdown">
+            <!-- <li class="dropdown">
                 <a class="app-nav__item" href="#" data-toggle="dropdown" aria-label="Show notifications">
                     <i class="fa fa-bell fa-lg"></i>
                     <span class="badge badge-danger badge-pill notification-badge">3</span>
@@ -96,7 +96,7 @@ $logoSidebar = (!empty($appProfile->logo_sidebar) && file_exists(FCPATH . 'uploa
                     </div>
                     <li class="app-notification__footer"><a href="#">Lihat semua notifikasi.</a></li>
                 </ul>
-            </li>
+            </li> -->
 
             <li class="dropdown">
                 <a class="app-nav__item" href="#" data-toggle="dropdown" aria-label="Open Profile Menu">

@@ -59,13 +59,14 @@ $isPageNotFound = ($totalPages > 0 && $currentPage > $totalPages);
 $offset = ($currentPage - 1) * $perPage;
 $pagedTaken = array_slice($allTaken, $offset, $perPage);
 
-$eventData    = (isset($active_event) && is_array($active_event)) ? $active_event : null;
+$eventData      = (isset($active_event) && is_array($active_event)) ? $active_event : null;
 $computedStatus = $eventData['computed_status'] ?? 'CLOSED';
 $targetTime     = $eventData['target_time'] ?? null;
 $eventName      = $eventData['event_name'] ?? 'Pendaftaran Asisten Praktikum';
 $badgeText      = $eventData['badge_text'] ?? 'Tutup';
 $badgeColor     = $eventData['badge_color'] ?? 'bg-danger text-white';
 $statusLabel    = $eventData['status_label'] ?? 'Pendaftaran Ditutup';
+$isExtraTime    = (int)($eventData['is_extra_time'] ?? 0) === 1;
 ?>
 
 <div class="app-title shadow-sm bg-white rounded p-4 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center">
@@ -82,7 +83,6 @@ $statusLabel    = $eventData['status_label'] ?? 'Pendaftaran Ditutup';
 </div>
 
 
-
 <div class="row">
     <div class="col-12">
         <div class="tile tile-brand shadow-sm p-4 text-white rounded position-relative overflow-hidden mb-4" style="background: linear-gradient(135deg, var(--primary) 0%, var(--color-primary-combine) 100%);">
@@ -92,7 +92,9 @@ $statusLabel    = $eventData['status_label'] ?? 'Pendaftaran Ditutup';
                         <span class="badge <?= $badgeColor ?> font-weight-bold px-2 py-1 text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">
                             <?= esc($badgeText) ?>
                         </span>
-                        <h3 class="mb-0 text-white font-weight-bold h4"><?= esc($eventName) ?></h3>
+                        <h4 class="mb-0 text-white font-weight-bold">
+                            <?= esc($eventName) ?>
+                        </h4>
                     </div>
                     <p class="mb-0 text-white-50 text-small-c" style="line-height: 1.6;">
                         <?php if ($eventData): ?>
@@ -101,6 +103,9 @@ $statusLabel    = $eventData['status_label'] ?? 'Pendaftaran Ditutup';
                             Saat ini belum ada periode pendaftaran aktif yang dibuka.
                         <?php endif; ?>
                     </p>
+                    <?php if ($isExtraTime): ?>
+                        <small class="badge badge-light text-dark font-weight-bold py-1 px-2" style="font-size: 0.65rem; margin-top: 0.5rem;">Perpanjangan</small>
+                    <?php endif; ?>
                 </div>
 
                 <div class="col-lg-5 col-md-12 text-lg-right d-flex align-items-center justify-content-center align-items-sm-end justify-content-sm-end">
@@ -143,7 +148,7 @@ $statusLabel    = $eventData['status_label'] ?? 'Pendaftaran Ditutup';
             <div class="container my-auto" style="max-width: 680px;">
                 <div class="mb-4">
                     <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-white-10 mb-3" style="width: 80px; height: 80px; background: rgba(255,255,255, 1);">
-                        <img style="width: 60px; 60px" src="<?= $logoImg; ?>"
+                        <img style="width: 60px; height: 60px;" src="<?= $logoImg; ?>"
                             alt="<?= esc($appProfile->application_name ?? 'Logo FA'); ?>"
                             class="verified-logo"
                             onerror="this.onerror=null; this.src='<?= base_url('assets/images/profile/profile-default.png'); ?>';">
@@ -173,6 +178,7 @@ $statusLabel    = $eventData['status_label'] ?? 'Pendaftaran Ditutup';
         </div>
     </div>
 </div>
+
 
 <?php if ($student->verification_status === "completed"): ?>
     <div class="card verified-card p-4 p-md-5 mb-4 text-center">
@@ -807,8 +813,7 @@ $statusLabel    = $eventData['status_label'] ?? 'Pendaftaran Ditutup';
 
                 if (distance <= 0) {
                     clearInterval(timerInterval);
-                    $('#modalClosedNotice').modal('show');
-                    $('#countdown-board').html('<span class="badge badge-danger p-2">Waktu Telah Habis</span>');
+                    window.location.reload();
                     return;
                 }
 
